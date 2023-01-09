@@ -1,0 +1,27 @@
+\input{preamble/misc.tex}
+\input{preamble/tabularx.tex}
+\input{preamble/listings.tex}
+% \input{preamble/pgfplots.tex}
+% \input{preamble/siunitx.tex}
+
+\titlehead{\centering\includegraphics[width=7cm]{pictures/title.png}}
+\title{Topic Placeholder}
+\subtitle{Optional Subtitle}
+\author{Name Placeholder}
+\publishers{My Company}
+\date{\today}
+
+\begin{document}
+    \maketitle
+    \include{content/chapter_0_abstract.tex}
+    \tableofcontents
+
+    \include{content/chapter_1_semantic_analysis.tex}
+    %\include{content/test_chapter.tex}
+
+    % \listoffigures
+    \listoftables
+    \listof{listing}{List of Listings}
+    % \nocite{*}
+    % \printbibliography[heading=bibintoc]
+\end{document}

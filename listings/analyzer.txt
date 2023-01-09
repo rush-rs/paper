@@ -1,0 +1,39 @@
+ [1;33mWarning[39m at test.rush:4:9[0m
+
+ [90m  3 | [0mfn add(left: int, right: int) -> int {
+ [90m  4 | [0m    let asd: char = 1 as char;
+               [1;33m~~~[0m
+ [90m  5 | [0m    let asd: int = 2;
+
+ [1;33munused variable `asd`[0m
+ [1;36mnote:[0m if this is intentional, change the name to `_asd` to hide this warning
+
+ [1;35mHint[39m at test.rush:5:9[0m
+
+ [90m  4 | [0m    let asd: char = 1 as char;
+ [90m  5 | [0m    let asd: int = 2;
+               [1;35m~~~[0m
+ [90m  6 | [0m    return left + right;
+
+ [1;35mvariable `asd` shadowed here[0m
+
+ [1;33mWarning[39m at test.rush:5:9[0m
+
+ [90m  4 | [0m    let asd: char = 1 as char;
+ [90m  5 | [0m    let asd: int = 2;
+               [1;33m~~~[0m
+ [90m  6 | [0m    return left + right;
+
+ [1;33munused variable `asd`[0m
+ [1;36mnote:[0m if this is intentional, change the name to `_asd` to hide this warning
+
+ [1;34mInfo[39m at test.rush:9:14[0m
+
+ [90m  8 | [0m
+ [90m  9 | [0mfn main() -> () {
+                    [1;34m~~[0m
+ [90m 10 | [0m    exit(add(1, 2));
+
+ [1;34munnecessary explicit unit return type[0m
+ [1;36mnote:[0m functions implicitly return `()` by default
+ [1;36mnote:[0m remove the explicit type: `fn main(...) { ... }`

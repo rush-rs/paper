@@ -1,0 +1,28 @@
+\chapter{Abstract}
+
+Programming languages are undoubtedly of great importance for various aspects of
+modern-day life. Even if they remain unnoticed, digital systems running programs
+written in some sort of programming language are ubiquitous.
+\newline
+However, there are numerous ways of implementing a programming language. A
+language designer could choose an interpreted or a compiled approach for their
+language's implementation. Both ways of program execution come with their own
+advantages and disadvantages.
+\newline
+This paper aims to inform the reader about different means of program execution.
+For this, we will implement our own simple programming language called \emph{rush}.
+However, we will not settle on one method of program execution. Therefore, in
+order to highlight the differences between the different methods of program
+execution, we will implement rush using different backends.
+\newline
+First, two interpreted backends are presented. One of them uses a tree-walking
+approach while the other one uses a virtual machine for executing rush code.
+Furthermore, two backends which compile to high-level targets are presented. As
+examples for high-level targets, we chose a compiler targeting \emph{LLVM} and a
+compiler targeting \emph{WebAssembly}. Furthermore, we will present two compilers
+which generate low-level assembly code. For this, a compiler targeting \emph{RISC-V}
+assembly and another compiler targeting \emph{X86\_64} assembly are presented.
+\newline
+This paper assumes that the reader has basic knowledge about computer
+programming and computer hardware. Most code samples will be Rust code as the
+entire project is written in Rust.

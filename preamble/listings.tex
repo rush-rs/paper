@@ -1,0 +1,121 @@
+\usepackage{keycommand}
+\usepackage{fvextra}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{ulem}
+
+\captionsetup{margin=10pt, font=small, labelfont=bf, labelsep=endash}
+
+\definecolor{hint}{HTML}{A0A1A7}
+\fvset{
+    breaklines=true,
+    numbers=left,
+    frame=lines,
+    numbersep=12pt,
+    rulecolor=\color{hint},
+    framesep=2\fboxsep,
+    fontsize=\footnotesize,
+    labelposition=bottomline,
+    baselinestretch=1.2,
+}
+\renewcommand{\theFancyVerbLine}{\scriptsize\ttfamily\color{hint}\arabic{FancyVerbLine}}
+
+\newfloat{listing}{htbp}{lol}[chapter]
+\floatname{listing}{Listing}
+% sets for all custom floats with `plain` style, but those are all listings in this document
+\captionsetup[plain]{skip=0pt}
+
+\newkeycommand+[°]{\TSListing}[
+    first line,
+    last line,
+    caption,
+    label,
+    float,
+    bool raw=false,
+    bool raw queries=false,
+][1]{
+    % Default args
+    °\def\args{%
+        commandchars=×\{\},
+    }°
+    °\def\commandargs{}°
+%
+    % set `firstnumber` and `firstline` if `first line` is set
+    \ifcommandkey{first line}{°\expandafter\def\expandafter\args\expandafter{\args%
+        firstnumber=\commandkey{first line},
+        firstline=\commandkey{first line},
+    }°}{}
+    % set `lastline` if `last line` is set
+    \ifcommandkey{last line}{°\expandafter\def\expandafter\args\expandafter{\args%
+        lastline=\commandkey{last line},
+    }°}{}
+    % set `label` if `caption` is set and `float` is unset
+    \ifcommandkey{caption}{
+        \ifcommandkey{float}{}{
+            °\expandafter\def\expandafter\args\expandafter{\args%
+                label=\textnormal{\color{black}\commandkey{caption}},
+            }°
+        }
+    }{}
+    \if\commandkey{raw}1°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
+        --raw
+    }°\fi
+    \if\commandkey{raw queries}1°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
+        --raw-queries
+    }°\fi
+%
+    % begin float if `float` is set
+    \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}
+    % actual input of code
+    °\expandafter\VerbatimInput\expandafter[\args]°{|"ts2tex listings/#1 °\commandargs°"}
+    % end float and set caption and label if `float` is set
+    \ifcommandkey{float}{
+            \ifcommandkey{caption}{°\caption{\commandkey{caption}}°}{}
+            \ifcommandkey{label}{°\label{\commandkey{label}}°}{}
+        °\end{listing}°
+    }{}
+}
+
+\newkeycommand+[°]{\AnsiListing}[
+    first line,
+    last line,
+    caption,
+    label,
+    float,
+][1]{
+    % Default args
+    °\def\args{%
+        commandchars=×\{\},
+        numbers=none,
+    }°
+    °\def\commandargs{}°
+%
+    % set `firstnumber` and `firstline` if `first line` is set
+    \ifcommandkey{first line}{°\expandafter\def\expandafter\args\expandafter{\args%
+        firstnumber=\commandkey{first line},
+        firstline=\commandkey{first line},
+    }°}{}
+    % set `lastline` if `last line` is set
+    \ifcommandkey{last line}{°\expandafter\def\expandafter\args\expandafter{\args%
+        lastline=\commandkey{last line},
+    }°}{}
+    % set `label` if `caption` is set and `float` is unset
+    \ifcommandkey{caption}{
+        \ifcommandkey{float}{}{
+            °\expandafter\def\expandafter\args\expandafter{\args%
+                label=\textnormal{\color{black}\commandkey{caption}},
+            }°
+        }
+    }{}
+%
+    % begin float if `float` is set
+    \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}
+    % actual input of code
+    °\expandafter\VerbatimInput\expandafter[\args]°{|"ansi2tex code/#1 °\commandargs°"}
+    % end float and set caption and label if `float` is set
+    \ifcommandkey{float}{
+            \ifcommandkey{caption}{°\caption{\commandkey{caption}}°}{}
+            \ifcommandkey{label}{°\label{\commandkey{label}}°}{}
+        °\end{listing}°
+    }{}
+}

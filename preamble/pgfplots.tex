@@ -1,0 +1,46 @@
+\usepackage{pgfplots}
+
+\pgfplotsset{compat=1.17}
+
+% \plot[axis-options]{axis-environment}
+\newcommand{\plot}[2][]{
+    \begin{tikzpicture}
+        \begin{axis}[
+            grid=both,
+            grid style=solid,
+            axis equal,
+            scale only axis,
+            minor tick num=1,
+            axis lines=middle,
+            xlabel={x},
+            ylabel={y},
+            #1
+        ]
+            #2
+        \end{axis}
+    \end{tikzpicture}
+}
+% \addgraph[plot-options]{formula}
+\newcommand{\addgraph}[2][]{
+    \addplot[color=red, #1]
+    {#2}
+    ;
+}
+% \addpoint[plot-options]{coordinate}{pin-angle}{label}
+\newcommand{\addpoint}[4][]{
+    \addplot[
+        color=black,
+        mark=*,
+        only marks,
+        #1
+    ]
+    coordinates {(#2)}
+    node[pin=#3:{#4}]{}
+    ;
+}
+% \addsamples[plot-options]{coordinates}
+\newcommand{\addsamples}[2][]{
+    \addplot[color=blue, mark=*, #1]
+    coordinates{#2}
+    ;
+}

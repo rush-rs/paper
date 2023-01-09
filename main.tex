@@ -1,27 +1,28 @@
 \input{preamble/misc.tex}
 \input{preamble/tabularx.tex}
 \input{preamble/listings.tex}
+\input{preamble/tikz.tex}
 % \input{preamble/pgfplots.tex}
 % \input{preamble/siunitx.tex}
 
 \titlehead{\centering\includegraphics[width=7cm]{pictures/title.png}}
 \title{Topic Placeholder}
 \subtitle{Optional Subtitle}
-\author{Name Placeholder}
-\publishers{My Company}
+\author{Silas Groh, Mik Müller}
+\publishers{Carl Fuhlrott Gymnasium}
 \date{\today}
 
 \begin{document}
-    \maketitle
-    \include{content/chapter_0_abstract.tex}
-    \tableofcontents
+\maketitle
+\include{content/abstract.tex}
+\tableofcontents
 
-    \include{content/chapter_1_semantic_analysis.tex}
-    %\include{content/test_chapter.tex}
+\include{content/parsing_and_semantic_analysis.tex}
+%\include{content/test_chapter.tex}
 
-    % \listoffigures
-    \listoftables
-    \listof{listing}{List of Listings}
-    % \nocite{*}
-    % \printbibliography[heading=bibintoc]
+\listoffigures
+\listoftables
+\listof{listing}{List of Listings}
+\nocite{*}
+\printbibliography[heading=bibintoc]
 \end{document}

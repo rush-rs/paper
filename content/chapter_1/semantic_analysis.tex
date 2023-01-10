@@ -1,26 +1,32 @@
 \section{Semantic Analysis}
 
-A programming language is not just defined by a grammar but often also by a semantic specification.
+Often, a programming language is not just defined by its grammar,
+since the grammar cannot specify how programs should behave.
+Therefore, a programming language's behavior is often defined by a so-called \emph{semantic specification}.
 Unlike the grammar, the semantic specification does not specify the language's syntax.
 Instead, this  specification often mandates how a program should behave.
 Common rules include \emph{data types} and \emph{integer overflow behavior}.
 Another example of a semantic rule is that a variable has to be defined before it is used.
-Defining the semantic rules a the programming language is often a hard task because not all requirements are clear from the beginning.
+Defining the semantic rules of a the programming language is often a demanding task,
+since not all requirements are clear from the beginning.
 Since the semantic rules of a programming language can not be defined in a formal way,
 a language designer often writes their specification in a natural language, meaning Chomsky type 0.
 However, due to the specification being written in a natural language, the specification can sometimes be ambiguous.
+Therefore, a well-written semantic specification should avoid ambiguity as much as possible.
+Furthermore, this specification is often written in English,
+since it is a well-adopted language across several academic fields like computer science.
 Since those rules define when a program is valid, they have to be checked and enforced before program compilation can start.
 
 Because rush shares its semantic rules across all backends,
 it would be cumbersome to implement semantic validation in each
-backend individually. Therefore, it would be rational to implement a separate
+backend individually. Therefore, it is rational to implement a separate
 compilation step which is responsible for validating the source program's
-semantics. Among other checks, the so-called semantic analyzer validates types
+semantics. Among other checks, the so-called \emph{semantic analyzer}\footnote{Later referred to as \enquote{analyzer}} validates types
 and variable references whilst performing type annotations. The last aspect is
 of particular importance since all compiler backends rely on type information at
 compile time. However, in order to obtain type information, the abstract syntax
 tree of the source program must be traversed, performing numerous other checks
-in the process. The semantic analyzer behaves exactly like this. In order to
+during the process. The semantic analyzer behaves exactly like this. In order to
 preserve a clear boundary between the individual compilation steps, the parser
 only validates the program's syntax without performing further validation.
 Therefore, the analyzer traverses the abstract syntax tree previously generated
@@ -28,9 +34,9 @@ by the parser.
 
 In order to highlight why type information is often required at compile time, we
 will consider following code example. The listing \ref{lst:analyzer-test} displays a basic rush program
-
-calculating the sum of two integer values in order to use the sum as its
-exit-code. In this example, the desired exit-code of the program is five.
+calculating the sum of two integer values.
+The program then uses this sum as its exit-code.
+In this example, the desired exit-code of the program is five.
 
 \TSListing[caption={A rush Program Which Adds Two Integers}, label={lst:analyzer-test}, float=H]{semantic_analysis_simple.rush}
 
@@ -38,10 +44,10 @@ In this example, the semantic analyzer will first check if the program contains
 a \texttt{main} function. If this is not the case, the analyzer rejects the program
 because it violates rush's semantic specification. Just like C or Rust, rush
 requires that every program must contain exactly one \texttt{main} function. If a
-programming languages requires a \texttt{main} function, top-level statements can be
+programming language requires a \texttt{main} function, most top-level statements can be
 completely forbidden, allowing more elegant code imports between different
 source files. Furthermore, a \texttt{main} function clearly indicates the program's
-start of execution which removes ambiguity. Therefore, the analyzer checks that
+start of execution, thus decreasing ambiguity. Therefore, the analyzer checks that
 the \texttt{main} function takes no parameters and returns no value. However, in this
 example, there is a valid \texttt{main} function. Now, the analyzer traverses the
 function body of the \texttt{main} function. Since \texttt{let} statements are used to declare
@@ -52,9 +58,9 @@ only considers the types of expressions. Therefore, in this example, the
 analyzer remembers that the variables \texttt{two} and \texttt{three} store integer values.
 This information will become much more useful when we consider line 4. Here, the
 analyzer checks that the identifiers \texttt{two} and \texttt{three} refer to valid variables.
-Just like in most other programming languages, rush does not allow the addition
-of two boolean values for example. Here, the analyzer checks that the operands
-of the `+` operator have the same type and that this type is valid in additions.
+Just like most other programming languages, rush does not allow the addition
+of two boolean values for example. Therefore, the analyzer checks that the operands
+of the \texttt{+} operator have the same type and that this type is valid in additions.
 Because this validation requires information about types, the analyzer accesses
 its scope when looking up the identifiers \texttt{two} and \texttt{three}. Since those names
 were previously mapped to the \texttt{int} type, the analyzer is now aware of the
@@ -71,7 +77,7 @@ As indicated previously, most compilers require type information whilst
 generating target code. For simplicity, we will consider a fictional compiler
 which can compile both integer and float additions. However, the fictional
 target machine requires different instructions for addition depending on the
-type of the operands. Therefore, integer addition uses the \texttt{intadd} instruction
+type of the operands. For instance, integer addition uses the \texttt{intadd} instruction
 while float addition uses the \texttt{floatadd} instruction. Here, type ambiguity would
 cause difficulties. If there was no semantic analysis step, the compiler would
 have to implement its own way of determining the types of the operands at
@@ -104,7 +110,7 @@ Listing \ref{lst:analyzer_attr} displays the struct fields of the semantic analy
 The field \texttt{functions} in line 13 maps a function name to the function's signature.
 Therefore, if a function is called later in the program, the analyzer checks if the function exists and can compare if the arguments match the declared parameters.
 The \texttt{scopes} field in line 16 is responsible for managing variables.
-In rush, blocks using braces (\texttt{\{\}}) create a new scope.
+In rush, blocks using braces (\texttt{\{\}}) create new scopes.
 If the analyzer enters such a block, a new scope is pushed onto the \texttt{scopes} stack.
 Each scope maps a variable identifier to some variable-specific data.
 For instance, the analyzer keeps track of variable types, whether variables are used later, if they are mutated, and where it was declared.
@@ -151,4 +157,4 @@ Since rush allows blocks which contain expressions, a block containing another b
 Therefore, it is possible that the \texttt{expression} method calls itself multiple times recursively.
 For most other tree-traversing methods, this recursive behavior is mostly identical as most AST nodes may contain themselves.
 
-\textcolor{TODO: continue work here}
+\textcolor{red}{TODO: continue work here}

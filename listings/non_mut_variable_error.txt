@@ -1,0 +1,17 @@
+ [1;31mSemanticError[39m at test.rush:3:5[0m
+
+ [90m  2 | [0m    let number = 5;
+ [90m  3 | [0m    number += 5;
+           [1;31m^^^^^^^^^^^[0m
+ [90m  4 | [0m}
+
+ [1;31mcannot re-assign to immutable variable `number`[0m
+
+ [1;35mHint[39m at test.rush:2:9[0m
+
+ [90m  1 | [0mfn main() {
+ [90m  2 | [0m    let number = 5;
+               [1;35m~~~~~~[0m
+ [90m  3 | [0m    number += 5;
+
+ [1;35mvariable not declared as `mut`[0m

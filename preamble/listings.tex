@@ -111,7 +111,7 @@
     % begin float if `float` is set
     \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}
     % actual input of code
-    °\expandafter\VerbatimInput\expandafter[\args]°{|"ansi2tex code/#1 °\commandargs°"}
+    °\expandafter\VerbatimInput\expandafter[\args]°{|"ansi2tex listings/#1 °\commandargs°"}
     % end float and set caption and label if `float` is set
     \ifcommandkey{float}{
             \ifcommandkey{caption}{°\caption{\commandkey{caption}}°}{}

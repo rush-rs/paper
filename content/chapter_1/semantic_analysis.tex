@@ -28,6 +28,7 @@ by the parser.
 
 In order to highlight why type information is often required at compile time, we
 will consider following code example. The listing \ref{lst:analyzer-test} displays a basic rush program
+
 calculating the sum of two integer values in order to use the sum as its
 exit-code. In this example, the desired exit-code of the program is five.
 
@@ -88,11 +89,7 @@ determining the types of subtrees. Because of the previously mentioned reasons,
 rush's semantic analyzer also annotates the abstract syntax tree with type
 information so that it is usable for later steps of compilation.
 
-In order to obtain a better understanding of how the analyzer works, we will now
-consider parts of its implementation and how they behave when analyzing the
-example from above.
-
-%- Main function
+%- Main function: OK
 %- Let statements
 %- Variable references
 %- Type compatibility
@@ -103,7 +100,55 @@ we should first consider the attributes which play a vital role in the analyzer.
 
 \TSListing[first line=12, last line=26, caption={Attributes of the \texttt{analyzer} struct}, label={lst:analyzer_attr}, float=H]{rush/crates/rush-analyzer/src/analyzer.rs}
 
+Listing \ref{lst:analyzer_attr} displays the struct fields of the semantic analyzer.
+The field \texttt{functions} in line 13 maps a function name to the function's signature.
+Therefore, if a function is called later in the program, the analyzer checks if the function exists and can compare if the arguments match the declared parameters.
+The \texttt{scopes} field in line 16 is responsible for managing variables.
+In rush, blocks using braces (\texttt{\{\}}) create a new scope.
+If the analyzer enters such a block, a new scope is pushed onto the \texttt{scopes} stack.
+Each scope maps a variable identifier to some variable-specific data.
+For instance, the analyzer keeps track of variable types, whether variables are used later, if they are mutated, and where it was declared.
+By saving this much information about each declared variable, the analyzer can produce very helpful and accurate error messages and warnings.
+Such an error message is displayed in listing \ref{lst:analyer_imutable_err}.
 
+\AnsiListing[caption={Output When Compiling An Invalid rush Program}, float=h, label={lst:analyer_imutable_err}]{non_mut_variable_error.txt}
 
-\TSListing[first line=3, last line=12, caption={Validation of the \texttt{main} function in the analyzer}, label={lst:main_fn_analyzer}, float=H]{rush/crates/rush-analyzer/src/analyzer.rs}
+Furthermore, the \texttt{loop\_count} field is used to validate the uses of the \texttt{break} and \texttt{continue} keywords.
+Because these statements are only valid inside loop bodies, the value of \texttt{loop\_count} must be $> 0$ when such a statement is used.
+This counter is incremented as soon as the analyzer begins traversal of a loop body.
+After the analyzer has traversed the loop's body, the counter is decremented again.
+Due to this design, nested loops do not cause issues while the validity of the above statements can be guaranteed.
 
+In order to obtain a better understanding of how the analyzer works, we will now
+consider parts of its implementation and how they behave when analyzing the
+example from above.
+
+First, all functions are traversed and analyzed.
+Because a \texttt{main} function is mandatory in every rush program,
+the analyzer simply checks that the \texttt{functions} map contains the \texttt{main} function after all functions have been analyzed.
+Furthermore, the code in listing \ref{lst:analyzer_sig_main} validates the \texttt{main} function's signature.
+\TSListing[first line=404, last line=419, caption={Analyzer Validating The Signature Of The \texttt{main} Function}, label={lst:analyzer_sig_main}, float=H]{rush/crates/rush-analyzer/src/analyzer.rs}
+During traversal of function bodies, the analyzer encounters two \texttt{let} statements in line two and three.
+For analyzing these types of statements, the corresponding function is called.
+First, the initializing expression of the let-statement is analyzed in order to obtain information about it's result data type.
+After the subtree of the expression has been traversed and analyzed, its data type is now known.
+The analyzer now inserts a new entry for the variable's name (e.g. \texttt{two}) into its current scope.
+Among other data, this entry includes the variable's data type, which was obtained by prior analysis of the expression.
+However, we have not yet explained how type annotation works in the analyzer.
+In order to get an understanding of how the analyzer determines types of variables, we must consider how expressions are traversed.
+The code in listing \ref{lst:analyzer_expr} is part of the method responsible for analyzing expressions.
+
+\TSListing[first line=1007, last line=1013, caption={Analysis Of Expressions During Semantic Analysis}, label={lst:analyzer_expr}, float=H]{rush/crates/rush-analyzer/src/analyzer.rs}
+
+The \texttt{node} parameter specifies the expression node generated by the parser,
+it does not yet contain any type information since it is yet to be analyzed.
+It is also apparent that the method returns a value of the type \texttt{AnalyzedExpression},
+which represents an analyzed and annotated expression.
+Therefore, this method consumes a non-analyzed expression and transforms it into an analyzed version of itself.
+In this function, the recursive tree-traversal algorithm used in the semantic analyzer is clearly visible.
+For instance, if the current expression is a block-expression (line 1009), the responsible method is called.
+Since rush allows blocks which contain expressions, a block containing another block is a legal construct.
+Therefore, it is possible that the \texttt{expression} method calls itself multiple times recursively.
+For most other tree-traversing methods, this recursive behavior is mostly identical as most AST nodes may contain themselves.
+
+\textcolor{TODO: continue work here}

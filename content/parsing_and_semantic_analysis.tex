@@ -24,8 +24,11 @@ Separating the process of compilation into individual steps was the predominant 
 Due to limited memory of the computers at the time, a single-step compiler could not be implemented.
 Therefore, only the individual steps of the compiler would fit,
 as each step occupied a considerate amount of machine memory.
+These types of compilers are called \emph{multipass compilers}.
 However, the output of each step would be serialized and written to disk, ready to be read by the next step.
-It is obvious that this partitioning leads to a lot of overhead which can be omitted by using a more modern approach.
+It is obvious that this partitioning leads to a lot of performance overhead, since disk access if often significantly slower than memory access.
+Nowadays, we can mitigate these performance issues by implementing the compiler as a single program.
+Therefore, the compiler can avoid slow disk operations by keeping intermediate structures solely in memory.
 \cite[pp.~6--7]{wirth_compiler_construction_2005}
 
 \begin{figure}[h]

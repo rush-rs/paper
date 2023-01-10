@@ -1,0 +1,3 @@
+[submodule "listings/rush"]
+	path = listings/rush
+	url = git@github.com:rush-rs/rush

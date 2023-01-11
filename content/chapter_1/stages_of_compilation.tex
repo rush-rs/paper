@@ -11,7 +11,6 @@ However, the output of each step would be serialized and written to disk, ready 
 It is obvious that this partitioning leads to a lot of performance overhead, since disk access if often significantly slower than memory access.
 Nowadays, we can mitigate these performance issues by implementing the compiler as a single program.
 Therefore, the compiler can avoid slow disk operations by keeping intermediate structures solely in memory.
-\cite[pp.~6--7]{wirth_compiler_construction_2005}
 
 \begin{figure}[h]
 	\centering
@@ -43,4 +42,4 @@ Therefore, the compiler can avoid slow disk operations by keeping intermediate s
 	      Due to likely constraints considering the target instruction set,
 	      the code generation is often considered to be the most involved step of compilation.
 \end{enumerate}
-\cite[p.~6]{wirth_compiler_construction_2005}
+\cite[pp.~6--7]{wirth_compiler_construction_2005}

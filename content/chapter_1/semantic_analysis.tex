@@ -1,20 +1,20 @@
 \section{Semantic Analysis}
 
-Often, a programming language is not just defined by its grammar,
+Often, a programming language is not just defined by its grammar
 since the grammar cannot specify how programs should behave.
 Therefore, a programming language's behavior is often defined by a so-called \emph{semantic specification}.
 Unlike the grammar, the semantic specification does not specify the language's syntax.
 Instead, this  specification often mandates how a program should behave.
 Common rules include \emph{data types} and \emph{integer overflow behavior}.
 Another example of a semantic rule is that a variable has to be defined before it is used.
-Defining the semantic rules of a the programming language is often a demanding task,
+Defining the semantic rules of a programming language is often a demanding task
 since not all requirements are clear from the beginning.
-Since the semantic rules of a programming language can not be defined in a formal way,
+Because the semantic rules of a programming language can not be defined formally,
 a language designer often writes their specification in a natural language, meaning Chomsky type 0.
 However, due to the specification being written in a natural language, the specification can sometimes be ambiguous.
 Therefore, a well-written semantic specification should avoid ambiguity as much as possible.
-Furthermore, this specification is often written in English,
-since it is a well-adopted language across several academic fields like computer science.
+Furthermore, this specification is often written in English
+due to it being well-adopted language across several academic fields like computer science.
 Since those rules define when a program is valid, they have to be checked and enforced before program compilation can start.
 
 Because rush shares its semantic rules across all backends,
@@ -156,5 +156,23 @@ For instance, if the current expression is a block-expression (line 1009), the r
 Since rush allows blocks which contain expressions, a block containing another block is a legal construct.
 Therefore, it is possible that the \texttt{expression} method calls itself multiple times recursively.
 For most other tree-traversing methods, this recursive behavior is mostly identical as most AST nodes may contain themselves.
+
+For simple types of expressions like integers or floats further analysis is omitted.
+Since these types of expressions are constant, the function direcly returns an analyzed version of the expression.
+Since we have now explained how tree traversal and analysis works in general, the question of how types are saved in the new tree remains.
+\TSListing[first line=129, last line=146, caption={Obtaining The Type Of Expressions}, label={lst:expr_type_impl}, float=H]{rush/crates/rush-analyzer/src/ast.rs}
+The code in listing \ref{lst:expr_type_impl} shows how the type of any kind of analyzed expression can be obtained.
+For constant expressions like \verb|AnalyzedExpression::(_)|, the determination of its type is straight-forward.
+Here, the \texttt{result\_type} function returns \verb|Type::Int(0)|.
+In this implementation, \texttt{Type} enum saves a count which specifies the number of pointer indirections.
+For instance, the rush type \texttt{**int} is represented as \verb|Type::Int(2)| because there are two levels of pointer indirection.
+However, if the method is called on a constant integer expression, the resulting level of pointer indirection is zero.
+Therefore, this method is able to return the types of simple constant expressions.
+For more complex expressions like if-expressions,
+the corresponding analyzed AST node saves its result type directly.
+For instance, during analysis of block expressions,
+the corresponding function checks if the block contains a trailing expression.
+If this is the case, the result type of the block expression is identical to the one of its trailing expression.
+This way, the analyzer is able to get type information about each node of the tree after it has been analyzed.
 
 \textcolor{red}{TODO: continue work here}

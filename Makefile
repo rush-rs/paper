@@ -1,5 +1,5 @@
 build:
-	[ -f main.pdf ] && rm main.pdf
+	rm -f main.pdf
 	make main.pdf
 
 main.pdf: main.tex listings preamble content ts2tex.json

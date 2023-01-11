@@ -95,12 +95,6 @@ determining the types of subtrees. Because of the previously mentioned reasons,
 rush's semantic analyzer also annotates the abstract syntax tree with type
 information so that it is usable for later steps of compilation.
 
-%- Main function: OK
-%- Let statements
-%- Variable references
-%- Type compatibility
-%- Exit uses int
-
 Before examining how the analyzer's implementation behaves in the example from above,
 we should first consider the attributes which play a vital role in the analyzer.
 
@@ -167,12 +161,80 @@ Here, the \texttt{result\_type} function returns \verb|Type::Int(0)|.
 In this implementation, \texttt{Type} enum saves a count which specifies the number of pointer indirections.
 For instance, the rush type \texttt{**int} is represented as \verb|Type::Int(2)| because there are two levels of pointer indirection.
 However, if the method is called on a constant integer expression, the resulting level of pointer indirection is zero.
-Therefore, this method is able to return the types of simple constant expressions.
-For more complex expressions like if-expressions,
+Therefore, this method is able to return the types of simple constant expressions with no additional effort.
+For more complex constructs like if-expressions,
 the corresponding analyzed AST node saves its result type directly.
 For instance, during analysis of block expressions,
-the corresponding function checks if the block contains a trailing expression.
+the responsible function checks if the block contains a trailing expression.
 If this is the case, the result type of the block expression is identical to the one of its trailing expression.
-This way, the analyzer is able to get type information about each node of the tree after it has been analyzed.
+This way, the analyzer is able to get type information about each node of the tree, assuming that it has been analyzed previously.
+In the case of a semantically malformed program,
+the analyzer must somehow continue the tree traversal because otherwise only one error could be reported at a time.
+To mitigate this issue, we have implemented the \texttt{Unknown} type.
+If the analyzer encounters a type conflict where one of the conflicting types is \emph{unknown},
+it does not report another error since the unknown type was caused solely by a previous error.
+Therefore, errors do not cascade, meaning that an undeclared variable will not cause another type error.
 
-\textcolor{red}{TODO: continue work here}
+After the let-statementes, the \texttt{exit} function is called.
+Here, the analyzer calls the \texttt{call\_expr} function which is responsible for analyzing the validity of function calls.
+First, the call parameter expressions are analyzed.
+Therefore, the expression \texttt{two + three} is traversed before further analysis can proceed.
+Since the identifiers on the left- and right hand side have been declared previously by the two let-statements,
+obtaining their data types merely involves a lookup of the identifier names inside the current scope's hashmap.
+If an unknown variable is provided, the lookup in the hashmap would yield no value, thus causing an error message to be generated at this point.
+Because the values of the two variables should be added, the method \texttt{infix\_expr} is called.
+This function validates several constraints.
+For instance, the operands must both be of the same type.
+Here, both operands are integers, thus complying with the specification.
+Therefore, the analyzer accepts this infix-expression and is now aware that it yields another integer.
+Now that the analysis of the call argument expression has completed, its compatibility with the declared parameter must be validated.
+
+\TSListing[first line=1822, last line=1827, caption={Validation Of Argument Type Compatibility In The Analyzer}, label={lst:analyzer_call_exit}, float=H]{rush/crates/rush-analyzer/src/analyzer.rs}
+
+The listing \ref{lst:analyzer_call_exit} shows parts of the \texttt{arg} function which is responsible for validating that a function call argument is compatible with the declared parameter.
+In the above example, this means that the \texttt{exit} function is to be called with exactly one integer argument.
+This code will produce an error message if the type of the call argument deviates from the one of the declared parameter.
+However, the example from above presents a syntactically and semantically correct rush program.
+
+Another task of the semantic analyzer can be to implement early optimization.
+In compiler design, most of the optimizations are often performed with the target machine in mind.
+Therefore, the effects of these target-machine dependent optimizations can excel the ones caused by earlier optimizations.
+However, it is still sensible to peform trivial optimizations, such as constant folding and loop conversion inside the semantic analyzer.
+For instance, the rush expression $2 + 3$ evaluates to $5$ during compile time instead of run time.
+This evaluation of expressions during compile time is referred to as \emph{constant folding} \cite[p.~54]{wirth_compiler_construction_2005}.
+Constant folding is often used in order to avoid the emission of otherwise redundant arithmetic instructions.
+As a result of this, the compiled program will run faster since less computation is being performed when the program is executed.
+In order to make such optimization possible, each expression node in the analyzed AST has a method named \texttt{constant}.
+
+\TSListing[first line=148, last line=153, caption={Method For Determining If An Expression Is Constant}, label={lst:expr_constant_impl}, float=H]{rush/crates/rush-analyzer/src/ast.rs}
+
+This method is responsible for determining whether an expression is constant.
+The method returns \texttt{true} if its expression is a constant integer, float, boolean or char.
+Other types of expression, such as a call-expression cannot be constant since such a function call may cause side effects which cannot be determined during compile time.
+This method is vital for constant folding since both the left- and right hand side of infix-expressions need to be constant in order to be evaluated at compile time.
+
+Among other optimizations implemented in the analyzer, loop transformation can also have a positive effect on the program's performance during runtime.
+The listing \ref{lst:rush_true_while} displays a part of a rush program which uses a \texttt{while} loop even though a \texttt{loop} would be faster.
+Listing \ref{lst:rush_faster_loop} displays the same algorithm implemented using the faster \texttt{loop}.
+
+\TSListing[caption={Redundant \texttt{while} Loop Inside a rush Program}, label={lst:rush_true_while}, float=H]{constant_true_while.rush}
+\TSListing[caption={Faster Loop Algorithm Implemented In rush}, label={lst:rush_faster_loop}, float=H]{faster_loop.rush}
+
+The \texttt{loop} implementation is more efficient since the condition check is omitted before each iteration.
+Because the \texttt{while} loop checks that its condition is true before it starts the next iteration,
+the \texttt{while} loop will run slower than the \texttt{loop} in this example.
+However, this is only the case because the condition of the loop is a constant \texttt{true}.
+Therefore, using a condition which is always true is redundant and should therefore be omitted.
+If the analyzer detects such a scenario after a while-loop was analyzed, the output node will be converted into a conventional loop.
+Detection of this scenario is implemented in line 855 of listing \ref{analyzer_loops}.
+
+\TSListing[first line=851, last line=865, caption={Loop Transformation In The Analyzer}, label={lst:analyzer_loops}, float=H]{rush/crates/rush-analyzer/src/analyzer.rs}
+
+Another scenario in which a \texttt{while} loop can be restructured occurs if the condition always evaluates to \texttt{false}.
+\TSListing[caption={\texttt{while} Loop Inside a rush Program Which Never Iterates}, label={lst:rush_true_while}, float=H]{constant_false_while.rush}
+Since the loop in listing \ref{lst:rush_true_while} never iterates, it is completely redundant and can therefore be omitted entirely.
+This scenario is detected in line 853 of listing \ref{lst:analyzer_loops}.
+This optimization improves runtime efficiency by a small amount since the code performing the condition check will not be compiled into the output program.
+Furthermore, the resulting output code will also be of slightly smaller size since the entire loop compilation can be omitted.
+Therefore, implementing such trivial optimizations can significantly contribute to a more efficient output program.
+However, compiler writers often implement significantly more early optimization than presented in the two examples from above.

@@ -1,0 +1,3 @@
+while false {
+    // this loop will never iterate
+}

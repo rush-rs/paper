@@ -16,7 +16,7 @@
     framesep=2\fboxsep,
     fontsize=\footnotesize,
     labelposition=bottomline,
-    baselinestretch=1.2,
+    % baselinestretch=1,
 }
 \renewcommand{\theFancyVerbLine}{\scriptsize\ttfamily\color{hint}\arabic{FancyVerbLine}}
 
@@ -67,7 +67,7 @@
     % begin float if `float` is set
     \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}
     % actual input of code
-    °\expandafter\VerbatimInput\expandafter[\args]°{|"ts2tex listings/#1 °\commandargs°"}
+    °\expandafter\VerbatimInput\expandafter[\args]°{|"ts2tex #1 °\commandargs°"}
     % end float and set caption and label if `float` is set
     \ifcommandkey{float}{
             \ifcommandkey{caption}{°\caption{\commandkey{caption}}°}{}
@@ -111,7 +111,7 @@
     % begin float if `float` is set
     \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}
     % actual input of code
-    °\expandafter\VerbatimInput\expandafter[\args]°{|"ansi2tex listings/#1 °\commandargs°"}
+    °\expandafter\VerbatimInput\expandafter[\args]°{|"ansi2tex #1 °\commandargs°"}
     % end float and set caption and label if `float` is set
     \ifcommandkey{float}{
             \ifcommandkey{caption}{°\caption{\commandkey{caption}}°}{}

@@ -5,8 +5,6 @@ build:
 main.pdf: main.tex listings preamble content ts2tex.json
 	latexmk -xelatex -shell-escape -g main.tex
 
-config: gen_config.py
+init: fetch_deps.sh gen_config.py
+	sh fetch_deps.sh
 	python3 gen_config.py
-
-tree-sitter: fetch_parsers.sh
-	sh fetch_parsers.sh

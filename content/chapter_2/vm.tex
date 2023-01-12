@@ -1,1 +1,46 @@
 \section{Using A Virtual Machine}
+
+Just like a tree-walking interpreter, a virtual machine presents a method of implementing an interpreter for a programming language.
+However, the way a virtual machine operates fundamentally differs from the one which the tree-walking interpreter uses.
+For rush, we have implemented a virtual machine backend in order to compare it to the previously displayed tree-walking interpreter.
+
+\subsection{Defining A Virtual Machine}
+
+Often, one might encounter the term \emph{virtual machine} when talking about emulating an existing type of computer using a software system.
+This emulation often includes simulating devices like displays, disk or GPU.
+In this context however, a \emph{virtual machine} is a software entity which emulates how a computer interprets instructions.
+Just like a real computer, a virtual machine executes instructions directly.
+Often, a virtual machine may make use of an architecture similar to the \emph{Von Neumann architecture}.
+
+The von Neumann architecture was first introduced by John Neumann in the year 1945
+The processing unit contains components like the \emph{ALU}\footnote{Short for \enquote{arithmetic logic unit}}, registers, and a control unit.
+\cite[p.~172]{Ledin2020-yp}.
+The control unit is of particular importance since it manages the instruction counter and plays a vital role in the \emph{fetch-decode-execute} cycle.
+
+\begin{itemize}
+	\item \textbf(Fetch): The processor's control unit loads the next instruction from the adequate memory location.
+	      The value of the next instruction is then placed into the processor's internal instruction register.
+	\item \textbf(Decode):
+	      The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken during instruction execution.
+	      Such steps may involve the ALU performing read-write operations on registers or memory locations.
+	\item \textbf(Execute):
+	      The control unit invokes all necessary steps for executing the requested operation.
+	      For instance, the control unit may invoke the ALU in order to perform an addition.
+\end{itemize}
+
+A computer's processor performs this fetch-decode-execute cycle repeatedly from the moment it is powered on until the point in time where it is powered down again.
+For relatively simple processors, each cycle is executed in an isolated manner because instructions are executed in a sequential order.
+This means that the execution of the instruction $i$ is delayed until execution of $i - 1$ has completed.
+For most virtual machines, executing the input instructions in sequential order is often the simplest solution.
+The \emph{IPC}\footnote{Short for \enquote{instructions per clock}} provides a performance metric for processors.
+It determines how long a processor takes to execute instructions relative to its clock speed.
+For instance, if the IPC is 0.25, a processor would require four clocks for one instruction to be executed.
+
+\cite[pp.~208-209]{Ledin2020-yp}.
+
+
+Unlike the tree-walking interpreter, a virtual machine does not traverse the AST.
+
+\subsection{The rush Virtual Machine}
+\subsection{How The Virtual Machine Executes A Rush Program}
+\subsection{The Compiler Targeting The Virtual Machine}

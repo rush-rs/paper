@@ -2,10 +2,10 @@ fn main() {
     exit(fib(10))
 }
 
-fn fib(n: int) -> int {
-    if n < 2 {
-        n
+fn fib(i: int) -> int {
+    if i < 2 {
+        i
     } else {
-        fib(n - 2) + fib(n - 1)
+        fib(i - 2) + fib(i - 1)
     }
 }

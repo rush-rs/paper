@@ -9,11 +9,10 @@ language's implementation. Both ways of program execution come with their own
 advantages and disadvantages.
 \newline
 This paper aims to inform the reader about different means of program execution.
-However, we will only focus on the basics since implementing programming language is often a demanding task.
-For this, we will implement our own language called \emph{rush}.
-However, we will not settle on one method of program execution. Instead, in
-order to highlight the differences between the different methods of program
-execution, we will implement rush using different backends.
+However, we will only focus on the basics since implementing a programming language is often a demanding task.
+In order to present practical examples, we will present our own programming language called \emph{rush}.
+However, rush does not settle on one method of program execution. Instead, in
+order to highlight the differences between the different methods, rush is implemented using different backends.
 The features of rush are carefully chosen to match the scope of this paper.
 On the one hand, rush should include as many fundamental features as possible since these concepts can be applied to most other programming languages.
 On the other hand, implementing too many features could result in the example being overwhelming.
@@ -21,10 +20,10 @@ On the other hand, implementing too many features could result in the example be
 In chapter 1, we will present an introduction to programming language implementation.
 Furthermore, the characteristics of the rush programming language are presented.
 In chapter 2, the processes of syntactic and semantic analysis are presented.
-Chapter 3 focuses on implementing an interpreter for rush.
-Here, we differentiate between a \emph{tree-walking} interpreter and a \emph{virtual machine} which interprets instructions.
-In chapter 4, we will present how compilation to high-level targets works.
-As examples for high-level targets, we present a compiler using \emph{LLVM} and a
+Chapter 3 focuses on implementing rush using an interpreted approach.
+Here, we differentiate between a \emph{tree-walking} interpreter and a \emph{virtual machine}.
+Chapter 4 illustrates how compilation to high-level targets makes implementing a compiler much easier.
+As examples for high-level targets, we present a compiler using the \emph{LLVM} framework and a
 compiler targeting \emph{WebAssembly}.
 Chapter 5 focuses on compilation to low-level targets.
 For this, a compiler targeting \emph{RISC-V} assembly and another compiler targeting \emph{X86\_64} assembly is presented.

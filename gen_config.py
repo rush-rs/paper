@@ -78,10 +78,10 @@ for key, value in additional_keys.items():
 with open('ts2tex.json', 'w') as config_file:
     json.dump(
         {
-            'query_search_dirs': ['./tree-sitter/**/queries/'],
+            'query_search_dirs': ['./deps/**/queries/'],
             'parser_search_dirs': [
-                './tree-sitter/',
-                './tree-sitter/ebnf/crates/',
+                './deps/',
+                './deps/ebnf/crates/',
             ],
             'theme': theme,
         },

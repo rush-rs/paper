@@ -50,7 +50,7 @@
   },
 
   "includes": ["**/*"],
-  "excludes": ["**/tree-sitter"],
+  "excludes": ["**/deps"],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.74.0.wasm",
     "https://plugins.dprint.dev/json-0.15.6.wasm",

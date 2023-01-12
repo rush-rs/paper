@@ -302,5 +302,5 @@ TSWLatexianTemp*
 
 
 # Custom
-/tree-sitter
+/deps
 main.pdf

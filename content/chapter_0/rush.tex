@@ -1,0 +1,11 @@
+\section{Characteristics Of The Rush Programming Language}
+
+Rush is a simple programming language which was purposely designed for this paper.
+The language features a \emph{static type system}, \emph{arithmetic operators}, \emph{local and global variables}, \emph{if-else control flow}, \emph{loops}, and \emph{functions}.
+\TSListing[caption={Generating Fibonacci Numbers Using rush}, label={lst:rush_fib}, float=H]{fib.rush}
+
+In the git commit \texttt{\input "|git rev-parse --short @:./listings/rush"}, the entire rush project included
+\input "|tokei ./listings/rush -o json | jq '.Total.code'" lines of source code \footnote{Lines of source code with omitted blank lines and comments}.
+On the first sight, this might seem like a large number for a simple programming language.
+However, the rush project includes a lexer, a parser, a semantic analyzer, five compilers, one interpreter, and several other tools, like a language server for IDE support.
+Furthermore, we can compare the size of the Rust compiler with the one of the rush project.

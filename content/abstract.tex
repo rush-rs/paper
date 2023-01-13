@@ -3,8 +3,8 @@
 Programming languages are undoubtedly of great importance for various aspects of
 modern-day life. Even if they remain unnoticed, digital systems running programs
 written in some sort of programming language are ubiquitous.
-However, there are numerous ways of implementing a programming language. A
-language designer could choose an interpreted or a compiled approach for their
+However, there are numerous ways of implementing a programming language.
+A language designer could choose an interpreted or a compiled approach for their
 language's implementation. Both ways of program execution come with their own
 advantages and disadvantages.
 \newline
@@ -17,15 +17,15 @@ The features of rush are carefully chosen to match the scope of this paper.
 On the one hand, rush should include as many fundamental features as possible since these concepts can be applied to most other programming languages.
 On the other hand, implementing too many features could result in the example being overwhelming.
 
-In chapter 1, we will present an introduction to programming language implementation.
-Furthermore, the characteristics of the rush programming language are presented.
+In chapter 1, we will give an introduction to programming language implementation
+and the characteristics of the rush programming language are presented.
 In chapter 2, the processes of syntactic and semantic analysis are presented.
 Chapter 3 focuses on implementing rush using an interpreted approach.
-Here, we differentiate between a \emph{tree-walking} interpreter and a \emph{virtual machine}.
-Chapter 4 illustrates how compilation to high-level targets makes implementing a compiler much easier.
+Here, we differentiate between a \emph{tree-walking interpreter} and a \emph{virtual machine}.
+Chapter 4 illustrates how compilation to high-level\footnote{high-level targets: in this case machine independent} targets makes implementing a compiler much easier.
 As examples for high-level targets, we present a compiler using the \emph{LLVM} framework and a
 compiler targeting \emph{WebAssembly}.
-Chapter 5 focuses on compilation to low-level targets.
+Chapter 5 focuses on compilation to low-level\footnote{low-level targets: specific to one target architecture and operating system} targets.
 For this, a compiler targeting \emph{RISC-V} assembly and another compiler targeting \emph{x86\_64} assembly is presented.
 
 This paper assumes that the reader has basic knowledge about computer programming and computer hardware.

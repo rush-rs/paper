@@ -2,28 +2,30 @@ Computer programs are often written in formal, purposefully designed languages.
 These languages introduce many constraints in order to allow
 programmers to implement algorithms in a structured and precise way.
 Since programming languages should be easy to write for a human whilst being easy to understand by a computer,
-they are often falsely as mysterious.
+they are often falsely regarded as mysterious.
 The fundamental challenge is that a computer is only able to interpret a sequence of CPU instructions instead of a written program.
 Therefore, the source program has to be translated into such a sequence of instructions before it can be executed by the computer.
 Because programming languages come with many formal constraints, the translation process can be defined formally as well.
 Therefore, this translation can be automated and implemented as an algorithm on its own.
-This translation process is referred to as \emph{compilation}, and is usually performed by program called \emph{a compiler}.
+This translation process is referred to as \emph{compilation}, and is usually performed by a program called a \emph{compiler}.
 However, the output instruction sequence must represent the identical algorithm specified in the source code.
 It is apparent that compilation requires significant effort and must obey complex rules
 since it should translate the source program precisely without altering its meaning.
 
 Another common method of program execution is to implement a program which interprets the source code directly.
-This executing program is referred to as an \emph{interpreter}.
+This executor is referred to as an \emph{interpreter}.
 Although compilers and interpreters share some of their core principles, their major difference is that the interpreter omits translation.
-The implementation of an interpreter is often significantly easier since the interpreter only has to understand the source program in order to execute it.
+The implementation of an interpreter is often significantly easier and smaller since the interpreter only has to understand the source program in order to execute it.
 In other words, the step of translating the source program into another form can be completely dismissed.
-However, implementing an interpreter is only rational if it is written using a high-level language.
-Therefore, compilers played an essential role in the early days of computing since high-level languages were yet to be developed.
+However, implementing an interpreter is only rational if it is written using a high-level language like C or Rust.
+Implementation of an interpreter in a high-level language is often favorable since the host language is able to save the programmer a lot of work.
+If an interpreter was to be implemented using a low-level language like assembly, there would not be much work done by the host language.
+Compilers therefore played an essential role in the early days of computing since high-level languages were yet to be developed.
 
 The first compiler was implemented around 1956 and aimed to translate \emph{Fortran} to computer instructions.
 However, the success of this programming endeavor was not assured until the program was completed.
 In total, the program involved roughly 18 man-years of work
-and is thereby regarded as one of the largest programming projects of the time.
+and is thereby regarded as one of the largest programming projects of all time.
 To this day, new compilers are created and innovations in the field of programming languages can be observed regularly.
 Therefore, compiler construction can still be considered a fundamental and relevant topic in computer science
 \cite[p.~6]{wirth_compiler_construction_2005}.

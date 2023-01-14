@@ -5,6 +5,8 @@
 % \input{preamble/pgfplots.tex}
 % \input{preamble/siunitx.tex}
 
+\pagenumbering{gobble}
+
 \titlehead{\centering\includegraphics[width=7cm]{pictures/title.png}}
 \title{Topic Placeholder}
 \subtitle{Optional Subtitle}
@@ -16,6 +18,8 @@
 \maketitle
 \include{content/abstract.tex}
 \tableofcontents
+
+\cleardoublepage\pagenumbering{arabic}
 
 \chapter{Introduction}
 \input{content/chapter_0/introduction.tex}

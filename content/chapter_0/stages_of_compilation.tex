@@ -31,8 +31,8 @@ Therefore, the compiler can avoid slow disk operations by keeping intermediate s
 \begin{enumerate}
 	\item The lexical analysis (\emph{lexing}) translates sequences of characters of the source program
 	      into their corresponding symbols (\emph{tokens}) of the language's vocabulary.
-	      For example, identifiers, operators, and delimiters are recognized
-	      by examining each of their characters in sequential order.
+	      Tokens, such as identifiers, operators, and delimiters are recognized
+	      by examining each character of the source program in sequential order.
 	\item The syntactical analysis (\emph{parsing}) transforms the previously generated sequence of tokens
 	      into a tree data structure which directly represents the structure of the source program.
 	\item The semantic analysis is responsible for validating
@@ -44,3 +44,8 @@ Therefore, the compiler can avoid slow disk operations by keeping intermediate s
 	      the code generation is often considered to be the most involved step of compilation.
 \end{enumerate}
 \cite[pp.~6--7]{wirth_compiler_construction_2005}
+
+Many modern compilers tend to combine steps 1 and 2 into a single step.
+In this approach, the parser holds a lexer and instructs it to return the next token as the parser demands it.
+Using this approach, memory usage is minimized since the parser only considers a few tokens instead of a complete sequence.
+Figure \ref{fig:compilation-steps_altered} shows an altered chart considering that change.

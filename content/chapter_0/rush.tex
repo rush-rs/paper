@@ -15,9 +15,8 @@ However, the constraint $n \in \mathbb{N}$ must be valid in order for this funct
 In this example, the \texttt{main} function calls the \texttt{fib} function using the natural number 10.
 In rush, every valid program must contain exactly one \texttt{main} function since program execution will start there.
 Even though rush has a \texttt{return} statement, the body of the \texttt{fib} function contains no such statement.
-This is because blocks like the one of the function \texttt{fib} return the value of their last expression.
-The if-else construct must also be an expression since it is used like a value in this example.
-The if-else expression thereby returns the value of the executed branch.
+This is because blocks like the one of the function \texttt{fib} return the result of their last expression.
+The if-else construct must therefore also be an expression since it represents the last entity in the block, and it is not followed by a semicolon.
 In this example, if the input parameter \texttt{n} is less than 2, it is returned without modification.
 Otherwise, the function calls itself recursively in order to calculate the sum of the preceding Fibonacci numbers $n - 2$ and $n - 1$.
 Therefore, the result value of the entire if-expression is calculated by using one of the two branches.

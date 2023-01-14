@@ -1,0 +1,11 @@
+fn main() {
+    exit(rec(1000))
+}
+
+fn rec(n: int) -> int {
+    if n == 0 {
+        n
+    } else {
+        rec(n - 1)
+    }
+}

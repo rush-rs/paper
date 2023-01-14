@@ -7,7 +7,8 @@ For rush, we have implemented a virtual machine backend in order to compare it t
 \subsection{Defining a Virtual Machine}
 
 Often, one might encounter the term \emph{virtual machine} when talking about emulating an existing type of computer using a software system.
-This emulation often includes simulating additional devices like the computer's display or its In this context however, a \emph{virtual machine} is a software entity which emulates how a computer interprets instructions.
+This emulation often includes simulating additional devices like the computer's display or its disk.
+In this context however, a \emph{virtual machine} is a software entity which emulates how a computer interprets instructions.
 Just like a real computer, a virtual machine executes low-level instructions directly.
 
 Since a physical processor and a virtual machine share some fundamental traits,
@@ -21,15 +22,15 @@ Therefore, a von Neumann processor contains a control unit which manages the \em
 This cycle is a simplification of the steps a processor performs in order to execute instructions.
 
 \begin{itemize}
-	\item \textbf(Fetch): The processor's control unit loads the next instruction from the adequate memory location.
-	      The value of the next instruction is then placed into the processor's internal instruction register.
-	\item \textbf(Decode):
-	      The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken during instruction execution.
-	      Such steps may involve accessing additional registers or memory locations.
-	\item \textbf(Execute):
-	      The control unit dispatches the instruction to a specialized component of the processor.
-	      The target component is often dependent on the type of instruction since each processor component is optimized with one specific type of instruction in mind.
-	      For instance, the control unit may invoke the ALU in order to perform a mathematical operation.
+    \item \textbf(Fetch): The processor's control unit loads the next instruction from the adequate memory location.
+          The value of the next instruction is then placed into the processor's internal instruction register.
+    \item \textbf(Decode):
+          The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken during instruction execution.
+          Such steps may involve accessing additional registers or memory locations.
+    \item \textbf(Execute):
+          The control unit dispatches the instruction to a specialized component of the processor.
+          The target component is often dependent on the type of instruction since each processor component is optimized with one specific type of instruction in mind.
+          For instance, the control unit may invoke the ALU in order to perform a mathematical operation.
 \end{itemize}
 
 A computer's processor performs this fetch-decode-execute cycle repeatedly from the moment it is powered on until the point in time where it is powered down again.
@@ -37,14 +38,34 @@ For relatively simple processors, each cycle is executed in an isolated manner b
 This means that the execution of the instruction $i$ is delayed until execution of $i - 1$ has completed \cite[pp.~208-209]{Ledin2020-yp}.
 
 For most virtual machines, executing the input instructions in sequential order is often the simplest solution.
-Unlike the tree-walking interpreter, a virtual machine does not traverse the AST since it uses a sequence of instructions as its input.
-However, when choosing how to implement a virtual machine, one must not always opt for an architecture which closely represents the von Neumann design.
-Since virtual machines are purely abstract constructs, meaning they are implemented using software, design constrains are usually kept to a minimum.
-Therefore, implementing a programming language to run on a virtual machine is often a reasonable idea.
+Often, a virtual machine implements a method of instruction execution similar to the fetch-decode-execute cycle.
+It is now apparent that a virtual machine is unable to traverse the AST directly and therefore relies on a sequence of instructions as its input.
+Although the von Neumann architecture is relatively simple, one must not always adopt it when choosing how to implement a virtual machine.
+Since virtual machines are purely abstract constructs, meaning that they are implemented using software, design constrains are usually kept to a minimum.
 A large benefit of virtual machines is that the source program runs significantly faster at runtime.
-The reason for this speedup is because tree-traversal involves a lot of overhead which is omitted when interpreting instructions directly.
+Therefore, implementing a programming language to run on a virtual machine is often a reasonable idea.
+A reason for this speedup is that tree-traversal involves a lot of overhead which is omitted when interpreting instructions directly.
 
-TODO: present an example which shows how slow tree-traversal is 
+\TSListing[first line=5, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
+\noindent
+\begin{figure}[H]
+    \caption{}
+    \begin{minipage}{.5\textwidth}
+        \centering
+        \begin{tikzpicture}[
+                tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
+            ]
+            \node{fn rec}
+            child { node {if-expression}
+                    child { node {if} child {node {n}} }
+                    child { node {else} child{node{rec}} }
+                };
+        \end{tikzpicture}
+    \end{minipage}%
+    \begin{minipage}{.5\textwidth}
+        \TSListing[raw=true]{listings/vm_faster_instructions.txt}
+    \end{minipage}
+\end{figure}
 
 \subsection{Registers and Stack-Based Machines}
 
@@ -68,6 +89,5 @@ Furthermore, using the stack usually involves a lot of push or pop instructions 
 
 \subsection{The rush Virtual Machine}
 
-
-\subsection{How the Virtual Machine Executes a rush Program}
+\subsection{How the Virtual Machine Executes A rush Program}
 \subsection{The Compiler Targeting the Virtual Machine}

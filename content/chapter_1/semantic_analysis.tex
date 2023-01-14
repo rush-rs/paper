@@ -85,7 +85,7 @@ compile time. However, determining these types requires a complete
 tree-traversal of the operand expressions. Due to the recursive design of the
 abstract syntax tree, implementing this tree-traversal would require a
 significant amount of source code in the compiler. However, the implementation
-of this algorithm would be nearly identical accross all of rush's compiler
+of this algorithm would be nearly identical across all of rush's compiler
 backends. Therefore, implementing type determination in each backend
 individually would enlarge the compiler source code, thus making it harder to
 understand. Since code duplication is considered inelegant, outsourcing this
@@ -249,7 +249,7 @@ Since the example from above presents a syntactically and semantically valid rus
 Another task of the analyzer can be to perform early optimizations.
 In compiler design, most of the optimizations are often performed with the target machine in mind.
 Therefore, the effects of these target-machine dependent optimizations can excel the ones caused by earlier optimizations.
-However, it is still rational to peform trivial optimizations, such as constant folding and loop conversion inside the analyzer.
+However, it is still rational to perform trivial optimizations, such as constant folding and loop conversion inside the analyzer.
 For instance, the rush expression $2 + 3$ evaluates to $5$ during compile time instead of run time.
 This evaluation of expressions during compile time is referred to as \emph{constant folding}.
 Constant folding is often used in order to avoid the emission of otherwise redundant arithmetic instructions.

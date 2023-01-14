@@ -1,0 +1,6 @@
+main:
+ [00]    setmp 2
+ [01]    push 42
+ [02]    svari *rel[0]
+ [03]    reltoaddr 0
+ [04]    svari *rel[-1]

@@ -1,0 +1,4 @@
+fn main() {
+    let mut num = 42;
+    let to_tum = &num;
+}

@@ -53,14 +53,14 @@ Figure \ref{fig:compilation_steps_altered} shows an altered chart considering th
 \begin{figure}[h]
 	\centering
 	\begin{tikzpicture}[node distance=3mm and 1cm, inner sep=3mm]
-        \node (syntactic_analysis_text) [inner sep=0] {syntactical analysis};
+		\node (syntactic_analysis_text) [inner sep=0] {syntactical analysis};
 		\node (lexical_analysis) [rec, below=of syntactic_analysis_text] {lexical analysis};
-        \node (syntactic_analysis) [rec, fit={(syntactic_analysis_text) (lexical_analysis)}] {};
+		\node (syntactic_analysis) [rec, fit={(syntactic_analysis_text) (lexical_analysis)}] {};
 		\node (semantic_analysis) [rec, right=of syntactic_analysis] {semantic analysis};
 		\draw [arrow] (syntactic_analysis) -- (semantic_analysis);
 		\node (codegen) [rec, right=of semantic_analysis] {code generation};
 		\draw [arrow] (semantic_analysis) -- (codegen);
 	\end{tikzpicture}
-	\caption{Different Steps of Compilation}
+	\caption{Different Steps of Compilation (altered)}
 	\label{fig:compilation_steps_altered}
 \end{figure}

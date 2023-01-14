@@ -22,15 +22,15 @@ Therefore, a von Neumann processor contains a control unit which manages the \em
 This cycle is a simplification of the steps a processor performs in order to execute instructions.
 
 \begin{itemize}
-    \item \textbf(Fetch): The processor's control unit loads the next instruction from the adequate memory location.
-          The value of the next instruction is then placed into the processor's internal instruction register.
-    \item \textbf(Decode):
-          The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken during instruction execution.
-          Such steps may involve accessing additional registers or memory locations.
-    \item \textbf(Execute):
-          The control unit dispatches the instruction to a specialized component of the processor.
-          The target component is often dependent on the type of instruction since each processor component is optimized with one specific type of instruction in mind.
-          For instance, the control unit may invoke the ALU in order to perform a mathematical operation.
+	\item \textbf(Fetch): The processor's control unit loads the next instruction from the adequate memory location.
+	      The value of the next instruction is then placed into the processor's internal instruction register.
+	\item \textbf(Decode):
+	      The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken during instruction execution.
+	      Such steps may involve accessing additional registers or memory locations.
+	\item \textbf(Execute):
+	      The control unit dispatches the instruction to a specialized component of the processor.
+	      The target component is often dependent on the type of instruction since each processor component is optimized with one specific type of instruction in mind.
+	      For instance, the control unit may invoke the ALU in order to perform a mathematical operation.
 \end{itemize}
 
 A computer's processor performs this fetch-decode-execute cycle repeatedly from the moment it is powered on until the point in time where it is powered down again.
@@ -48,24 +48,45 @@ A reason for this speedup is that tree-traversal involves a lot of overhead whic
 
 \TSListing[first line=5, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
 \noindent
-\begin{figure}[H]
-    \caption{}
-    \begin{minipage}{.5\textwidth}
-        \centering
-        \begin{tikzpicture}[
-                tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
-            ]
-            \node{fn rec}
-            child { node {if-expression}
-                    child { node {if} child {node {n}} }
-                    child { node {else} child{node{rec}} }
-                };
-        \end{tikzpicture}
-    \end{minipage}%
-    \begin{minipage}{.5\textwidth}
-        \TSListing[raw=true]{listings/vm_faster_instructions.txt}
-    \end{minipage}
+\begin{figure}[h]
+	\begin{minipage}{.7\textwidth}
+		\begin{tikzpicture}[
+				tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
+			]
+			\node{fn rec}
+			child { node {if-expression}
+					child { node {condition} child {node {n == 0}} }
+					child [missing]
+					child { node {if-block} child {node {int-expression}} }
+					child [missing]
+					child { node {else-block} child{node{call-expression}} }
+				};
+		\end{tikzpicture}
+	\end{minipage}%
+	\begin{minipage}{.3\textwidth}
+		\TSListing[raw=true]{listings/vm_faster_instructions.txt}
+	\end{minipage}
+	\caption{Syntax Tree and VM instructions of a Recursive rush Program}
+	\label{fig:tree_vs_vm}
 \end{figure}
+
+Figure \ref{fig:tree_vs_vm} displays a heavily simplified syntax tree and rush VM instructions representing the recursive program from above.
+The root node of the syntax tree represents the \texttt{rec} function.
+Since the function only contains a single expression, the if-expression node follows as the only child of the root node.
+The if-expression contains a condition, an if-branch, and an else-branch.
+Since the function should not call itself again if \texttt{n} is equal to 0, the if-block returns 0.
+The else-block however calls the \texttt{rec} function recursively.
+If the above program is executed, the tree-walking interpreter would have to traverse the entire tree of the \texttt{rec} function every time it is called.
+Since \texttt{rec} is a recursive function, the tree-walking interpreter would have to traverse it $n$ times.
+In this example, the syntax tree of the program is relatively simple.
+However, the syntax tree of a more complex program will also contain more complexity.
+Since loops and recursive functions execute the code in their bodies repeatedly, the tree traversal of the body presents an inefficiency.
+Here, the inefficiency solely lies in the repeated tree-traversal, not in the repetition introduced by an iterative or recursive algorithm.
+In order to improve efficiency, an algorithm could traverse the tree once, saving its semantic meaning in the process.
+Then, the semantic meaning of the previously traversed tree could be interpreted repeatedly without this much overhead.
+
+% TODO: draw final conclusions
+Virtual machines can often mitigate this issue by interpreting instructions directly.
 
 \subsection{Registers and Stack-Based Machines}
 

@@ -1,71 +1,80 @@
+\newpage
 \section{Using a Virtual Machine}
 
-Just like a tree-walking interpreter, a virtual machine presents a method of implementing an interpreter for a programming language.
-However, the way a virtual machine operates fundamentally differs from the one which the tree-walking interpreter uses.
-For rush, we have implemented a virtual machine backend in order to compare it to the previously displayed tree-walking interpreter.
+Just like a tree-walking interpreter, a virtual machine presents a way of implementing an interpreter for a programming language.
+However, the way a virtual machine operates fundamentally differs from a tree-walking interpreter.
+For rush, we have implemented a virtual machine backend in order to compare it to the previously explained tree-walking interpreter.
 
 \subsection{Defining a Virtual Machine}
 
 Often, one might encounter the term \emph{virtual machine} when talking about emulating an existing type of computer using a software system.
 This emulation often includes simulating additional devices like the computer's display or its disk.
-In this context however, a \emph{virtual machine} is a software entity which emulates how a computer interprets instructions.
+In this context however, a \emph{virtual machine}\footnote{May later be shortened to \enquote{VM}} is a software entity which emulates how a computer interprets instructions.
 Just like a real computer, a virtual machine executes low-level instructions directly.
+Therefore, the VM is unable to traverse the AST and therefore relies on a compiler to generate its input instructions.
 
 Since a physical processor and a virtual machine share some fundamental traits,
-the architecture of a virtual machine is often a slight deviation from the von Neumann architecture.
+the architecture of a virtual machine is often a slight deviation from the \emph{von Neumann architecture}.
 The von Neumann architecture was first introduced by John Neumann in the year 1945.
 Von Neumann originally presented a design which allows implementing a computer using relatively few components.
-A von Neumann computer usually contains components like an \emph{ALU}\footnote{Short for \enquote{arithmetic logic unit}}, multiple registers, a control unit, memory, and basic IO \cite[p.~172]{Ledin2020-yp}.
-The ALU is designed in order to perform logical and mathematical operations as fast as possible.
-However, in order to keep its implementation simple, it lacks the ability to fetch instructions from memory directly.
-Therefore, a von Neumann processor contains a control unit which manages the \emph{fetch-decode-execute} cycle.
-This cycle is a simplification of the steps a processor performs in order to execute instructions.
+Following the von Neumann architecture, a processor would usually contain components like an \emph{ALU}\footnote{Short for \enquote{arithmetic logic unit}}, a control unit, multiple registers, memory, and basic IO \cite[p.~172]{Ledin2020-yp}.
+The ALU is often designed so that it performs logical and mathematical operations as fast as possible.
+However, to keep its implementation simple, it lacks the ability to fetch and execute instructions from memory directly.
+Therefore, the processor contains a control unit which manages the \emph{fetch-decode-execute} cycle.
+The fetch-decode-execute cycle is a simplification of the steps a processor performs in order to execute an instruction.
+The list below explains the individual steps of the fetch-decode-execute cycle.
 
 \begin{itemize}
 	\item \textbf(Fetch): The processor's control unit loads the next instruction from the adequate memory location.
-	      The value of the next instruction is then placed into the processor's internal instruction register.
+	      The instruction is then placed into the processor's internal instruction register where it is available for further analysis.
 	\item \textbf(Decode):
-	      The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken during instruction execution.
+	      The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken before or after instruction execution.
 	      Such steps may involve accessing additional registers or memory locations.
 	\item \textbf(Execute):
 	      The control unit dispatches the instruction to a specialized component of the processor.
 	      The target component is often dependent on the type of instruction since each processor component is optimized with one specific type of instruction in mind.
-	      For instance, the control unit may invoke the ALU in order to perform a mathematical operation.
+	      For instance, the control unit may invoke the ALU in order to execute a mathematical instruction.
 \end{itemize}
 
 A computer's processor performs this fetch-decode-execute cycle repeatedly from the moment it is powered on until the point in time where it is powered down again.
 For relatively simple processors, each cycle is executed in an isolated manner because instructions are executed in a sequential order.
 This means that the execution of the instruction $i$ is delayed until execution of $i - 1$ has completed \cite[pp.~208-209]{Ledin2020-yp}.
 
-For most virtual machines, executing the input instructions in sequential order is often the simplest solution.
-Often, a virtual machine implements a method of instruction execution similar to the fetch-decode-execute cycle.
-It is now apparent that a virtual machine is unable to traverse the AST directly and therefore relies on a sequence of instructions as its input.
-Although the von Neumann architecture is relatively simple, one must not always adopt it when choosing how to implement a virtual machine.
+For virtual machines, executing the input instructions in sequential order is often also the simplest solution.
+Often, a virtual machine executes instructions in a similar way to the fetch-decode-execute cycle.
+Although the von Neumann architecture is relatively simple, one does not always have to adopt it when implementing a virtual machine.
 Since virtual machines are purely abstract constructs, meaning that they are implemented using software, design constrains are usually kept to a minimum.
-Therefore, designing an architecture of a virtual machine can sometimes be a demanding task.
+Therefore, a virtual machine can also be implemented with the high-level constructs of the source language in mind.
+For instance, the VM might feature specialize break, continue, or loop instructions which are not present in modern-day CPUs.
+Designing the architecture of a virtual machine can sometimes be a challenging task since choosing an adequate set of features may involve a lot of testing iterations.
+Because neither the compiler nor the VM exist in the beginning, one should carefully plan the implementation of their VM's architecture.
+From the point where the architecture is clear, implementation of the VM should normally be a straight-forward task.
 
 \subsection{Register-Based and Stack-Based Machines}
 
 One of the main decisions to be made when designing a VM is how it implements temporary storage.
-Often, physical processors use \emph{registers} in order to make larger computations possible.
+Physical processors often use \emph{registers} in order to make larger computations feasible.
 Registers are a limited set of very fast, low capacity storage units.
 On modern architectures, like \emph{x86\_64}, each general-purpose register is able to hold as much as 64 bits of information.
 However, there is always only a limited amount of registers available since they are physical components of the computers CPU.
 Therefore, programs often only utilize registers for storing temporary values, such as intermediate results of a large computation.
 The main alternative to using registers is a stack-based design.
-A popular example for a stack-based virtual machine is \emph{WebAssembly}.
+A popular example for a stack-based virtual machine is \emph{WebAssembly} \cite[p.~44]{Sendil2022-fy}.
+For more information on WebAssembly, we will present a compiler targeting WebAssembly in chapter \ref{chap:high_level_targets}.
 For compiler writers, register allocation is often a demanding task.
-This problem is described in more detail in the later chapters. % TODO: refer to correct chapter
-Since register allocation is not required in compilers generating code for stack-based machines, their implementation is often significantly easier compared to the one  of a compiler targeting a register-based machine.
+This problem is described in more detail in chapter \ref{chap:low_level_targets}.
+Since register allocation is not required in a compiler targeting stack-based machines, its implementation is often significantly easier compared to a compiler targeting a register-based machine.
 Therefore, one might chose to implement a stack-based virtual machine in order to minimize complexity of both the compiler and the interpreter.
 However, a stack-based design also introduces several issues on its own.
-For instance, register-based machines might regularly outperform stack-based machines.
-For instance, using the stack usually involves a lot of push or pop operations which could have otherwise been omitted.
+For example, register-based machines might regularly outperform stack-based machines.
+A reason for this is that use of the stack usually requires a lot of push or pop operations which could have otherwise been omitted.
 
 \subsection{Comparing the VM to the Tree-Walking Interpreter}
-A large benefit of virtual machines is that the source program runs significantly faster at runtime.
-Therefore, implementing a programming language to run on a virtual machine is often a reasonable idea.
-A reason for this speedup is that tree-traversal involves a lot of overhead which is omitted when interpreting instructions directly.
+One significant benefit of virtual machines is that they executes programs much faster compared to tree-walking interpreters.
+A reason for this speedup is that tree-traversal involves a lot of overhead which is omitted when instructions are interpreted directly.
+Therefore, implementing a programming language using a virtual machine is often a reasonable idea.
+
+% TODO: continue proofreading here
 
 \TSListing[first line=5, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
 \noindent
@@ -126,10 +135,24 @@ Like most virtual machines, the rush VM implements a fetch-decode-execute cycle 
 
 \TSListing[first line=13, last line=23, caption={Struct Definition of the \texttt{Vm}}, label={lst:vm_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
+Listing \ref{lst:vm_struct} displays the struct definition of the rush VM.
+In line 15, a field called \texttt{stack} is defined.
+Like explained above, the rush VM uses a stack for storing temporary values.
+Even though the stack is implemented using a \texttt{Vec}, it behaves identical to a LIFO stack data structure.
+In line 17, the \texttt{mem} field is declared.
+This field represents the linear memory capable of storing variables.
+However, each memory cell is implemented to hold an option of a value.
+Therefore, each memory cell may also hold a \texttt{None} value representing unitialized memory cells.
+In line 20, the \texttt{mem\_ptr} field is declared.
+It too serves an important role in managing the linear memory.
+The exact responsibilities of the so called \emph{memory pointer} will be explained shortly.
+Lastly, the \texttt{call\_stack} is declared.
+This field also behaves like a stack and is responsible for managing function calls and returns.
+
 The instructions in figure \ref{fig:tree_vs_vm} can be interpreted by the rush VM.
 Here, the output program is structured as functions which contain their instructions.
 Because function names are replaced by indices, strings can be omitted in the output program which leads to a decrease in code size and an increase in runtime speed.
-For better understanding, we have annotated the individual functions with a human-readable name.
+For better understanding, we have annotated the individual functions with their human-readable name.
 
 The first block of instructions can be called the \emph{prelude} since its only task is to call the \texttt{main} function and declare global variables.
 Global variables need to be initialized at the beginning of a program so that they can be accessed later in the program.
@@ -156,7 +179,14 @@ Here, the absolute address $a$ is the sum of the relative index $i$ and the runt
 Therefore, the absolute address of any relative address can be calculated at runtime like this: $a = i + m$.
 By also implementing this relative addressing mode,
 compilers targeting the rush VM can generate code without knowing the exact number of recursions a function performs.
-In order to understand the difference between absolute and relative addressing modes, a practical example can be considered.
+
+\begin{figure}[h]
+	\includegraphics[width=\textwidth]{./vm_linmem_draft.png}
+	\caption{\textcolor{red}{DRAFT:} Linear Memory of the rush VM}
+	\label{fig:rush_vm_linmem}
+\end{figure}
+
+In order to get a deeper understanding of the addressing modes, a practical example can be considered.
 The code in listing \ref{lst:rush_pointer_simple} displays a rush program in which a pointer is created.
 First, the integer variable \texttt{num} is created.
 In line 3, a pointer variable called \texttt{to\_num} is created by \emph{referencing} the \texttt{num} variable.
@@ -171,39 +201,218 @@ This instruction contains a parameter which specifies the relative address of th
 
 \TSListing[raw=true, caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, float=H]{listings/vm_instructions_simple_pointer.txt}
 
-The first instruction \texttt{setmp} increases the memory pointer by two.
+The first instruction \texttt{setmp} (\emph{set memory pointer}) increases the memory pointer by two.
 This is because the \texttt{main} function contains two local variables whose space is to be allocated at the start of the function.
 Therefore, one might encounter \texttt{mp} being incremented by 0 since the corresponding function contains no local variables.
 The next instruction \texttt{push} pushes the value 42 onto the stack.
-%: TODO: explain what svari does
-Before a variable is referenced, its address is only saved as a relative addressing since the compiler is not aware of the absolute address at compile time.
+In line 4, the \texttt{svari} (\emph{set variable immediate}) assigns the top value on stack to the specified relative address.
+Here, 42 is also popped off the stack since stack values should only be accessed once.
+Next, the \texttt{reltoaddr} (\emph{relative to address}) instruction pushes the absolute address of the specified relative address onto the stack.
+This instruction calculates the absolute address of its operand at runtime using the algorithm described above.
+The specified relative address is 0 since the \texttt{svari} instruction has saved 42 at the relative address 0.
+Last, in line 6, the \texttt{svari} instruction is used again in order to save the \texttt{to\_num} variable.
+Since the absolute address of the referenced variable was previously calculated, it now exists as the top item on the stack.
+Here, the instruction should save \texttt{to\_num} at the relative address -1.
+This is because the compiler targeting the VM assigns variables to higher relative addresses first, then progressing into lower relative memory as more variables are used.
+This is because the memory pointer is incremented at the start of each function.
+In this example, relative addressing is used by the compiler in order to save variables in memory.
+However, absolute addressing is also used when variables are referenced.
 
 \subsection{How the Virtual Machine Executes A rush Program}
 
+By considering the minimal pointer example from above, we now have a rough idea how the VM might execute instructions.
 In order to get a better understanding of how the rush VM works exactly, we will explain how it executes the program in listing \ref{lst:rush_vm_faster}.
 For this, we should consider the instructions in figure \ref{fig:tree_vs_vm} again.
-The first instruction of the prelude function is \texttt{setmp 0}.
-This instruction adjusts the \emph{memory pointer} by the specified amount.
-In this case however, the memory pointer remains unmodied since the argument of the instruction is 0.
-
-
-\begin{figure}[h]
-	\includegraphics[width=\textwidth]{./vm_linmem_draft.png}
-	\caption{\textcolor{red}{DRAFT:} Linear Memory of the rush VM}
-	\label{fig:rush_vm_linmem}
-\end{figure}
-
+The first instruction of the prelude function is \texttt{setmp}.
+This instruction adjusts the \emph{memory pointer} by amount specified in its operand.
+In this case however, the memory pointer remains unmodified since the operand of the instruction is 0.
 Next, the \texttt{call 1} instruction calls the \texttt{main} function.
 In order to understand how function calls work in this VM, we must consider the call stack of the rush VM.
 Figure \ref{fig:compilation_steps} displays the state of the VMs call stack after the \texttt{call 1} instruction has been executed.
 During execution of the call-instructions, the VM pushes a new stack frame onto its call stack.
 Listing \ref{lst:call_frame_struct} shows how a call fram is implemented.
-% TODO: explain fp / ip
 
 \TSListing[first line=26, last line=31, caption={Struct Definition of a \texttt{CallFrame}}, label={lst:call_frame_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+
+In this implementation, each call frame holds to important pieces of information.
+In line 28 of listing \ref{lst:call_frame_struct}, the \texttt{ip} field is declared.
+It specifies the \emph{instruction pointer} which holds the index of the current instruction relative to the current function.
+Since the \texttt{call} function was interpreted previously, the instruction pointer is now set to 0 as execution should continue at the first instruction of the called function.
+The \texttt{fp} field is delcared in line 30.
+This field specifies the \emph{function pointer} which holds the index of the current function.
+After the function call, the value of \texttt{fp} is set to 0 since the main function is called.
+Figure \ref{fig:rush_vm_call_stack} shows how the call stack of the VM looks like after the \texttt{call} instruction has been interpreted.
+Function calls are managed in a stack in order to allow returning from functions.
+If the VM encounters a \texttt{ret} (short for \emph{return}) instruction, it should leave the current function.
+However, it should also know where to resume its fetch-decode-execute cycle.
+For this, the VM just simply pops the top element off the stack.
+Then, the next element on the stack contains the location of the instruction responsible for the function call.
+Since \texttt{ip} is incremented automatically after most instructions, the VM resumes instruction execution at the first instruction after the call-instruction.
+This way, function calls are implemented in a simple but robust manner.
 
 \begin{figure}[h]
 	\includegraphics[width=\textwidth]{./vm_call_stack_draft.png}
 	\caption{\textcolor{red}{DRAFT:} Call Stack of the rush VM}
 	\label{fig:rush_vm_call_stack}
 \end{figure}
+
+After the call-instructions has been interpreted, the VM resumes execution in the main-function.
+Since the main-function only calls the \texttt{rec} function with the argument 1000, there are no new concepts to consider in this function.
+After the call instruction in line 7, the VM starts in the \texttt{rec} function.
+Here, the rec function increments the memory pointer by 1.
+However, the \texttt{rec} function has not declared any variables in its body.
+This behavior is because function parameters count as variable declarations.
+Since the function takes one parameter, the memory pointer is incremented by one cell.
+Next, the instruction \texttt{svari} saves the value of the parameter which was previously pushed onto the stack at the relative address 0.
+In line 12, the relative address is pushed onto the stack as a value.
+In is consumed in line 13 by the \texttt{gvar} instruction.
+This instruction first pops the top value of the stack.
+This value always contains either a relative or absolute address.
+In this case, the address is relative 0.
+Then, the instruction retrieves the value of the target variable and pushes it onto the stack.
+In line 14, a constant value of 0 is pushed onto the stack.
+Next, the \texttt{eq} instruction pops two items off the stack in order to test them for equality.
+Then, the result of the comparison is pushed onto the stack as a boolean.
+In line 16, the \texttt{jmpfalse} instruction is executed.
+This instruction jumps to the specified instruction index if the value of the top stack element is \texttt{false}.
+If the value on the stack is false, the parameter n was not equal to 0.
+In this case, the VM jumps to the instruction in line 19.
+Here, the value of the parameter is pushed onto the stack using the previously explained \texttt{push} and \texttt{gvar} instructions.
+Now, the top element on the stack is the value of the parameter \texttt{n}.
+In line 21, the \texttt{push} instruction pushes a constant 1 onto the stack.
+Next, the \texttt{sub} instruction pops two elements off the stack in order to subtract them.
+In this case, the instruction subtracts 1 from the value of \texttt{n} and pushes the result onto the stack.
+Next, the \texttt{rec} calls itself recursively using the \texttt{call} instruction.
+Since the call argument is the top element on the stack, the result of the subtraction is used as the argument of the recursive call.
+Next, the function decrements the memory pointer in order to deallocate used memory using the \texttt{setmp} instruction in line 24.
+Lastly, the \texttt{ret} instruction is used to return from the function.
+However, if the result of the comparison in line 15 is true, meaning that \texttt{n} is equal to 0, the \texttt{jmpfalse} instruction in line 16 does nothing.
+Then, the VM continues to the \texttt{push} instruction in line 17.
+Here, 0 is pushed onto the stack.
+Next, the \texttt{jmp} instruction is interpreted.
+Unlike \texttt{jmpfalse}, this instruction jumps to the target instruction index unconditionally.
+The instruction at index 14 is \texttt{setmp} in line 24.
+Since we have covered what this instruction does, we can summarize that the function will return with the value 0 in this case.
+However, before every \texttt{return}, the memory pointer must first be decremented if it was incremented at the beginning of a function.
+
+Now that we have explained the semantic meaning of rush VM instructions, we will explain how the fetch-decode-execute cycle is implemented in the VM.
+The code in listing \ref{lst:vm_run_meth} contains the entire \texttt{run} method of the rush VM.
+
+\TSListing[first line=166, last line=177, caption={The \texttt{run} Method of the rush VM}, label={lst:vm_run_meth}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+
+This method manages the entire fetch-decode-execute cycle of the VM.
+It is immediately apparent that this method looks extremenly simple considering that it plays a fundamental role in the VM.
+The main construct in the function is a while-loop since the fetch-decode-execute cycle involves executing instructions repeatedly.
+The condition of the loop checks that the current instruction pointer refers to a legal instruction inside the current function.
+This way, the VM comes to a halt if it reaches the end of the instruction sequence.
+In the body of the loop, the current instruction is executed using the \texttt{self.run\_instruction} method.
+This method can return a runtime error, such as an integer-overflow error.
+Furthermore, this method may return a integer representing the exit code of the program.
+However, if the method returns none of these two possible types, the fetch-decode-execute cycle continues.
+In this code however, one cannot observe the instruction pointer being incremented.
+In order to answer the final question of how the current instruction is executed and the instruction pointer is incremented, we will now examine the code in listing \ref{lst:vm_run_instr_meth}.
+
+\TSListing[first line=346, last line=359, caption={Parts of the \texttt{run\_instruction} Method of the rush VM}, label={lst:vm_run_instr_meth}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+
+The code in listing \ref{lst:vm_run_instr_meth} displays the last part of the \texttt{run\_instruction} method.
+This method mainly consists of an algorithm mathing the current instruction in order to execute specific code representing the instruction's semantic meaning.
+In this example, the implementations of the \texttt{bitand} and \texttt{bitxor} instructions are visible.
+Both instructions first pop two elements from the stack since they represent the operands of the underlying logical computation.
+Then, a corresponding helper function is invoked on the left hand side operand.
+The helper function then performs the actual computation of the logical operation.
+Most of the infix-expressions are later executed in a similar way.
+It is apparent that the execution of these instructions involves relatively little difficuilty.
+After the instruction has been executed, the instruction pointer is finally incremented and nothing is returned.
+For some special instructions, such as the jump-instructions, the instruction pointer should not be incremented since it would interfere with the jump.
+
+\TSListing[first line=189, last line=192, caption={Execution of the \texttt{jmp} Instruction in the rush VM}, label={lst:vm_jmp_instr}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+
+As seen in listing \ref{lst:vm_jmp_instr}, the \texttt{jmp} instruction only sets the instruction pointer to the target index specified in the instruction operand.
+Then, the code returns from the method so that the instruction pointer is not incremented later.
+Now that we have explained how the rush VM works, we should now consider how the compiler generates its instructions.
+
+\subsection{The Compiler Targeting the rush VM}
+
+Since the rush VM interprets instructions directly, there must be a compiler translating the AST generated by the semantic analysis into these instructions.
+For this purpose, we have implemented a compiler which does exactly this.
+Compared to a compiler targeting \emph{RISC-V} for instance, this compiler is significantly simpler since the rush VM uses a stack-based design.
+For instance, compilation of infix-expressions, such as $n + m$ is implemented in this compiler whilst using relatively little effort.
+A part of the \texttt{infix\_expr} function is displayed in listing \ref{lst:vm_compile_infix_expr}.
+
+\TSListing[first line=538, last line=540, caption={Compilation of Infix-Expressions Targeting the VM}, label={lst:vm_compile_infix_expr}, float=H]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
+
+Here, the right hand side of the expression is compiled first.
+Next, the left hand side is compiled too.
+Finally, the appropiate arithmetic instruction is inserted.
+The simplicity of the VM becomes apparent when we consider that the instruction is generated by a helper function which converts infix-operators to instructions.
+
+\TSListing[first line=445, last line=450, caption={Compilation of Expressions Targeting the VM}, label={lst:vm_compile_expr}, float=H]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
+
+The code in listing \ref{lst:vm_compile_expr} shows the top of the \texttt{expression} method in the VM compiler.
+When we examine the method's signature it becomes apparent that it only consumes an \texttt{AnalyzedExpresssion}.
+However, the method does not return a value.
+This is possible because the types of expression displayed in the listing are pushed onto the stack directly.
+By pushing the values of atomic expressions onto the stack directly, most tree-traversing methods do not need to return values.
+Due to this, short and elegant code like the one in listing \ref{lst:vm_compile_infix_expr} can be implemented.
+Furthermore, the rush VM includes special instructions for mathematical power operations.
+Since many real architectures lack special power instructions, implementing a rush compiler targeting the VM has proven to be less demanding in many ways.
+Furthermore, the VM also includes an \texttt{exit} instruction which terminates the fetch-decode-execute cycle of the vm instantly.
+Therefore, implementing a virtual machine with the source language in mind can present a reasonable approach to implement an interpreted programming language with relatively little effort.
+
+However, there is also one aspect of the VM which made implementation of the compiler targeting the VM more demanding than usual.
+For instance, in most Assembly dialects, labels can be used to allow jumping between blocks of code.
+However, the VM does not support labels as a way to implement jumps between blocks of code.
+Like seen in the previous examples, VM instruction that jump require the exact index of their target instruction.
+Therefore, the exact target of a jumping instruction must be known.
+To illustrate this issue, we will consider how loops are implemented in the VM.
+The rush code in figure \ref{fig:vm_loops} presents a program containing a loop.
+In loop's body, the variable \texttt{n} is incremented by 1.
+Next, the \texttt{break} keyword is used to terminate loop execution.
+Therefore, the total amount of iterations is 1.
+
+\noindent
+\begin{figure}[h]
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\TSListing[frame=none]{listings/vm_basic_loop.rush}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\TSListing[raw=true, frame=none]{listings/vm_basic_loop_instructions.txt}
+	\end{minipage}
+	\caption{How Loops are Interpreted by the VM}
+	\label{fig:vm_loops}
+\end{figure}
+
+The rush VM instructions of the \texttt{main} function are displayed on the right side of figure \ref{fig:vm_loops}.
+Here, lines 2 and 3 are responsible for declaring the variable \texttt{n}.
+The instructions in the lines 4-9 increment the variable \texttt{n} by 1.
+A new instruction which we have not covered so far is the \texttt{clone} instruction.
+It clones the top element on the stack by pushing it onto the stack without popping it previously.
+This instruction is only used in assign-expressions in order to duplicate the address value of the assignee.
+The instruction in line 10 intends to jump to the instruction index 11.
+However, the last index is 10, represented by the \texttt{jmp 3} instruction.
+If this occurs, the VM has no next instruction to fetch and therefore stops its fetch-decode-execute cycle.
+Since this instruction jumps to a position outside the loop, it represents the \texttt{break} statement in line 5 of the rush program.
+The \texttt{jmp} instruction in line 11 is responsible for the repetition of the loop since it jumps to the beginning of the loop's body in line 4.
+The difficuilty presented by this design is that the index of the jump's target must be known before the target instruction is created.
+
+\TSListing[first line=337, last line=343, caption={Implementation of Loops in the rush VM's Compiler}, label={lst:rush_vm_compiler_loop}, float=H]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
+
+The code in listing \ref{lst:rush_vm_compiler_loop} displays a part of the method responsible for compiling loops for the rush VM.
+The statement in line 337 inserts the instruction responsible for jumping back to the start of the loop's body.
+In line 340, the top loop is popped from the \texttt{loops} stack.
+This stack is an internal field used by the compiler in order to save information about loops.
+Each loop saves a list containing the indices of jump-instructions whose target index needs to be adjusted.
+
+If the compiler encounters a \texttt{break} statement, the code in listing \ref{lst:rush_vm_compiler_break} is executed.
+
+\TSListing[first line=268, last line=273, caption={Compilation of break-statements in the rush VM Compiler}, label={lst:rush_vm_compiler_break}, float=H]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
+
+Here, the \texttt{pos} variable saves the index of the jump-instruction to be inserted.
+In line 271, this index is then inserted into the list containing the placeholder indices of the current loop.
+Lastly, the \texttt{jmp} instruction is inserted containing a placeholder target index.
+Therefore, at the end of each loop's compilation, there will be a list containing the indices of instructions whose targets need to be adjusted.
+In line 342 of listing \ref{lst:rush_vm_compiler_loop}, the \texttt{self.fill\_blank\_jmps} method is used to set the target indices of the instructions to \texttt{pos}.
+We will omit the explaination of this method because it only iterates over the passed list of indices, replacing the target of the jump-instructions during the process.
+Now, we have presented a positive and a negative aspect of writing a compiler targeting the rush VM.

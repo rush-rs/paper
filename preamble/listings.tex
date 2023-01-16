@@ -14,7 +14,6 @@
     numbersep=12pt,
     rulecolor=\color{hint},
     framesep=2\fboxsep,
-    fontsize=\footnotesize,
     labelposition=bottomline,
     % baselinestretch=1,
 }
@@ -26,6 +25,7 @@
 \captionsetup[plain]{skip=0pt}
 
 \newkeycommand+[°]{\TSListing}[
+    first number,
     first line,
     last line,
     caption,
@@ -42,11 +42,16 @@
     }°
     °\def\commandargs{}°
 %
-    % set `firstnumber` and `firstline` if `first line` is set
-    \ifcommandkey{first line}{°\expandafter\def\expandafter\args\expandafter{\args%
+    % set `firstnumber` and `firstline`
+    \ifcommandkey{first line}{\ifcommandkey{first number}{°\expandafter\def\expandafter\args\expandafter{\args%
+        firstnumber=\commandkey{first number},
+        firstline=\commandkey{first line},
+    }°}{°\expandafter\def\expandafter\args\expandafter{\args%
         firstnumber=\commandkey{first line},
         firstline=\commandkey{first line},
-    }°}{}
+    }°}}{\ifcommandkey{first number}{°\expandafter\def\expandafter\args\expandafter{\args%
+        firstnumber=\commandkey{first number}
+    }°}{}}
     % set `lastline` if `last line` is set
     \ifcommandkey{last line}{°\expandafter\def\expandafter\args\expandafter{\args%
         lastline=\commandkey{last line},

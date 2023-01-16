@@ -1,1 +1,62 @@
 \section{Lexical and Syntactical Analysis}
+
+\color{purple!90!black}
+As previously mentioned, the first step during compilation or program execution is the \emph{lexical} and \emph{syntactical analysis}.
+Program source text is, without previous processing, just \emph{text} i.e., a sequence of characters.
+Before the computer can even begin to analyze the semantics and meaning of a program it has to first \emph{parse} the program source text into an appropriate data structure.
+This is done in two steps that are closely related and often combined, the \emph{lexical analysis} performed by a \emph{lexer} and the \emph{syntactical analysis} performed by a \emph{parser}.
+
+\subsection{Formal Syntactical Definition by a Grammar}
+
+Just like every natural language, most programming languages also conform to a grammar.
+However, grammars for programming languages most often are of type 2 or 3 in the Chomsky hierarchy, that is \emph{context-free} and \emph{regular} languages, whereas natural languages often are type 1 or 0.
+\TODO{citation}
+Additionally, it is not uncommon for parser writers to formally define the grammar with some notation.
+Popular options include \emph{BNF}\footnote{Backus-Naur Form, named after the two inventors} and \emph{EBNF}\footnote{Extended Backus-Naur Form, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, \TODO{emph?} the latter of which we use here.
+This paper does not further explain these notations, but for reference, Listing~\ref{lst:ebnf_reference_grammar} shows a short example grammar notated using EBNF and Appendix~\ref{apx:grammar} contains the full grammar of rush.
+
+\TSListing[float=h, caption={Grammar for Basic Arithmetic in EBNF Notation}, label={lst:ebnf_reference_grammar}]{listings/ebnf_reference.ebnf}
+
+\subsection{Grouping of Characters Into Tokens}
+
+Before the syntax of a program is validated it is common to have a lexer group certain sequences of characters into \emph{tokens}.
+The set of tokens a language has is the union of the set of all terminal symbols used in context-free grammar rules and the set of regular grammar rules.
+For the language defined in Listing~\ref{lst:ebnf_reference_grammar} these are the four operators `+', `-', `*' and `/', and the `number' non-terminal.
+An appropriate enumeration in Rust is given in Listing~\ref{lst:tokenkind_simple}.
+Here the primitive Rust type \texttt{u64} is used to store the value of detected numbers as an unsigned\footnote{unsigned: always positive, because there is no associated sign stored with the number} 64-bit integer.
+
+\TSListing[last line=8, float=h, caption={Enumeration of Token Kinds for Listing~\ref{lst:ebnf_reference_grammar} in Rust}, label={lst:tokenkind_simple}]{listings/tokens_simple.rs}
+
+In order to produce helpful diagnostics, the compiler additionally needs to store the start and end locations of every token in the source text. For that an accompanying \texttt{Token} struct is defined as shown in Listing~\ref{lst:token_and_span_simple}.
+
+\TSListing[first line=10, float=h, caption={Accompanying \texttt{Token} and \texttt{Span} Structs}, label={lst:token_and_span_simple}]{listings/tokens_simple.rs}
+
+The specifics of implementing a lexer are not explored in this paper, however a basic overview is still provided.
+\TODO{or will-future?}
+Listing~\ref{lst:lexer} shows the \texttt{Lexer} struct as it is defined in rush.
+The \texttt{reader} is an iterator over the input characters, the \texttt{location} saves the current index, column, and line in the source text, and the \texttt{curr\_char} and \texttt{next\_char} fields holds\ldots
+
+\begin{figure}[h]
+    \newcommand{\lexerframe}[8][]{\node(#2)[stack=7, rectangle split part fill={none,#3}, #1]{\ldots
+        \nodepart{two}\texttt{#4}
+        \nodepart{three}\texttt{#5}
+        \nodepart{four}\texttt{#6}
+        \nodepart{five}\texttt{#7}
+        \nodepart{six}\texttt{#8}
+        \nodepart{seven}\ldots
+    };}
+	\centering
+    \begin{tikzpicture}[node distance=2mm]
+        \lexerframe{frame0}{black!10,none}{\bfseries1}{+}{2}{*}{3}
+        \lexerframe[below=of frame0]{frame1}{black!20,black!10,none}{\bfseries1}{\bfseries+}{2}{*}{3}
+        \lexerframe[below=of frame1]{frame2}{none,black!20,black!10,none}{1}{\bfseries+}{\bfseries2}{*}{3}
+        \lexerframe[below=of frame2]{frame3}{none,none,black!20,black!10,none}{1}{+}{\bfseries2}{\bfseries*}{3}
+        \lexerframe[below=of frame3]{frame4}{none,none,none,black!20,black!10,none}{1}{+}{2}{\bfseries*}{\bfseries3}
+        \lexerframe[below=of frame4]{frame5}{none,none,none,none,black!20,none}{1}{+}{2}{*}{\bfseries3}
+	\end{tikzpicture}
+	\caption{Advancing Window of a Lexer}\label{fig:lexer}
+\end{figure}
+
+\TSListing[first line=10, last line=16, float=h, caption={The \texttt{Lexer} Struct Definition in rush}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
+
+\color{black}

@@ -1,14 +1,110 @@
 \section{Using LLVM for Code Generation}
 
 LLVM is a software project intended to simplify the construction of a compiler generating highly-performant output programs.
-It originally started as a project by \emph{Chris Lattner} at the University of Illinois.
+It originally started as a research project by \emph{Chris Lattner} for his master's thesis at the University of Illinois at Urbana-Champaign \cite{Lattner:MSThesis02}.
 Since then, the project has been widely adopted by the open source community.
-Today, it can be recognized as one of the largest open source projects.
+In 2012, the project was rewarded the \emph{ACM Software System Award}, a prestigious recognition of significant software which contributed to science.
+From the point where popularity of the framework grew, it was renamed from \emph{Low Level Virtual Machine} to the acronym it is known by today.
+Today, it can be recognized as one of the largest open source projects \cite[preface]{Cardoso_Lopes2014-jt}.
+Among many other projects, the Rust programming language depends on the LLVM compiler in order to generate its target-specific code \cite[p.~373]{McNamara2021-hz}.
+Furthermore, the \emph{Clang} C / C++ compiler uses LLVM as its code generating backend \cite[preface]{Hsu2021-ez}.
+Therefore, production ready compilers for popular programming languages have been implemented using the LLVM framework.
+Besides open-source projects, many companies also use LLVM in their commercial software.
+For instance, since 2005, Apple has started incorporating LLVM into some of its products. \cite[pp.~11-15]{Fandrey}.
+A recent example of software developed by Apple which uses LLVM is the \emph{Swift} programming language which is mainly used for developing IOS apps \cite[preface]{Hsu2021-ez}.
 
-% - Mention that Rust uses LLVM
+\subsection{The Role of LLVM in a Compiler}
 
-Many companies also use LLVM commercially.
+In a compiler system using LLVM, it is responsible for generating target-specific code.
+Furthermore, LLVM is known for performing very effective optimizations during code generation so that the translated program runs faster at runtime and uses less memory.
+In order to use LLVM, the system provides and API which is usable by earlier steps of compilation.
+Typically, a compiler frontend must only analyze the source program to create an AST.
+Therefore, LLVM represents the \emph{back end} of a compiler system.
+Then, the AST is traversed and the API of LLVM is used to construct an intermediate representation of the program so that the system can understand it.
+Next, LLVM compiles the input program to an arbitrary target architecture.
+As of today, LLVM features many target architectures so that a compiler designer does not have to worry about portability of the output program \cite[preface]{Hsu2021-ez}.
+Listing \ref{fig:compilation_steps_llvm} shows how LLVM integrates into the previously discussed steps of compilation.
 
-% - Apple's Swift
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[node distance=3mm and 1cm, inner sep=3mm]
+		\node (syntactic_analysis_text) [inner sep=0] {syntactical analysis};
+		\node (lexical_analysis) [rec, below=of syntactic_analysis_text] {lexical analysis};
+		\node (syntactic_analysis) [rec, fit={(syntactic_analysis_text) (lexical_analysis)}] {};
 
-\cite[preface]{Cardoso_Lopes2014-jt}
+		\node (semantic_analysis) [rec, right=of syntactic_analysis] {semantic analysis};
+		\draw [arrow] (syntactic_analysis) -- (semantic_analysis);
+
+		\node (llvm) [rec, right=of semantic_analysis] {LLVM};
+		\draw [arrow] (semantic_analysis) -- (llvm);
+	\end{tikzpicture}
+	\caption{Steps of Compilation When Using LLVM}
+	\label{fig:compilation_steps_llvm}
+\end{figure}
+
+% - provides an abstraction layer X
+% - optimization and code generation X
+% - contains thousand different APIs
+
+% - insert graphic (stages of compilation) with LLVM here X
+
+% - More on optimization is found in Lattner:p.5
+
+Through the use of the LLVM intermetiate representation, high-level type information is preserved while the benefits of a low-level representation are introduced.
+This allows LLVM to perform significant optimizations at compile time whilst preserving the high-level information for the linker.
+By communicating this much information to the linker, many so called \emph{link time optimizations} can be achieved which are not present in most other compilers \cite[p.~5]{Lattner:MSThesis02}.
+Therefore, programs compiled using LLVM as the backend will often run significantly faster due to the many aggressive optimizations introduced by the system.
+
+\subsection{The LLVM Intermediate Representation}
+
+% - target-independent Intermediate Representationfor program analysis X
+% - Alternative representation of the program to be compiled X
+% - LLVM provides many libraries for interacting with the Ir X
+- The IR is used to represent the source program in a target-independent way 
+- The system provides many APIs for interacting with the IR in memory, without the need for a file
+- However, the official API is C++ / C
+- There are many inofficial bindings, such as for Rust, Go, or Python
+- A program represented using LLVM IR always obeys a hierarchy: module -> function -> basic block -> instruction
+- A module is the file being compiled
+- A function is often similar to one in the source language
+
+- A basic block is a block of instructions which does not diverge
+- Each block must be terminated using either a jumping or returning instruction
+- A block may not be terminated twice (e.g. break in the loop body)
+
+\cite[p.~211-213]{Hsu2021-ez}.
+
+- LLVM is able to perform aggressive optimizations at runtime due to the type information preserved in the IR
+- An IR must be low-level enough so that enough optimizations can be made in the early phases of compilation
+- However, the IR should also be high-level enough so that it supports aggressive link-time optimizations.
+- The Virtual instruction set is therefore designed as a low-level representation with high-level type information
+- this instruction set represents a virtual architecture which is able to represent most ordinary processors but avoids machine specific constaints (registers / calling conventions)
+- LLVM provides an infinite set of virtual registers which can hold the value of primitives (int, float, pointer)
+- Registers use static single assignment form (SSA) (widely used for compiler optimization)
+- Values can be stored in memory (stack) using the load / store instructions
+- Three address code
+- Every instruction has an associated type, all operations obey type rules
+
+\cite[p.~14-17]{Lattner:MSThesis02}
+
+% - Present a simple example
+
+\subsection{The rush Compiler Using LLVM}
+
+% - Use of inkwell
+% - Example program
+% - Simple iterative function
+% - Explain the IR
+
+
+\subsection{Final Code Generation: The Linker}
+
+% - Explain linking
+% - Difference `.o` vs binary
+% - LLVM's link-time optimizations
+% - https://en.wikipedia.org/wiki/Linker_(computing)
+
+\subsection{Conclusions}
+
+% - Explain what was difficuilt and what was good
+% - Benchmark: fib LLVM vs x86_64

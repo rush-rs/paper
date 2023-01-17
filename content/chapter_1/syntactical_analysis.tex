@@ -33,7 +33,8 @@ Here every row in the table represents one point in time displaying the lexer's 
 % Listing~\ref{lst:lexer} shows the \Verb|Lexer| struct as it is defined in rush.
 % The \Verb|reader| is an iterator over the input characters, the \Verb|location| saves the current index, column, and line in the source text, and the \Verb|curr_char| and \Verb|next_char| fields holds\ldots
 
-\TSListing[first line=10, last line=16, float=h, caption={The rush \Verb|Lexer| Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
+% TODO: why does using \Verb inside caption break compilation for @MikMuellerDev
+\TSListing[first line=10, last line=16, float=h, caption={The rush \texttt{Lexer} Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
 
 \begin{table}[h]
 	\newcommand{\lexerframe}[8][]{\tikz[baseline={(frame.base)}]{
@@ -73,7 +74,7 @@ The \Verb|Eq| token, composed of two `\Verb|=|' symbols, also requires the lexer
 
 A simplified \Verb|Token| struct definition for the example language from Listing~\ref{lst:ebnf_reference_grammar} is shown in Listing~\ref{lst:token_simple}.
 
-\TSListing[float=h, caption={Simplified \Verb|Token| Struct Definition}, label={lst:token_simple}]{listings/token_simple.rs}
+\TSListing[float=h, caption={Simplified \texttt{Token} Struct Definition}, label={lst:token_simple}]{listings/token_simple.rs}
 
 In addition to the current and next character, a lexer also has to keep track of the current position in the source text for it to provide helpful diagnostics with locations to the user.
 This is done in the \Verb|location| field.

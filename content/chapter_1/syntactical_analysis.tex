@@ -1,6 +1,6 @@
+% chktex-file -2
 \section{Lexical and Syntactical Analysis}
 
-\color{purple!90!black}
 As previously mentioned, the first step during compilation or program execution is the \emph{lexical} and \emph{syntactical analysis}.
 Program source text is, without previous processing, just \emph{text} i.e., a sequence of characters.
 Before the computer can even begin to analyze the semantics and meaning of a program it has to first \emph{parse} the program source text into an appropriate data structure.
@@ -12,7 +12,7 @@ Just like every natural language, most programming languages also conform to a g
 However, grammars for programming languages most often are of type 2 or 3 in the Chomsky hierarchy, that is \emph{context-free} and \emph{regular} languages, whereas natural languages often are type 1 or 0.
 \TODO{citation}
 Additionally, it is not uncommon for parser writers to formally define the grammar with some notation.
-Popular options include \emph{BNF}\footnote{Backus-Naur Form, named after the two inventors} and \emph{EBNF}\footnote{Extended Backus-Naur Form, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, \TODO{emph?} the latter of which we use here.
+Popular options include \emph{BNF}\footnote{Backus-Naur Form, named after the two main inventors~\cite{Backus1960}} and \emph{EBNF}\footnote{Extended Backus-Naur Form, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, \TODO{emph?} the latter of which we use here.
 This paper does not further explain these notations, but for reference, Listing~\ref{lst:ebnf_reference_grammar} shows a short example grammar notated using EBNF and Appendix~\ref{apx:grammar} contains the full grammar of rush.
 
 \TSListing[float=h, caption={Grammar for Basic Arithmetic in EBNF Notation}, label={lst:ebnf_reference_grammar}]{listings/ebnf_reference.ebnf}
@@ -22,41 +22,58 @@ This paper does not further explain these notations, but for reference, Listing~
 Before the syntax of a program is validated it is common to have a lexer group certain sequences of characters into \emph{tokens}.
 The set of tokens a language has is the union of the set of all terminal symbols used in context-free grammar rules and the set of regular grammar rules.
 For the language defined in Listing~\ref{lst:ebnf_reference_grammar} these are the four operators `+', `-', `*' and `/', and the `number' non-terminal.
-An appropriate enumeration in Rust is given in Listing~\ref{lst:tokenkind_simple}.
-Here the primitive Rust type \texttt{u64} is used to store the value of detected numbers as an unsigned\footnote{unsigned: always positive, because there is no associated sign stored with the number} 64-bit integer.
-
-\TSListing[last line=8, float=h, caption={Enumeration of Token Kinds for Listing~\ref{lst:ebnf_reference_grammar} in Rust}, label={lst:tokenkind_simple}]{listings/tokens_simple.rs}
-
-In order to produce helpful diagnostics, the compiler additionally needs to store the start and end locations of every token in the source text. For that an accompanying \texttt{Token} struct is defined as shown in Listing~\ref{lst:token_and_span_simple}.
-
-\TSListing[first line=10, float=h, caption={Accompanying \texttt{Token} and \texttt{Span} Structs}, label={lst:token_and_span_simple}]{listings/tokens_simple.rs}
 
 The specifics of implementing a lexer are not explored in this paper, however a basic overview is still provided.
 \TODO{or will-future?}
-Listing~\ref{lst:lexer} shows the \texttt{Lexer} struct as it is defined in rush.
-The \texttt{reader} is an iterator over the input characters, the \texttt{location} saves the current index, column, and line in the source text, and the \texttt{curr\_char} and \texttt{next\_char} fields holds\ldots
+The base principal of a lexer is to iterate over the characters of the input to produce tokens.
+Depending on the target language it might however be required to scan the input using an $n$-sized window i.e., observing $n$ characters at a time.
+In the case of rush this $n$ is 2, resulting in the \Verb|Lexer| struct not only storing the current character but also the next character as seen in Listing~\ref{lst:lexer}.
+For clarity, Table~\ref{tbl:lexer} shows the values of \Verb|curr_char| and \Verb|next_char| during processing of the input `\Verb|1+2==3|'.
+Here every row in the table represents one point in time displaying the lexer's current state.
+% Listing~\ref{lst:lexer} shows the \Verb|Lexer| struct as it is defined in rush.
+% The \Verb|reader| is an iterator over the input characters, the \Verb|location| saves the current index, column, and line in the source text, and the \Verb|curr_char| and \Verb|next_char| fields holds\ldots
 
-\begin{figure}[h]
-    \newcommand{\lexerframe}[8][]{\node(#2)[stack=7, rectangle split part fill={none,#3}, #1]{\ldots
-        \nodepart{two}\texttt{#4}
-        \nodepart{three}\texttt{#5}
-        \nodepart{four}\texttt{#6}
-        \nodepart{five}\texttt{#7}
-        \nodepart{six}\texttt{#8}
-        \nodepart{seven}\ldots
-    };}
+\TSListing[first line=10, last line=16, float=h, caption={The rush \Verb|Lexer| Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
+
+\begin{table}[h]
+	\newcommand{\lexerframe}[8][]{\tikz[baseline={(frame.base)}]{
+			\node(frame)[stack=6, rectangle split part fill={#2}, #1]{
+				\texttt{#3}
+				\nodepart{two}\texttt{#4}
+				\nodepart{three}\texttt{#5}
+				\nodepart{four}\texttt{#6}
+				\nodepart{five}\texttt{#7}
+				\nodepart{six}\texttt{#8}
+			};
+			% fix margin around tikzpicture
+			\node[fit={(current bounding box)}, inner ysep=.5mm, inner xsep=0]{};
+		}}
 	\centering
-    \begin{tikzpicture}[node distance=2mm]
-        \lexerframe{frame0}{black!10,none}{\bfseries1}{+}{2}{*}{3}
-        \lexerframe[below=of frame0]{frame1}{black!20,black!10,none}{\bfseries1}{\bfseries+}{2}{*}{3}
-        \lexerframe[below=of frame1]{frame2}{none,black!20,black!10,none}{1}{\bfseries+}{\bfseries2}{*}{3}
-        \lexerframe[below=of frame2]{frame3}{none,none,black!20,black!10,none}{1}{+}{\bfseries2}{\bfseries*}{3}
-        \lexerframe[below=of frame3]{frame4}{none,none,none,black!20,black!10,none}{1}{+}{2}{\bfseries*}{\bfseries3}
-        \lexerframe[below=of frame4]{frame5}{none,none,none,none,black!20,none}{1}{+}{2}{*}{\bfseries3}
-	\end{tikzpicture}
-	\caption{Advancing Window of a Lexer}\label{fig:lexer}
-\end{figure}
+	\caption{Advancing Window of a Lexer}\label{tbl:lexer}
+	\begin{tabularx}{0.95\textwidth}{rCLLl}
+		Calls & State                                                                                                                                                     & \colorbox{black!20}{\Verb|curr_char|} & \colorbox{black!10}{\Verb|next_char|} & Output Token  \\
+		\\[-1.1em]\hline\\[-1.1em]
+		0     & \lexerframe{none}{1}{+}{2}{=}{=}{3}                                                                                                                       & \Verb|None|                           & \Verb|None|                           &               \\
+		0     & \lexerframe{black!10,none}{\bfseries1}{+}{2}{=}{=}{3}                                                                                                     & \Verb|None|                           & \Verb|Some('1')|                      &               \\
+		0     & \lexerframe{black!20,black!10,none}{\bfseries1}{\bfseries+}{2}{=}{=}{3}                                                                                   & \Verb|Some('1')|                      & \Verb|Some('+')|                      &               \\
+		1     & \lexerframe{none,black!20,black!10,none}{\color{black!50}1}{\bfseries+}{\bfseries2}{=}{=}{3}                                                              & \Verb|Some('+')|                      & \Verb|Some('2')|                      & \Verb|Int(1)| \\
+		2     & \lexerframe{none,none,black!20,black!10,none}{\color{black!50}1}{\color{black!50}+}{\bfseries2}{\bfseries=}{=}{3}                                         & \Verb|Some('2')|                      & \Verb|Some('=')|                      & \Verb|Plus|   \\
+		3     & \lexerframe{none,none,none,black!20,black!10,none}{\color{black!50}1}{\color{black!50}+}{\color{black!50}2}{\bfseries=}{\bfseries=}{3}                    & \Verb|Some('=')|                      & \Verb|Some('=')|                      & \Verb|Int(2)| \\
+		4     & \lexerframe{none,none,none,none,black!20,black!10}{\color{black!50}1}{\color{black!50}+}{\color{black!50}2}{\color{black!50}=}{\bfseries=}{\bfseries3}    & \Verb|Some('=')|                      & \Verb|Some('3')|                      &               \\
+		4     & \lexerframe{none,none,none,none,none,black!20}{\color{black!50}1}{\color{black!50}+}{\color{black!50}2}{\color{black!50}=}{\color{black!50}=}{\bfseries3} & \Verb|Some('3')|                      & \Verb|None|                           & \Verb|Eq|     \\
+		5     & \lexerframe{none}{\color{black!50}1}{\color{black!50}+}{\color{black!50}2}{\color{black!50}=}{\color{black!50}=}{\color{black!50}3}                       & \Verb|None|                           & \Verb|None|                           & \Verb|Int(3)| \\
+	\end{tabularx}
+\end{table}
 
-\TSListing[first line=10, last line=16, float=h, caption={The \texttt{Lexer} Struct Definition in rush}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
+As explained in Section~\ref{sec:stages_of_compilation}, many modern language implementations have the lexer produce tokens as needed by the parser.
+Thus, a lexer requires one public method called something like \Verb|next_token| reading and returning, as the name suggests, the next token.
+In Table~\ref{tbl:lexer} the column on the left displays how many times the \Verb|next_token| method has been called by the parser.
+In the first three rows this count is still 0, as this happens during initialization of the lexer in order to fill the \Verb|curr_char| and \Verb|next_char| fields with sensible values before the first token in requested.
+The \Verb|Eq| token, composed of two `\Verb|=|' symbols, also requires the lexer to advance two times before it can be returned, which is represented by the two rows in which the call count is 4.
 
-\color{black}
+A simplified \Verb|Token| struct definition for the example language from Listing~\ref{lst:ebnf_reference_grammar} is shown in Listing~\ref{lst:token_simple}.
+
+\TSListing[float=h, caption={Simplified \Verb|Token| Struct Definition}, label={lst:token_simple}]{listings/token_simple.rs}
+
+In addition to the current and next character, a lexer also has to keep track of the current position in the source text for it to provide helpful diagnostics with locations to the user.
+This is done in the \Verb|location| field.

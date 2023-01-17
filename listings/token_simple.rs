@@ -1,3 +1,8 @@
+struct Token {
+    kind: TokenKind,
+    span: Span,
+}
+
 enum TokenKind {
     Number(u64),
 
@@ -5,11 +10,6 @@ enum TokenKind {
     Minus,
     Star,
     Slash,
-}
-
-struct Token {
-    kind: TokenKind,
-    span: Span,
 }
 
 struct Span {

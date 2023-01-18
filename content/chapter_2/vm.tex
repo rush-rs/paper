@@ -263,10 +263,22 @@ In this call frame, \texttt{ip} still points to the \texttt{call} instruction wh
 Since \texttt{ip} is incremented automatically after most instructions, the VM resumes instruction execution at the first instruction after the call-instruction.
 This way, function calls are implemented in a simple but robust manner.
 
-\begin{figure}[h]
-	\includegraphics[width=\textwidth]{./vm_call_stack_draft.png}
-	\caption{\textcolor{red}{DRAFT:} Call Stack of the rush VM}
-	\label{fig:rush_vm_call_stack}
+% \begin{figure}[h]
+% 	\includegraphics[width=\textwidth]{./vm_call_stack_draft.png}
+% 	\caption{\textcolor{red}{DRAFT:} Call Stack of the rush VM}
+% 	\label{fig:rush_vm_call_stack}
+% \end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \node[stack=3, rectangle split part align=center, text width=10ex, text centered, inner xsep=0]{
+            \shortstack{prelude\\$fp=0$\\$ip=1$}
+            \nodepart{two}{\shortstack{main\\$fp=1$\\$ip=0$}}
+            \nodepart{three}{\ldots}
+        };
+    \end{tikzpicture}
+	\caption{Call Stack of the rush VM}\label{fig:rush_vm_call_stack}
 \end{figure}
 
 Now that the call-instruction has been interpreted, the VM begins executing the first instruction of the main-function.

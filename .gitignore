@@ -303,4 +303,4 @@ TSWLatexianTemp*
 
 # Custom
 /deps
-main.pdf
+*.pdf

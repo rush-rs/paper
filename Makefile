@@ -10,3 +10,6 @@ init: fetch_deps.sh gen_config.py
 	python3 gen_config.py
 	cargo install --git https://github.com/rush-rs/ts2tex
 	cargo install --git https://github.com/rush-rs/ansi2tex
+
+build_listings: build_listings.py
+	python3 build_listings.py

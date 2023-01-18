@@ -50,44 +50,80 @@ Listing \ref{fig:compilation_steps_llvm} shows how LLVM integrates into the prev
 
 % - More on optimization is found in Lattner:p.5
 
-Through the use of the LLVM intermetiate representation, high-level type information is preserved while the benefits of a low-level representation are introduced.
-This allows LLVM to perform significant optimizations at compile time whilst preserving the high-level information for the linker.
-By communicating this much information to the linker, many so called \emph{link time optimizations} can be achieved which are not present in most other compilers \cite[p.~5]{Lattner:MSThesis02}.
-Therefore, programs compiled using LLVM as the backend will often run significantly faster due to the many aggressive optimizations introduced by the system.
 
 \subsection{The LLVM Intermediate Representation}
+
+The intermediate representation (\emph{IR}) represents the source program in a low-level but target-independent way. 
+Through the use of the LLVM intermediate representation, high-level type information is preserved while the benefits of a low-level representation are introduced.
+This allows LLVM to perform significant more aggressive optimizations at compile time compared to other compiler solutions.
+Furthermore, LLVM communicates a lot of information to the linker.
+As a result of this, many so called \emph{link time optimizations} can be achieved which are not present in most other compilers \cite[p.~5]{Lattner:MSThesis02}.
+Therefore, programs compiled using LLVM as the backend will often run significantly faster due to the many aggressive optimizations introduced by the system.
 
 % - target-independent Intermediate Representationfor program analysis X
 % - Alternative representation of the program to be compiled X
 % - LLVM provides many libraries for interacting with the Ir X
-- The IR is used to represent the source program in a target-independent way 
-- The system provides many APIs for interacting with the IR in memory, without the need for a file
-- However, the official API is C++ / C
-- There are many inofficial bindings, such as for Rust, Go, or Python
-- A program represented using LLVM IR always obeys a hierarchy: module -> function -> basic block -> instruction
-- A module is the file being compiled
-- A function is often similar to one in the source language
 
-- A basic block is a block of instructions which does not diverge
-- Each block must be terminated using either a jumping or returning instruction
-- A block may not be terminated twice (e.g. break in the loop body)
+% - The IR is used to represent the source program in a target-independent way 
+LLVM provides many APIs for interacting with the IR in memory, so that it can be created by a compiler frontend without it being written onto a file.
+The official API for LLVM is for C++ and C.
+However, there are many inofficial bindings, such as for Rust, Go, or Python.
+For instance, a compiler frontend written in Rust can leverage LLVM although the system is written in C++.
+A program represented using the IR always obeys the following hierarchy: 
 
-\cite[p.~211-213]{Hsu2021-ez}.
+\begin{itemize}
+    \item The top most hierarchical structure is the so called \emph{module}.
+    It represents the current file being compiled.
+    \item Each module contains several \emph{functions}.
+    Often, each function in the source program is represented using a function in the LLVM IR.
+    \item Each function contains several \emph{basic blocks}.
+    Each basic block contains a sequence of instructions.
+    Each block always has to be terminated using a jumping or returning instruction.
+    However, a block must never be terminated twice.
+    \item As mentioned above, each basic block contains a sequence of \emph{instructions}.
+    Each instruction holds a semantic meaning and represents a part of the source program.
+\end{itemize} \cite[p.~211-213]{Hsu2021-ez}.
 
-- LLVM is able to perform aggressive optimizations at runtime due to the type information preserved in the IR
-- An IR must be low-level enough so that enough optimizations can be made in the early phases of compilation
-- However, the IR should also be high-level enough so that it supports aggressive link-time optimizations.
-- The Virtual instruction set is therefore designed as a low-level representation with high-level type information
-- this instruction set represents a virtual architecture which is able to represent most ordinary processors but avoids machine specific constaints (registers / calling conventions)
-- LLVM provides an infinite set of virtual registers which can hold the value of primitives (int, float, pointer)
-- Registers use static single assignment form (SSA) (widely used for compiler optimization)
-- Values can be stored in memory (stack) using the load / store instructions
-- Three address code
-- Every instruction has an associated type, all operations obey type rules
+% - A program represented using LLVM IR always obeys a hierarchy: module -> function -> basic block -> instruction
+% - A module is the file being compiled
+% - A function is often similar to one in the source language
 
-\cite[p.~14-17]{Lattner:MSThesis02}
+% - A basic block is a block of instructions which does not diverge
+% - Each block must be terminated using either a jumping or returning instruction
+% - A block may not be terminated twice (e.g. break in the loop body)
 
-% - Present a simple example
+
+The IR provides a low-level enough representation in order to allow optimizations in the early stages of compilation.
+However, due to the high-level type information contained in a program represented using the IR,
+LLVM is able to perform many aggressive optimizations on the IR during later stages of compilation.
+This way, LLVM can communicate a lot of information to the linker which can then use this information for link-time optimizations.
+The virtual instruction set of LLVM is therefore designed as a low-level representation with high-level type information.
+This instruction set represents a virtual architecture which is able to represent most common types processors.
+However, the IR avoids machine specific constaints like register-count or low-level calling conventions.
+The virtual architecture provides an infinite set of virtual registers which can hold the value of primitives like \emph{integers}, \emph{floating-point numbers}, and \emph{pointer}.
+All registers in the IR use the \emph{SSA}\footnote{Short for \enquote{static single assignment}, widely used in optimizing compilers} form in order to allow more optimizations.
+Using the virtual instruction set, stack memory can be easily used using the \texttt{load} and \texttt{store} instructions.
+Therefore, low-level details concerning stack memory can completely be omitted.
+In order to enforce the correctness of the provided type information,
+the operands of an instruction all obey type rules \cite[p.~14-17]{Lattner:MSThesis02}. 
+
+% - LLVM is able to perform aggressive optimizations at runtime due to the type information preserved in the IR
+%- An IR must be low-level enough so that enough optimizations can be made in the early phases of compilation
+%- However, the IR should also be high-level enough so that it supports aggressive link-time optimizations.
+%- The Virtual instruction set is therefore designed as a low-level representation with high-level type information
+%- this instruction set represents a virtual architecture which is able to represent most ordinary processors but avoids machine specific constaints (registers / calling conventions)
+%- Registers use static single assignment form (SSA) (widely used for compiler optimization)
+%- Values can be stored in memory (stack) using the load / store instructions
+%- Three address code
+%- Every instruction has an associated type, all operations obey type rules
+
+%\cite[p.~14-17]{Lattner:MSThesis02}
+
+In order to understand how the LLVM IR represents a program, we now consider the calculation of Fibonacci numbers again.
+For reference, the rush program used in this example can be found in Listing \ref{lst:rush_fib} on page \pageref{lst:rush_fib}.
+The code in Listing \ref{lst:llvm_fib} displays LLVM IR representing this rush program.
+
+\TSListing[first line=5, caption={LLVM IR Representation of the Program in Listing \ref{lst:rush_fib}}, label={lst:llvm_fib}, float=H]{listings/fib.ll}
 
 \subsection{The rush Compiler Using LLVM}
 

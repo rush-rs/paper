@@ -4,12 +4,14 @@ struct Token {
 }
 
 enum TokenKind {
-    Number(u64),
+    Int(u64),
 
-    Plus,
-    Minus,
-    Star,
-    Slash,
+    Plus,  // +
+    Minus, // -
+    Star,  // *
+    Slash, // /
+    Eq,    // ==
+    Neq,   // !=
 }
 
 struct Span {

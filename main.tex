@@ -24,29 +24,29 @@
 \def\rushCommit{\ignorespaces\texttt{\input "|git -C ./deps/rush rev-parse --short HEAD | perl -pe 'chomp'"}\unskip}
 
 \chapter{Introduction}
-% \input{content/chapter_0/introduction.tex}
-% \input{content/chapter_0/stages_of_compilation.tex}
+\input{content/chapter_0/introduction.tex}
+\input{content/chapter_0/stages_of_compilation.tex}
 \input{content/chapter_0/rush.tex}
-%
-% \chapter{Analyzing the Source}
-% \input{content/chapter_1/syntactical_analysis}
-% \input{content/chapter_1/semantic_analysis}
-%
-% \chapter{Interpreting the Program}
-% \TODO{write short introduction on interpreters}
-% \input{content/chapter_2/tree}
-% \input{content/chapter_2/vm}
+
+\chapter{Analyzing the Source}
+\input{content/chapter_1/syntactical_analysis}
+\input{content/chapter_1/semantic_analysis}
+
+\chapter{Interpreting the Program}
+\TODO{write short introduction on interpreters}
+\input{content/chapter_2/tree}
+\input{content/chapter_2/vm}
 
 \chapter{Compiling to High-Level Targets}\label{chap:high_level_targets}
 \input{content/chapter_3/wasm}
 \input{content/chapter_3/llvm}
 
-% \chapter{Compiling to Low-Level Targets}\label{chap:low_level_targets}
-% \input{content/chapter_4/concepts}
-% \input{content/chapter_4/riscv}
-% \input{content/chapter_4/x64}
-%
-% \chapter{Final Thoughts and Conclusions}\label{chap:final_thoughts}
+\chapter{Compiling to Low-Level Targets}\label{chap:low_level_targets}
+\input{content/chapter_4/concepts}
+\input{content/chapter_4/riscv}
+\input{content/chapter_4/x64}
+
+\chapter{Final Thoughts and Conclusions}\label{chap:final_thoughts}
 
 %\include{content/test_chapter.tex}
 

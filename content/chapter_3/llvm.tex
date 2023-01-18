@@ -199,10 +199,10 @@ In order to get accquainted to the LLVM framework in a practical way, we have im
 However, the first problem emerged soon since the LLVM project only provides official C / C++ bindings to be used by other programs.
 Nonetheless, the entire rush project is written in the Rust programming language.
 Therefore, a third-party Rust wrapper around LLVM is required.
-We have settled on using the \emph{Inkwell} rust crate since it exposes a safe rust API for using LLVM for code generation \cite{Inkwell2023}.
+We have settled on using the \emph{Inkwell} Rust crate since it exposes a safe rust API for using LLVM for code generation \cite{Inkwell2023}.
 
 To understand how this rush compiler leverages LLVM in order to translate programs, we should first consider some implementation details.
-The code in Listing~\ref{lst:llvm_cmp_struct} displays the top part of the `\texttt|Compiler|' struct definition.
+The code in Listing~\ref{lst:llvm_cmp_struct} displays the top part of the `\texttt{Compiler}' struct definition.
 
 \TSListing[first line=26, last line=29, caption={Struct definition of the rush LLVM \texttt{Compiler}}, label={lst:llvm_cmp_struct}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
@@ -216,6 +216,7 @@ In order to get a deeper understanding of how this compiler works exactly, we wi
 \begin{figure}[h]
 	\begin{minipage}{.5\textwidth}
 		\centering
+        \TODO{replace the variables with parameters + add one other variable}
 		\TSListing[frame=none]{listings/simple.rush}
 	\end{minipage}%
 	\begin{minipage}{.5\textwidth}

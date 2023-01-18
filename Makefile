@@ -1,4 +1,4 @@
-build:
+build: listings/generated
 	rm -f main.pdf
 	make main.pdf
 
@@ -11,5 +11,6 @@ init: fetch_deps.sh gen_config.py
 	cargo install --git https://github.com/rush-rs/ts2tex
 	cargo install --git https://github.com/rush-rs/ansi2tex
 
-build_listings: build_listings.py
+listings/generated: build_listings.py deps/rush listings/fib.rush listings/simple.rush
+	mkdir -p ./listings/generated/
 	python3 build_listings.py

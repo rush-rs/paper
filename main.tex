@@ -21,7 +21,7 @@
 
 \cleardoublepage\pagenumbering{arabic}
 
-\def\rushCommit{\ignorespaces\texttt{\input "|git -C ./deps/rush rev-parse --short HEAD | perl -pe 'chomp'"}\unskip}
+\newcommand\rushCommit{\ignorespaces\texttt{\input "|git -C ./deps/rush rev-parse --short HEAD"}\unskip}
 
 \chapter{Introduction}
 \input{content/chapter_0/introduction.tex}

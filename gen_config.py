@@ -39,12 +39,18 @@ groups_re = re.compile(
 )
 colors_re = re.compile(r'(\w+) = "(#[a-fA-F0-9]{6})",')
 
+print("Fetching `highlights.lua`...")
 highlights_lua = requests.get(
     'https://raw.githubusercontent.com/navarasu/onedark.nvim/master/lua/onedark/highlights.lua'
 ).text
+
+
+print("Fetching `palette.lua`...")
 palette_lua = requests.get(
     'https://raw.githubusercontent.com/navarasu/onedark.nvim/master/lua/onedark/palette.lua'
 ).text
+
+print("Fetching complete")
 
 colors = {
     match.group(1): match.group(2)

@@ -227,20 +227,33 @@ In order to get a deeper understanding of how this compiler works exactly, we wi
 	\label{fig:llvm_simple}
 \end{figure}
 
-In the source program on the left side, the two variables \texttt{two} and \texttt{three} are defined.
-Then, the program exits using the sum of these two variables.
+The source program on the left side contains the \texttt{foo} and the \texttt{main} functions.
+These functions are declared in the lines 5 and 17 of the output IR.
+The \texttt{foo} function takes two parameters (\texttt{n} and \texttt{m}).
+It uses the two parameters and calculates their sum in order to use it as the exit code of the program. 
+In line 18 of the IR, the parameters \texttt{n} and \texttt{m} are added together.
+The result of this addition is then used in order to call the \texttt{exit} function.
+This function call takes place in line 11 of the IR.
+Therefore, the exit code of the program will be 5.
+
+During translation, the compiler first iterates over all declared functions in order to add them to the LLVM module.
+Listing~\ref{lst:llvm_main_fn} displays the top part of the method responsible for translating the \texttt{main} function.
+In the lines 312 until 316, the signature of the \texttt{main} function is created.
+This signature is created inside an if-expression became the signature of the function differs dependinng on whether the compiler should create a \textttt{main} or a \texttt{\_start} function.
+The latter is used if the compiler is used for cross-compilation\footnote{\TODO{here}} to another architecture.
+
+\TSListing[first line=311, last line=317, caption={Compilation of the `\texttt{main}' Function Using LLVM}, label={lst:llvm_main_fn}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
+
+\begin{itemize}
+	\item \TODO{Explain function signature + add function to module}
+\end{itemize}
+
 
 \TSListing[first line=862, last line=868, caption={Compilation of Expressions Using LLVM}, label={lst:llvm_exprs}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
 \begin{itemize}
 	\item \TODO{Function uses analyzed expr and produces a LLVM value}
 	\item \TODO{How a basic int is created}
-\end{itemize}
-
-\TSListing[first line=311, last line=317, caption={Compilation of the `\texttt{main}' Function Using LLVM}, label={lst:llvm_main_fn}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
-
-\begin{itemize}
-	\item \TODO{Explain function signature + add function to module}
 \end{itemize}
 
 \TSListing[first line=598, last line=613, caption={Compilation of Let-Statements Using LLVM}, label={lst:llvm_let}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}

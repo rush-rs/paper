@@ -1,5 +1,7 @@
 fn main() {
-    let two = 2;
-    let three = 3;
-    exit(two + three)
+    foo(2, 3)
+}
+
+fn foo(n: int, m: int) {
+    exit(n + m)
 }

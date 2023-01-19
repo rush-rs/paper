@@ -15,6 +15,9 @@ Additionally, it is not uncommon for parser writers to formally define the gramm
 Popular options include \emph{BNF}\footnote{Backus-Naur Form, named after the two main inventors~\cite{Backus1960}} and \emph{EBNF}\footnote{Extended Backus-Naur Form, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, \TODO{emph?} the latter of which we use here.
 This paper does not further explain these notations, however Listing~\ref{lst:ebnf_reference_grammar} shows a short example grammar notated using EBNF.
 For reference, Appendix~\ref{apx:grammar} contains the full grammar of rush.
+\TODO{example for type 1 language?}
+\TODO{explain start symbol}
+\TODO{formal definition of grammars?}
 
 \TSListing[float=h, caption={Grammar for Basic Arithmetic and Relation in EBNF Notation}, label={lst:ebnf_reference_grammar}]{listings/ebnf_reference.ebnf}
 
@@ -93,6 +96,7 @@ The former still contains information about all input tokens with their respecti
 Therefore, a CST is usually used for development tools like formatters and intricate linters and analyzers where it is important to preserve stylistic choices made by the programmer or to know the exact location of every token.
 However, an AST is enough for interpretation and compilation as it preserves the semantic meaning of the program.
 Figure~\ref{fig:parser_simple_ast} shows an AST for the program `\Verb|1+2==3|' in the language notated in Listing~\ref{lst:ebnf_reference_grammar} on page~\pageref{lst:ebnf_reference_grammar}.
+In the case of rush an AST with limited location information is used, because rush's semantic analyzer is still basic enough to work with that, and, as discussed, execution and compilation requires no CST.
 
 \begin{wrapfigure}{R}{0.5\textwidth}
     \centering
@@ -143,17 +147,33 @@ Often $k$ is either $1$ or $0$ for a two or one wide window respectively.
 This window moves just like previously explained for the lexer, and observes $k$ \textbf{tokens}, not characters, simultaneously.
 \TODO{how to emph tokens, bold or italic?}
 \TODO{mention omitting $k$}
+
 An example for LR parsing is the \emph{shift-reduce} parsing approach.
 \ldots\TODO{explain shift-reduce parsing}\ldots
-For LL parsing, the \emph{recursive-descent parser} is probably the most well-known one.
-\TODO{rewrite that sentence}
-It is easy to write and still powerful enough for most languages but comes with a few limitations.
-\TODO{LL parsers can't parse every context-free language}
-By design, LL parsers must recognize a node by its first $n=k+1$ tokens, where $n$ is the window size.
+
+LL parsers are usually much simpler to implement, but come with a limitation.
+By design, they must recognize a node by its first $n=k+1$ tokens, where $n$ is the window size.
 However, due to that restriction, not every context-free language can be parsed by \textcolor{red}{a/an} LL parser.
 An example for that is given in Listing~\ref{lst:ebnf_reference_pratt}.
 
 \TSListing[float=h, caption={Example Language a Traditional LL$(1)$ Parser Cannot Parse}, label={lst:ebnf_reference_pratt}]{listings/ebnf_reference_pratt.ebnf}
+
+Most LL parsers are \emph{recursive-descent} parsers, including the rush parser.
+Implementation of such a recursive-descent parser is rather uncomplicated.
+Assuming the grammar respects the mentioned limitation, every context-free grammar rule is mapped to one method on a \Verb|Parser| struct.
+In the example grammar from Listing~\ref{lst:ebnf_reference_grammar} on page~\pageref{lst:ebnf_reference_grammar} again, these are all the capitalized rules highlighted in yellow.
+Additionally, a matching node type is defined for each context-free rule, holding the relevant information for execution.
+In Rust the mapping from EBNF grammar notation to type definitions is very simple as displayed in Table~\ref{tbl:ebnf_to_rust}.
+
+\begin{table}[h]
+    \begin{tabularx}{0.95\textwidth}{lLL}
+        Description & EBNF & Rust \\
+        \hline
+        & \TSInline{ebnf}{A = B , C ;} & \TSInline{rs}{struct A { b: B, c: C}} \\
+        & \TSInline{ebnf}{A = B , C ;} & \TSInline{rs}{struct A { b: B, c: C}} \\
+    \end{tabularx}
+    \caption{Mapping From EBNF Grammar to Rust Type Definitions}\label{tbl:ebnf_to_rust}
+\end{table}
 
 \begin{itemize}
     \item top-down

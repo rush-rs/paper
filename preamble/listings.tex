@@ -3,6 +3,7 @@
 \usepackage{float}
 \usepackage[labelformat=simple]{caption}
 \usepackage[normalem]{ulem}
+\usepackage{xstring}
 
 \captionsetup{margin=10pt, font=small, labelfont=bf, labelsep=endash}
 
@@ -23,6 +24,8 @@
 \floatname{listing}{Listing}
 % sets for all custom floats with `plain` style, but those are all listings in this document
 \captionsetup[plain]{skip=0pt}
+
+\newcommand{\TSInline}[2]{\StrSubstitute{#2}{'}{'"'"'}[\temp] \ignorespaces\input{|ts2tex --code '\temp' --ext=#1}\unskip}
 
 \newkeycommand+[°]{\TSListing}[
     first number,

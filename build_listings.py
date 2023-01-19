@@ -15,8 +15,6 @@ def llvm_gen_ir(source: str, output: str):
     subprocess.run(
         f'cargo r {input_path}',
         shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
     ).check_returncode()
 
     os.rename('output.ll', output_path)

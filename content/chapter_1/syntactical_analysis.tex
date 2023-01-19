@@ -122,6 +122,39 @@ Figure~\ref{fig:parser_simple_ast} shows an AST for the program `\Verb|1+2==3|' 
     \item parser generators
 \end{enumerate}
 
+Not every parser is the same and there are a few different strategies for implementing one.
+These strategies are categorized into \emph{top-down parsers} and \emph{bottom-up parsers}.
+The main difference between them being the kind of tree traversal they perform.
+Top-down parsers construct the syntax tree in a pre-order manner, meaning a parent node is always processed before its children nodes.
+Hence, the syntax tree is constructed from top to bottom, starting with the root node.
+Bottom-up parsers instead perform post-order traversal.
+That way, all child nodes are processed before their parent node.
+This results in the tree being constructed from the leafs at the bottom upwards to the root.
+
+Top-down and bottom-up parsers are further categorized into many more subcategories.
+The two we will focus on here are \emph{LL$(k)$ parsers} and \emph{LR$(k)$ parsers}.
+\TODO{`we will' ok?}
+\TODO{citation for naming convention}
+These are named after the direction of reading the tokens, `L' being from left to right, and the derivation they use.
+`L' for the leftmost derivation and `R' for the rightmost derivation.
+\TODO{what are derivations? + citation}
+The parenthesized $k$ represents a natural number with $k\in\mathbb{N}_0$ describing the number of tokens for \emph{lookahead}.
+Often $k$ is either $1$ or $0$ for a two or one wide window respectively.
+This window moves just like previously explained for the lexer, and observes $k$ \textbf{tokens}, not characters, simultaneously.
+\TODO{how to emph tokens, bold or italic?}
+\TODO{mention omitting $k$}
+An example for LR parsing is the \emph{shift-reduce} parsing approach.
+\ldots\TODO{explain shift-reduce parsing}\ldots
+For LL parsing, the \emph{recursive-descent parser} is probably the most well-known one.
+\TODO{rewrite that sentence}
+It is easy to write and still powerful enough for most languages but comes with a few limitations.
+\TODO{LL parsers can't parse every context-free language}
+By design, LL parsers must recognize a node by its first $n=k+1$ tokens, where $n$ is the window size.
+However, due to that restriction, not every context-free language can be parsed by \textcolor{red}{a/an} LL parser.
+An example for that is given in Listing~\ref{lst:ebnf_reference_pratt}.
+
+\TSListing[float=h, caption={Example Language a Traditional LL$(1)$ Parser Cannot Parse}, label={lst:ebnf_reference_pratt}]{listings/ebnf_reference_pratt.ebnf}
+
 \begin{itemize}
     \item top-down
     \begin{itemize}
@@ -140,9 +173,25 @@ Figure~\ref{fig:parser_simple_ast} shows an AST for the program `\Verb|1+2==3|' 
     \end{itemize}
 \end{itemize}
 
-Just like lexers, a parser can also observe more than one token simultaniously.
-This is called \emph{lookahead}.
-\ldots
+Pratt-parsing\ldots
+\TODO{Listing~\ref{lst:ebnf_reference_pratt} is Listing~\ref{lst:ebnf_reference_grammar} but missing precedences}
+
+\begin{wrapfigure}{R}{0.5\textwidth}
+    \centering
+    \begin{tikzpicture}[level distance=1cm, sibling distance=2cm]
+        \node {Expression}
+            child {node {Expression}
+                child {node {Expression}
+                    child {node {\Verb|Int(1)|}}}
+                child {node {\Verb|Plus|}}
+                child {node {Expression}
+                    child {node {\Verb|Int(2)|}}}}
+            child {node {\Verb|Eq|}}
+            child {node {Expression}
+                child {node {\Verb|Int(3)|}}};
+    \end{tikzpicture}
+    \caption{Abstract Syntax Tree for `\texttt{1+2==3}' Using Pratt-Parsing}\label{fig:parser_simple_ast_pratt}
+\end{wrapfigure}
 
 For most intents and purposes it is generally not recommended and necessary to implement parsers, and with that lexers, manually.
 \TODO{citation}

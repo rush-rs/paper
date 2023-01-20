@@ -28,38 +28,18 @@
 \newcommand{\TSInline}[2]{\ignorespaces\directlua{require('ts2tex_inline.lua')('#1', [[#2]])}\unskip}
 
 \newkeycommand+[°]{\TSListing}[
-    first number,
-    first line,
-    last line,
+    ranges,
     caption,
     label,
     float,
     bool raw=false,
     bool raw queries=false,
-    frame=lines,
-    ranges,
+    gobble,
+    fancyvrb,
 ][1]{
-    % Default args
-    °\def\args{%
-        commandchars=×\{\},
-        frame=\commandkey{frame},
-    }°
+    °\def\args{}°
     °\def\commandargs{}°
 %
-    % set `firstnumber` and `firstline`
-    \ifcommandkey{first line}{\ifcommandkey{first number}{°\expandafter\def\expandafter\args\expandafter{\args%
-        firstnumber=\commandkey{first number},
-        firstline=\commandkey{first line},
-    }°}{°\expandafter\def\expandafter\args\expandafter{\args%
-        firstnumber=\commandkey{first line},
-        firstline=\commandkey{first line},
-    }°}}{\ifcommandkey{first number}{°\expandafter\def\expandafter\args\expandafter{\args%
-        firstnumber=\commandkey{first number}
-    }°}{}}
-    % set `lastline` if `last line` is set
-    \ifcommandkey{last line}{°\expandafter\def\expandafter\args\expandafter{\args%
-        lastline=\commandkey{last line},
-    }°}{}
     % set `label` if `caption` is set and `float` is unset
     \ifcommandkey{caption}{
         \ifcommandkey{float}{}{
@@ -78,13 +58,21 @@
     }°\fi
     % set `--ranges` flag if `ranges` is set
     \ifcommandkey{ranges}{°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
-        --ranges \commandkey{ranges}
+        --ranges '\commandkey{ranges}'
+    }°}{}
+    % set `--gobble` flag if `gobble` is set
+    \ifcommandkey{ranges}{°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
+        --gobble '\commandkey{gobble}'
+    }°}{}
+    % set `--fancyvrb-args` flag if `fancyvrb` is set
+    \ifcommandkey{ranges}{°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
+        --fancyvrb-args '\args\commandkey{fancyvrb}'
     }°}{}
 %
     % begin float if `float` is set
     \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}
     % actual input of code
-    °\expandafter\VerbatimInput\expandafter[\args]°{|"ts2tex from-file #1 °\commandargs°"}
+    °\input°{|"ts2tex from-file #1 °\commandargs°"}
     % end float and set caption and label if `float` is set
     \ifcommandkey{float}{
             \ifcommandkey{caption}{°\caption{\commandkey{caption}}°}{}

@@ -224,7 +224,7 @@ The higher the precedences are, the deeper in the tree the resulting expressions
 All unrelated tokens are simply assigned a precedence of 0 for left and right.
 
 % TODO: fix gobble
-\TSListing[first line=172, last line=201, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush \TODO{necessary to show full method?}}]{deps/rush/crates/rush-parser/src/token.rs}
+\TSListing[ranges={172-173,194-201}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush \TODO{necessary to show full method?}}]{deps/rush/crates/rush-parser/src/token.rs}
 
 The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence.
 \ldots

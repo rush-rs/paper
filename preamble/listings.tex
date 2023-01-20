@@ -17,7 +17,8 @@
     labelposition=bottomline,
     % baselinestretch=1,
 }
-\renewcommand{\theFancyVerbLine}{\scriptsize\ttfamily\color{hint}\arabic{FancyVerbLine}}
+\newcounter{TS2TeXLineNo}
+\renewcommand{\theFancyVerbLine}{\ifnum\value{TS2TeXLineNo}=0\else\footnotesize\ttfamily\color{hint}\arabic{TS2TeXLineNo}\fi}
 
 \newfloat{listing}{htbp}{lol}[chapter]
 \floatname{listing}{Listing}
@@ -45,6 +46,7 @@
     bool raw=false,
     bool raw queries=false,
     frame=lines,
+    ranges,
 ][1]{
     % Default args
     °\def\args{%
@@ -75,12 +77,18 @@
             }°
         }
     }{}
+    % set `--raw` flag if `raw` is true
     \if\commandkey{raw}1°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
         --raw
     }°\fi
+    % set `--raw-queries` flag if `raw queries` is true
     \if\commandkey{raw queries}1°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
         --raw-queries
     }°\fi
+    % set `--ranges` flag if `ranges` is set
+    \ifcommandkey{ranges}{°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
+        --ranges \commandkey{ranges}
+    }°}{}
 %
     % begin float if `float` is set
     \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}

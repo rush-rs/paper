@@ -5,12 +5,12 @@ It originally started as a research project by \emph{Chris Lattner} for his mast
 Since then, the project has been widely adopted by the open source community.
 In 2012, the project was rewarded the \emph{ACM Software System Award}, a prestigious recognition of significant software which contributed to science.
 From the point where popularity of the framework grew, it was renamed from \emph{Low Level Virtual Machine} to the acronym it is known by today.
-Today, it can be recognized as one of the largest open source projects \cite[preface]{Cardoso_Lopes2014-jt}.
+Today, it can be recognized as one of the largest open source projects~\cite[preface]{Cardoso_Lopes2014-jt}.
 Among many other projects, the Rust programming language depends on the LLVM compiler in order to generate its target-specific code \cite[p.~373]{McNamara2021-hz}.
-Furthermore, the \emph{Clang} C / C++ compiler uses LLVM as its code generating backend \cite[preface]{Hsu2021-ez}.
+Furthermore, the \emph{Clang} C / C++ compiler uses LLVM as its code generating backend~\cite[preface]{Hsu2021-ez}.
 Therefore, production ready compilers for popular programming languages have been implemented using the LLVM framework.
 Besides open-source projects, many companies also use LLVM in their commercial software.
-For instance, since 2005, Apple has started incorporating LLVM into some of its products. \cite[pp.~11-15]{Fandrey}.
+For instance, since 2005, Apple has started incorporating LLVM into some of its products~\cite[pp.~11-15]{Fandrey}.
 A recent example of software developed by Apple which uses LLVM is the \emph{Swift} programming language which is mainly used for developing IOS apps \cite[preface]{Hsu2021-ez}.
 
 \subsection{The Role of LLVM in a Compiler}
@@ -23,7 +23,7 @@ Therefore, LLVM represents the \emph{back end} of a compiler system.
 Then, the AST is traversed and the API of LLVM is used to construct an intermediate representation of the program so that the system can understand it.
 Next, LLVM compiles the input program to an arbitrary target architecture.
 As of today, LLVM features many target architectures so that a compiler designer does not have to worry about portability of the output program \cite[preface]{Hsu2021-ez}.
-Listing \ref{fig:compilation_steps_llvm} shows how LLVM integrates into the previously discussed steps of compilation.
+Listing~\ref{fig:compilation_steps_llvm} shows how LLVM integrates into the previously discussed steps of compilation.
 
 \begin{figure}[h]
 	\centering
@@ -38,8 +38,7 @@ Listing \ref{fig:compilation_steps_llvm} shows how LLVM integrates into the prev
 		\node (llvm) [rec, right=of semantic_analysis] {LLVM};
 		\draw [arrow] (semantic_analysis) -- (llvm);
 	\end{tikzpicture}
-	\caption{Steps of Compilation When Using LLVM}
-	\label{fig:compilation_steps_llvm}
+	\caption{Steps of Compilation When Using LLVM}\label{fig:compilation_steps_llvm}
 \end{figure}
 
 % - provides an abstraction layer X
@@ -57,7 +56,7 @@ The intermediate representation (\emph{IR}) represents the source program in a l
 Through the use of the LLVM intermediate representation, high-level type information is preserved while the benefits of a low-level representation are introduced.
 This allows LLVM to perform significant more aggressive optimizations at compile time compared to other compiler solutions.
 Furthermore, LLVM communicates a lot of information to the linker.
-As a result of this, many so called \emph{link time optimizations} can be achieved which are not present in most other compilers \cite[p.~5]{Lattner:MSThesis02}.
+As a result of this, many so-called \emph{link time optimizations} can be achieved which are not present in most other compilers \cite[p.~5]{Lattner:MSThesis02}.
 Therefore, programs compiled using LLVM as the backend will often run significantly faster due to the many aggressive optimizations introduced by the system.
 
 % - target-independent Intermediate Representationfor program analysis X
@@ -67,18 +66,18 @@ Therefore, programs compiled using LLVM as the backend will often run significan
 % - The IR is used to represent the source program in a target-independent way
 LLVM provides many APIs for interacting with the IR in memory, so that it can be created by a compiler frontend without it being written onto a file.
 The official API for LLVM is for C++ and C.
-However, there are many inofficial bindings, such as for Rust, Go, or Python.
-For instance, a compiler frontend written in Rust can leverage LLVM although the system is written in C++.
+However, there are many unofficial bindings, such as for Rust, Go, or Python.
+For instance, a compiler frontend written in Rust can leverage LLVM, although the system is written in C++.
 A program represented using the IR always obeys the following hierarchy:
 
 \begin{itemize}
-	\item The top most hierarchical structure is the so called \emph{module}.
+	\item The top most hierarchical structure is the so-called \emph{module}.
 	      It represents the current file being compiled.
 	\item Each module contains several \emph{functions}.
 	      Often, each function in the source program is represented using a function in the LLVM IR.
 	\item Each function contains several \emph{basic blocks}.
-	      Each basic block contains a sequence of instructions.
-	      Each block always has to be terminated using a jumping or returning instruction.
+	      Such a basic block contains a sequence of instructions.
+	      Blocks always have to be terminated using a jumping or returning instruction.
 	      However, a block must never be terminated twice.
 	\item As mentioned above, each basic block contains a sequence of \emph{instructions}.
 	      Each instruction holds a semantic meaning and represents a part of the source program.
@@ -99,11 +98,11 @@ LLVM is able to perform many aggressive optimizations on the IR during later sta
 This way, LLVM can communicate a lot of information to the linker which can then use this information for link-time optimizations.
 The virtual instruction set of LLVM is therefore designed as a low-level representation with high-level type information.
 This instruction set represents a virtual architecture which is able to represent most common types processors.
-However, the IR avoids machine specific constaints like register-count or low-level calling conventions.
+However, the IR avoids machine specific constraints like register-count or low-level calling conventions.
 The virtual architecture provides an infinite set of virtual registers which can hold the value of primitives like \emph{integers}, \emph{floating-point numbers}, and \emph{pointer}.
 All registers in the IR use the \emph{SSA}\footnote{Short for \enquote{static single assignment}, widely used in optimizing compilers} form in order to allow more optimizations.
 In order to enforce the correctness of the type information included in the IR,
-the operands of an instruction all obey LLVMs type rules \cite[p.~14-17]{Lattner:MSThesis02}.
+the operands of an instruction all obey LLVM's type rules~\cite[p.~14-17]{Lattner:MSThesis02}.
 
 % - LLVM is able to perform aggressive optimizations at runtime due to the type information preserved in the IR
 %- An IR must be low-level enough so that enough optimizations can be made in the early phases of compilation
@@ -118,13 +117,13 @@ the operands of an instruction all obey LLVMs type rules \cite[p.~14-17]{Lattner
 %\cite[p.~14-17]{Lattner:MSThesis02}
 
 In order to understand how the LLVM IR represents a program, we now consider the calculation of Fibonacci numbers again.
-For reference, the rush program used in this example can be found in Listing \ref{lst:rush_fib} on page \pageref{lst:rush_fib}.
-The code in Listing \ref{lst:llvm_fib} displays LLVM IR representing this rush program.
+For reference, the rush program used in this example can be found in Listing~\ref{lst:rush_fib} on page \pageref{lst:rush_fib}.
+The code in Listing~\ref{lst:llvm_fib} displays LLVM IR representing this rush program.
 The IR was generated by the LLVM targeting rush compiler\footnote{Generated in Git commit \rushCommit, automatically built with this document}.
 
-\TSListing[first line=5, caption={LLVM IR Representation of the Program in Listing \ref{lst:rush_fib}}, label={lst:llvm_fib}, float=H]{listings/generated/fib.ll}
+\TSListing[first line=5, caption={LLVM IR Representation of the Program in Listing~\ref{lst:rush_fib}}, label={lst:llvm_fib}, float=H]{listings/generated/fib.ll}
 
-The code displayed in the listing is part of a LLVM module.
+The code displayed in the snipped is part of a LLVM module.
 In the lines 5 and 29, functions are defined using the \texttt{declare} keyword.
 It is apparent that the functions in the LLVM module represent the functions from the source rush program.
 Furthermore, if we examine the signature of the \texttt{fib} function in line 5 of the IR,
@@ -188,25 +187,23 @@ Since LLVM does not known that the \texttt{exit} function terminates program exe
 By considering the example from above, it became apparent that the IR represents many source language constructs in a high-level way.
 For instance, function calls can be used without considering the complex rules introduced by low-level calling conventions.
 Here, calling and returning from a function can be implemented using very little effort.
-Furthermore, virtual registers allow the compiler frontend to ommit register allocation entirely.
+Furthermore, virtual registers allow the compiler frontend to omit register allocation entirely.
 Lastly, the LLVM IR can subjectively be seen as very readable since registers, basic blocks, and functions may contain custom, human-readable labels.
 Moreover, most instructions have a relatively reasonable name which allows readers to guess what the instruction is doing without them reading any LLVM documentation.
 
 
 \subsection{The rush Compiler Using LLVM}
 
-In order to get accquainted to the LLVM framework in a practical way, we have implemented a rush compiler which uses the framework as its backend.
+In order to get acquainted to the LLVM framework in a practical way, we have implemented a rush compiler which uses the framework as its backend.
 However, the first problem emerged soon since the LLVM project only provides official C / C++ bindings to be used by other programs.
 Nonetheless, the entire rush project is written in the Rust programming language.
 Therefore, a third-party Rust wrapper around LLVM is required.
-We have settled on using the \emph{Inkwell} Rust crate since it exposes a safe rust API for using LLVM for code generation \cite{Inkwell2023}.
+We have settled on using the \emph{Inkwell} Rust crate since it exposes a safe rust API for using LLVM for code generation~\cite{Inkwell2023}.
 
 This compiler uses the annotated AST generated by the semantic analyzer in order to translate it into LLVM IR.
 Here, each type of AST node is translated using its own individual function.
-For instance, an expression ast node is translated into IR by the \texttt{expression} method of the compiler.
+For instance, an expression AST node is translated into IR by the \texttt{expression} method of the compiler.
 This way, translation of individual AST nodes can be organized in order to increase maintainability. 
-\TODO{continue here}
-
 To understand how this rush compiler leverages LLVM in order to translate programs, we should first consider some implementation details.
 The code in Listing~\ref{lst:llvm_cmp_struct} displays the top part of the `\texttt{Compiler}' struct definition.
 
@@ -244,23 +241,23 @@ Therefore, the exit code of the program will be 5.
 During translation, the compiler first iterates over all declared functions in order to add them to the LLVM module.
 Listing~\ref{lst:llvm_main_fn} displays the top part of the method responsible for translating the \texttt{main} function.
 
-\TSListing[first line=324, last line=341, caption={Compilation of the `\texttt{main}' Function Using LLVM}, label={lst:llvm_main_fn}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
+\TSListing[first line=328, last line=351, caption={Compilation of the `\texttt{main}' Function Using LLVM}, label={lst:llvm_main_fn}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
-In the lines 325-326, the \texttt{main} function is added to the current LLVM module.
+In the lines 334--336, the \texttt{main} function is added to the current LLVM module.
 Here, the name of the function is specific by the \texttt{fn\_name} variable.
 The return type of the function is specified by the \texttt{fn\_type} variable.
 In most cases, the return-type of the function is an integer since C libraries can then use the function as its \texttt{main} function.
 In cases where the generated code should not depend on C libraries, \Verb|fn_name| will be \Verb|_start| and \Verb|fn_type| will state that the function returns \emph{void}.
 Next, the `\texttt{entry}' and `\texttt{body}' block are appended to the newly created function.
 Therefore, the main-function now contains these two basic blocks.
-In the lines 333-337, the \Verb|curr_fn| field of the compiler is updated.
+In the lines 343--347, the \Verb|curr_fn| field of the compiler is updated.
 This field holds information about the current function being compiled.
-In line 335, the \Verb|llvm_value| field is of particular importance since all later additions of basic blocks, e.g. during loop compilation require the Inkwell \texttt{FunctionValue}.
-How the \Verb|entry_block| field in line 336 is used every time a pointer is declared is explained later.
+In line 345, the \Verb|llvm_value| field is of particular importance since all later additions of basic blocks, e.g., during loop compilation require the Inkwell \texttt{FunctionValue}.
+How the \Verb|entry_block| field in line 346 is used every time a pointer is declared is explained later.
 Using the Inkwell crate, most instructions generated will be automatically appended to the end of the current basic block.
 Therefore, the position of the instruction builder is changed to the end of the newly created `\texttt{body}' block.
-Since this block contains the beginning of the main-function's body, the \texttt{block} method of the compiler is called in line 341.
-In this case, this method first creates a new scope, then compiles all of the statements which the block contains.
+Since this block contains the beginning of the main-function's body, the \texttt{block} method of the compiler is called in line 351.
+In this case, this method first creates a new scope, then compiles all the statements which the block contains.
 Lastly, the method attempts to compile the block's optional expression.
 If the content of the body of the main-function does not lead to the insertion of more basic blocks,
 the `\texttt{body}' block will contain the entire contents of the function after the method call.
@@ -268,7 +265,7 @@ the `\texttt{body}' block will contain the entire contents of the function after
 In line 2 of the example rush program, the \texttt{main} function calls the \texttt{foo} function using the arguments 2 and 3.
 In order to understand how this compiler translates function calls, we will now consider Listing~\ref{lst:llvm_call}.
 
-\TSListing[first line=941, last line=944, caption={Compilation of Call-Expressions Using LLVM}, label={lst:llvm_call}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
+\TSListing[first line=951, last line=954, caption={Compilation of Call-Expressions Using LLVM}, label={lst:llvm_call}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
 The code in Listing~\ref{lst:llvm_call} displays a small part of the \Verb|call_expr| method of the rush LLVM compiler.
 This snipped shows the statement inserting the LLVM \texttt{call} instruction.
@@ -277,7 +274,7 @@ Since the variable \texttt{func} represents the called function, it was previous
 The \texttt{args} variable is of type \Verb|Vec<BasicMetadataValueEnum>| and therefore represents a list of Inkwell values representing the arguments used for the call.
 This variable was also defined previously by iterating over the \texttt{node.args} vector containing expressions.
 This vector is contained in the provided AST node representing the call-expression.
-Each argument expression is then compiled and its result is placed into the \texttt{args} output vector.
+Each argument expression is then compiled, and its result is placed into the \texttt{args} output vector.
 However, we cannot understand how results of expressions are handled in this compiler without considering Listing~\ref{lst:llvm_exprs}.
 % \begin{itemize}
 % 	\item \TODO{Function calls are implemented like this}
@@ -287,7 +284,7 @@ However, we cannot understand how results of expressions are handled in this com
 % \end{itemize}
 
 
-\TSListing[first line=863, last line=869, caption={Compilation of Expressions Using LLVM}, label={lst:llvm_exprs}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
+\TSListing[first line=873, last line=879, caption={Compilation of Expressions Using LLVM}, label={lst:llvm_exprs}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
 The code in Listing~\ref{lst:llvm_exprs} shows the top part of the \texttt{expression} method of this compiler.
 When consider the method's signature, it becomes apparent that it uses an `\texttt{AnalyzedExpression}' in order to generate a `\texttt{BasicValueEnum}'.
@@ -296,7 +293,7 @@ Using Inkwell, most inserted instructions yield a symbolical value at compile ti
 This value represents a virtual register which will contain a \emph{value} at runtime of the program.
 Therefore, the `\texttt{BasicValueEnum}' returned by the function represents the virtual register holding the result of the expression at runtime.
 This way, symbolical values can be used at compile time, thus presenting a high-level abstraction for generating the IR.
-The lines 865-869, show how a constant integer expression is compiled.
+The lines 875-879, show how a constant integer expression is compiled.
 Here, a constant int value of the \texttt{i64} type is created and transformed into a `\texttt{BasicValueEnum}' which is then used as the method's return value.
 For more complex expressions, the \texttt{expression} method invokes other methods which are specialized on this type of expression.
 For instance, if an infix-expression like `\texttt{3 * n}' is compiled, this method calls the `\Verb{infix_expr}' method of the compiler, using the current AST node as a call argument.
@@ -306,17 +303,17 @@ For instance, if an infix-expression like `\texttt{3 * n}' is compiled, this met
 % 	\item \TODO{How a basic int is created}
 % \end{itemize}
 
-\TSListing[first line=1011, last line=1014, caption={Compilation of Integer Infix-Expressions Using LLVM}, label={lst:llvm_infix}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
+\TSListing[first line=1021, last line=1024, caption={Compilation of Integer Infix-Expressions Using LLVM}, label={lst:llvm_infix}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
 The code in Listing~\ref{lst:llvm_infix} shows a part of the `\Verb|infix_helper|' method which is responsible for compiling parts of infix-expression.
-Line 1011 contains the code for inserting the `\texttt{mul}' integer multiplication instruction.
+Line 1021 contains the code for inserting the `\texttt{mul}' integer multiplication instruction.
 Here, the variables `\texttt{lhs}' and `\texttt{rhs}' are used as arguments for the `\Verb|build_int_sub|' method call.
 They too represent virtual registers which will contain the value of the left- and righthand side at runtime.
 Furthermore, the string containing `\Verb|i_prod|' specifies the name of the virtual register containing the product of the multiplication performed by the instruction.
 In this example, compiling basic integer multiplication has proven to be really simple since only one instruction needs to be inserted.
 This simplicity applies to most infix operations performed on integers.
 However, compiling mathematical power operations has proven to be more demanding since LLVM does not provide an instruction for performing these operations.
-Line 1014 is executed if the method needs to compile such a integer power operation.
+Line 1024 is executed if the method needs to compile such a integer power operation.
 In order to mitigate this issue, the `\Verb|__rush_internal_pow|' method is called instead of a method provided by Inkwell.
 This method first declares the `\Verb|core::pow|' function in order to call it directly after.
 This function implements an algorithm for power operations given an integer base and exponent.
@@ -330,26 +327,26 @@ Therefore, even complex calculations like this one can be implemented even thoug
 
 In line 6 of the source program, a let-statement is used to declare the mutable variable `\texttt{m}' with the initial value 3.
 However, there is never a value assigned to this variable.
-This variable is only mutable so thatit the compiler has to use stack memory for it.
-Non-mutable variables are inlined by the compiler in order to save ressources during runtime.
+This variable is only mutable so that the compiler has to use stack memory for it.
+Non-mutable variables are inlined by the compiler in order to save resources during runtime.
 In order to understand how the compiler translates let-statements, we will now consider Listing~\ref{lst:llvm_let}.
 
-\TSListing[first line=599, last line=614, caption={Compilation of Let-Statements Using LLVM}, label={lst:llvm_let}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
+\TSListing[first line=609, last line=624, caption={Compilation of Let-Statements Using LLVM}, label={lst:llvm_let}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
 The code in listing \ref{lst:llvm_let} displays the top part of the `\Verb{let_stmt}' method of this compiler.
 This method is responsible for compiling let-statements.
-In line 600, the initializer expression of the statement is compiled.
+In line 610, the initializer expression of the statement is compiled.
 The \texttt{rhs} variable then specifies the virtual register which contains the result of the expression at runtime.
 
-The code after the line 603 is only executed if the variable was declared as mutable.
+The code after the line 613 is only executed if the variable was declared as mutable.
 Therefore, in order to present this code in action, the \texttt{m} variable in the source program had to be declared as mutable.
-In line 606, the \Verb{alloc_ptr} method is used in order to create a new Inkwell pointer value.
+In line 616, the \Verb{alloc_ptr} method is used in order to create a new Inkwell pointer value.
 The first argument of the call specifies that the name of the pointer should be identical to the name of the variable.
 The second argument passes the type of the initializer expression to the method.
-The statement in line 609 is used in order to insert a store instruction.
+The statement in line 619 is used in order to insert a store instruction.
 Here, the instruction should store the value of the initializer expression in the newly created pointer.
 Since pointers present a way to use stack memory, also non-pointer variables in the source program are internally compiled to an IR program using pointers.
-Finally, in line 612, the newly defined variable is inserted into the current scope of the compiler.
+Finally, in line 622, the newly defined variable is inserted into the current scope of the compiler.
 Every variable inside the scope saves its Inkwell value and its type since these fields are required when the variable is used later.
 
 % \begin{itemize}
@@ -362,12 +359,12 @@ Every variable inside the scope saves its Inkwell value and its type since these
 
 The code in Listing~\ref{lst:llvm_ptr_alloc} shows the \Verb{alloc_ptr} method of the compiler.
 
-\TSListing[first line=625, last line=639, caption={Pointer Allocation in the LLVM Compiler}, label={lst:llvm_ptr_alloc}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
+\TSListing[first line=635, last line=649, caption={Pointer Allocation in the LLVM Compiler}, label={lst:llvm_ptr_alloc}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
 This method exists in order to create a new Inkwell pointer value.
 Like hinted previously, pointers are declared in the \texttt{entry} block of each function in order to allow for more aggressive optimizations.
-In line 630, this method places the builder cursor at the end of the entry-block of the current function.
-Next, in line 633, a \texttt{alloca} LLVM instruction is inserted.
+In line 640, this method places the builder cursor at the end of the entry-block of the current function.
+Next, in line 643, a \texttt{alloca} LLVM instruction is inserted.
 This instruction is responsible for allocating a new pointer which points to stack memory.
 After the instruction has been inserted, the builder position is reset to where it was before the method was called.
 Finally, the pointer is returned so that it is usable for other parts of the compiler.
@@ -394,7 +391,7 @@ Finally, the pointer is returned so that it is usable for other parts of the com
 \subsection{Conclusions}
 
 As a conclusion, implementing a compiler which leverages LLVM presents a lot of advantages.
-For instance, the language will be able to support many different backend architectures.
+For instance, the language will be able to support many backend architectures.
 Most of the demanding work is being done by LLVM, therefore implementing the compiler will proof to be less difficult and error-prone.
 Moreover, LLVM performs a lot of very effective optimizations which would otherwise have to be implemented by the compiler designer.
 However, these optimizations often involve a lot of work and are therefore unpractical to implement for simpler languages.

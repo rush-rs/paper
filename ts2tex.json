@@ -79,6 +79,10 @@
       "color": "#0184bc",
       "underline": true
     },
+    "text.todo": {
+      "color": "#e45649",
+      "italic": true
+    },
     "text.math": "#383a42",
     "text.reference": "#4078f2",
     "text.enviroment": "#383a42",

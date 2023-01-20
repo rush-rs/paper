@@ -305,3 +305,4 @@ TSWLatexianTemp*
 /deps
 *.pdf
 /listings/generated
+ts2tex.cache.json

@@ -25,16 +25,7 @@
 % sets for all custom floats with `plain` style, but those are all listings in this document
 \captionsetup[plain]{skip=0pt}
 
-\newcommand{\TSInline}[2]{\ignorespaces\directlua{
-    local escaped = string.gsub([[#2]], "'", [['"'"']])
-    local handle, err = io.popen("ts2tex inline #1 '" .. escaped .. "'")
-    if not handle then
-        print(err)
-        os.exit(1)
-    end
-    tex.print(handle:read("*all"))
-    handle:close()
-}\unskip}
+\newcommand{\TSInline}[2]{\ignorespaces\directlua{require('ts2tex_inline.lua')('#1', [[#2]])}\unskip}
 
 \newkeycommand+[°]{\TSListing}[
     first number,

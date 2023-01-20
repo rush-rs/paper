@@ -61,18 +61,18 @@
         --ranges '\commandkey{ranges}'
     }°}{}
     % set `--gobble` flag if `gobble` is set
-    \ifcommandkey{ranges}{°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
+    \ifcommandkey{gobble}{°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
         --gobble '\commandkey{gobble}'
     }°}{}
-    % set `--fancyvrb-args` flag if `fancyvrb` is set
-    \ifcommandkey{ranges}{°\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
+    % set `--fancyvrb-args` flag
+    °\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
         --fancyvrb-args '\args\commandkey{fancyvrb}'
-    }°}{}
+    }°
 %
     % begin float if `float` is set
     \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}
     % actual input of code
-    °\input°{|"ts2tex from-file #1 °\commandargs°"}
+    °\input°{|"ts2tex tree-sitter #1 °\commandargs°"}
     % end float and set caption and label if `float` is set
     \ifcommandkey{float}{
             \ifcommandkey{caption}{°\caption{\commandkey{caption}}°}{}
@@ -82,30 +82,14 @@
 }
 
 \newkeycommand+[°]{\AnsiListing}[
-    first line,
-    last line,
     caption,
     label,
     float,
-    frame=lines,
+    fancyvrb,
 ][1]{
-    % Default args
-    °\def\args{%
-        commandchars=×\{\},
-        numbers=none,
-        frame=\commandkey{frame},
-    }°
+    °\def\args{}°
     °\def\commandargs{}°
 %
-    % set `firstnumber` and `firstline` if `first line` is set
-    \ifcommandkey{first line}{°\expandafter\def\expandafter\args\expandafter{\args%
-        firstnumber=\commandkey{first line},
-        firstline=\commandkey{first line},
-    }°}{}
-    % set `lastline` if `last line` is set
-    \ifcommandkey{last line}{°\expandafter\def\expandafter\args\expandafter{\args%
-        lastline=\commandkey{last line},
-    }°}{}
     % set `label` if `caption` is set and `float` is unset
     \ifcommandkey{caption}{
         \ifcommandkey{float}{}{
@@ -114,11 +98,15 @@
             }°
         }
     }{}
+    % set `--fancyvrb-args` flag
+    °\expandafter\def\expandafter\commandargs\expandafter{\commandargs%
+        --fancyvrb-args '\args\commandkey{fancyvrb}'
+    }°
 %
     % begin float if `float` is set
     \ifcommandkey{float}{°\begin{listing}°[\commandkey{float}]}{}
     % actual input of code
-    °\expandafter\VerbatimInput\expandafter[\args]°{|"ansi2tex #1 °\commandargs°"}
+    °\input°{|"ts2tex ansi #1 °\commandargs°"}
     % end float and set caption and label if `float` is set
     \ifcommandkey{float}{
             \ifcommandkey{caption}{°\caption{\commandkey{caption}}°}{}

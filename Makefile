@@ -3,7 +3,7 @@ build: listings/generated
 	make main.pdf
 
 main.pdf: main.tex listings preamble content ts2tex.json
-	latexmk -xelatex -shell-escape -g main.tex
+	latexmk -lualatex -shell-escape -g main.tex
 
 init: fetch_deps.sh gen_config.py
 	sh fetch_deps.sh

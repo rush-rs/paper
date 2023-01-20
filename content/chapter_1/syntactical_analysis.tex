@@ -166,13 +166,17 @@ Additionally, a matching node type is defined for each context-free rule, holdin
 In Rust the mapping from EBNF grammar notation to type definitions is very simple as displayed in Table~\ref{tbl:ebnf_to_rust}.
 
 \begin{table}[h]
-    \begin{tabularx}{0.95\textwidth}{lLL}
-        Description & EBNF & Rust \\
-        \hline
-        & \TSInline{ebnf}{A = B , C ;} & \TSInline{rs}{struct A { b: B, c: C}} \\
-        & \TSInline{ebnf}{A = B , C ;} & \TSInline{rs}{struct A { b: B, c: C}} \\
-    \end{tabularx}
     \caption{Mapping From EBNF Grammar to Rust Type Definitions}\label{tbl:ebnf_to_rust}
+    \begin{tabularx}{0.95\textwidth}{Ll}
+        \rowcolor{black!20} EBNF & Rust \\
+        \hline
+        \rowcolor{black!5} \TSInline{ebnf}{A = B , C ;} & \TSInline{rs}{struct A { b: B, c: C }} \\
+        \rowcolor{black!10} \TSInline{ebnf}{A = B , [ C ] ;} & \TSInline{rs}{struct A { b: B, c: Option<C> }} \\
+        \rowcolor{black!5} \TSInline{ebnf}{A = B , { C } ;} & \TSInline{rs}{struct A { b: B, c: Vec<C> }} \\
+        \rowcolor{black!10} \TSInline{ebnf}{A = B , { C }- ;} & \TSInline{rs}{struct A { b: B, c: Vec<C> }} \\
+        \rowcolor{black!5} \TSInline{ebnf}{A = B | C ;} & \TSInline{rs}{enum A { B(B), C(C) }} \\
+        \rowcolor{black!10} \TSInline{ebnf}{A = B , [ ( '+' | '-' ) , C ] ;} & \makecell[l]{\TSInline{rs}{struct A { b: B, c: Option<(Op, C)> }}\\\TSInline{rs}{enum Op { Plus, Minus }}} \\
+    \end{tabularx}
 \end{table}
 
 \begin{itemize}

@@ -367,6 +367,33 @@ Then, the code returns from the method so that the instruction pointer is not in
 This method represents both the \emph{decode} and \emph{execute} steps since it first matches (\emph{decode}) and then interprets (\emph{execute}) the current instruction.
 Now that we have explained how some important parts of the rush VM work, we should now consider the compiler generating its input instructions.
 
+\subsection{How a Compiler Translates the AST}
+
+\begin{wrapfigure}{R}{0.5\textwidth}
+    \centering
+    \begin{tikzpicture}[level distance=1cm, sibling distance=2cm]
+        \node {Expression}
+            child {node {Expression}
+                child {node {Expression}
+                    child {node {\Verb|Int(1)|}}}
+                child {node {\Verb|Plus|}}
+                child {node {Expression}
+                    child {node {\Verb|Int(2)|}}}}
+            child {node {\Verb|Lt|}}
+            child {node {Expression}
+                child {node {\Verb|Int(4)|}}};
+    \end{tikzpicture}
+    \caption{Abstract Syntax Tree for `\texttt{1+2 < 4}'}\label{fig:cmp_simple_tree}
+\end{wrapfigure}
+
+\TODO{Writesjdkljaskljdklasthis section}
+
+Listing 'ref{fig:parser_simple_ast_pratt}' displays a simplified syntax tree of the rush expression
+
+skldsdjaskldsldldsdsdkl
+
+
+
 \subsection{The Compiler Targeting the rush VM}
 
 Since the rush VM interprets instructions directly, there must be a compiler translating the AST into these instructions.

@@ -10,8 +10,7 @@ enum TokenKind {
     Minus, // -
     Star,  // *
     Slash, // /
-    Eq,    // ==
-    Neq,   // !=
+    Pow,   // **
 }
 
 struct Span {

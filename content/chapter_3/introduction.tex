@@ -61,7 +61,7 @@ This sequence could have been generated from the previously discussed tree in Fi
 It is apparent that the order of instructions matches the order in which the tree was traversed.
 The instructions in line 1 and 2 represent the tree-nodes `Expression 1' and `Expression 2' respectively.
 Here, the value 1 is assigned to a register named `\texttt{r0}' whilst the value 2 is assigned to the register `\texttt{r1}'.
-The \testtt{add} instruction in line 3 appears after the instructions in line 1 and 2 since their tree nodes were traversed first.
+The \texttt{add} instruction in line 3 appears after the instructions in line 1 and 2 since their tree nodes were traversed first.
 Furthermore, the instruction uses register \texttt{r0} and \texttt{r1} as its operands and therefore depends on them containing a value.
 Therefore, the \texttt{add} instruction can use the registers returned by compiling its child nodes as its operands.
 Next, the constant integer value 4 is assigned to the register `\texttt{r3}'.

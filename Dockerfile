@@ -12,7 +12,8 @@ ADD https://downloads.rubixdev.de/biber-linux_x86_64-musl.tar.gz /bin
 RUN tar -xvf /bin/biber-linux_x86_64-musl.tar.gz -C /bin && \
     rm /bin/biber-linux_x86_64-musl.tar.gz
 
-RUN apk add llvm14 llvm14-libs libc-dev g++ \
+RUN apk add llvm14 llvm14-libs llvm14-dev llvm14-static \
+        libc-dev libxml2-dev libffi-dev g++ \
         make git jq \
         python3 py3-pip \
         tokei \
@@ -20,3 +21,4 @@ RUN apk add llvm14 llvm14-libs libc-dev g++ \
 RUN pip install requests
 
 ENV RUSTFLAGS='-C target-feature=-crt-static'
+RUN cargo install --git https://github.com/rush-rs/lirstings

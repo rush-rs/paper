@@ -18,8 +18,7 @@ However, due to the specification being written in a natural language, the speci
 Therefore, a well-written semantic specification should avoid ambiguity as much as possible.
 Furthermore, this specification is often written in English
 due to it being a well-adopted language across several academic fields like computer science.
-Since those rules define when a program is valid, they have to be checked and enforced before program compilation can start
-\cite[p.~21]{a_practical_guide_compiler_construction_watson_2017}.
+Since those rules define when a program is valid, they have to be checked and enforced before program compilation can start~\cite[p.~21]{a_practical_guide_compiler_construction_watson_2017}.
 
 \subsection{The Semantic Analyzer}
 Because rush shares its semantic rules across all backends,
@@ -37,11 +36,9 @@ only validates the program's syntax without performing further validation.
 Therefore, the analyzer traverses the abstract syntax tree previously generated
 by the parser.
 
-In order to highlight why type information is often required at compile time, we
-will consider following code example. The listing \ref{lst:analyzer-test} displays a basic rush program
-calculating the sum of two integer values.
-The program then uses this sum as its exit-code.
-In this example, the desired exit-code of the program is five.
+In order to highlight why type information is often required at compile time, we will consider Listing~\ref{lst:analyzer-test}.
+The code in this listing displays a basic rush program calculating the sum of two integers and uses the result as its exit code.
+In this example, the exit code of the program will be 5.
 
 \TSListing[caption={A rush Program Which Adds Two Integers}, label={lst:analyzer-test}, float=H]{listings/simple.rush}
 
@@ -60,7 +57,7 @@ This information will become much more useful when we consider line 4. Here, the
 analyzer checks that the identifiers \texttt{two} and \texttt{three} refer to valid variables.
 Just like most other programming languages, rush does not allow the addition
 of two boolean values for example. Therefore, the analyzer checks that the operands
-of the \texttt{+} operator have the same type and that this type is valid in additions.
+of the \texttt{+} operator have the same type and that this type is valid in additions. % TODO: revise this paragraph?
 Because this validation requires information about types, the analyzer accesses
 its scope when looking up the identifiers \texttt{two} and \texttt{three}. Since those names
 were previously associated with the \texttt{int} type, the analyzer is now aware of the
@@ -100,14 +97,14 @@ consider parts of its implementation and how they behave when analyzing the
 example from above. However, before we can examine how the analyzer's implementation behaves,
 we should first highlight which attributes play a vital role in the analyzer.
 
-\TSListing[first line=12, last line=26, caption={Attributes of the \texttt{analyzer} struct}, label={lst:analyzer_attr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\TSListing[ranges={12-26}, caption={Attributes of the \texttt{analyzer} struct}, label={lst:analyzer_attr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-Listing \ref{lst:analyzer_attr} displays the struct fields of the semantic analyzer.
+Listing~\ref{lst:analyzer_attr} displays the struct fields of the semantic analyzer.
 The field \texttt{diagnostics} contains a list of diagnostics.
 A diagnostic is a struct which represents a message, is intended to be displayed to the user of the compiler.
-Diagnostics can be of several severities, \emph{warning} and \emph{error} for instance.
+Each diagnostics has a severity, such as \emph{warning} or \emph{error} for instance.
 After the analyzer has finished the tree-traversal, all diagnostics are displayed in a user-friendly manner.
-An example for diagnostic messages can be found in listing \ref{lst:analyzer_imutable_err}.
+An example for diagnostic messages can be found in Listing~\ref{lst:analyzer_imutable_err}.
 The field \texttt{curr\_func\_name} saves the name of the current function.
 Moreover, the field \texttt{functions} in line 13 associates a function name to the function's signature.
 Therefore, if a function is called at a later point in time, the analyzer checks if the function exists and can compare if the arguments match the declared parameters.
@@ -117,7 +114,7 @@ If the analyzer enters such a block, a new scope is pushed onto the \texttt{scop
 Each scope maps a variable identifier to some variable-specific data.
 For instance, the analyzer keeps track of variable types, whether variables have been used later, if they are mutated, and the location of where they were declared.
 By saving this much information about each declared variable, the analyzer can produce very helpful and accurate error messages or warnings.
-Such an error message is displayed in listing \ref{lst:analyzer_imutable_err}, it occurs when another value is assigned to an immutable variable.
+Such an error message is displayed in Listing~\ref{lst:analyzer_imutable_err}, it occurs when another value is assigned to an immutable variable.
 
 \AnsiListing[caption={Output When Compiling an Invalid rush Program}, float=h, label={lst:analyzer_imutable_err}]{listings/non_mut_variable_error.txt}
 
@@ -127,7 +124,7 @@ This counter is incremented as soon as the analyzer begins traversal of a loop b
 After the analyzer has traversed the loop's body, the counter is decremented again.
 Due to this design, nested loops do not cause issues while the validity of the above statements can be guaranteed.
 
-Now that some of the important attributes have been highlighted, we can now consider the example from above again.
+Now that important attributes have been highlighted, we can now consider the example from above again.
 First, the analyzer traverses and analyzes all functions and their bodies.
 For every rush function, the analyzer invokes an internal method responsible for validating functions.
 Among other tasks, this method sets the \texttt{curr\_func\_name} field to the name of the current function and
@@ -135,9 +132,9 @@ inserts a new entry into the \texttt{functions} hashmap, associating the functio
 Because a \texttt{main} function is mandatory in every rush program,
 the analyzer simply checks that the \texttt{functions} hashmap contains an entry for the \texttt{main} function.
 Naturally, this lookup is performed after all functions have been analyzed since the \texttt{main} function can then exist in the hashmap.
-The code in listing \ref{lst:analyzer_sig_main} shows how one part of validatating the \texttt{main} function's signature works.
+The code in listing \ref{lst:analyzer_sig_main} shows how one part of validating the \texttt{main} function's signature works.
 
-\TSListing[first line=404, last line=419, caption={Analyzer Validating the Signature of the \texttt{main} Function}, label={lst:analyzer_sig_main}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\TSListing[ranges={404-419}, caption={Analyzer Validating the Signature of the `\texttt{main}' Function}, label={lst:analyzer_sig_main}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 This code is only executed if the \texttt{curr\_func\_name} field of the analyzer holds the value \texttt{main}.
 Therefore, these special checks are only performed for the \texttt{main} function.
@@ -152,22 +149,22 @@ The error is reported because this method pushes a new \texttt{Diagnostic} struc
 During the traversal of the main function's body, the analyzer encounters two \texttt{let} statements in line 2 and 3.
 For analyzing this type of statements, the \texttt{let\_stmt} method is invoked.
 
-\TSListing[first line=612, last line=617, caption={Beginning of the \texttt{let\_stmt} Method}, label={lst:analyzer_let_stmt}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\TSListing[ranges={612-617}, caption={Beginning of the \texttt{let\_stmt} Method}, label={lst:analyzer_let_stmt}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-First, the initializing expression of the let-statement is analyzed in order to obtain information about it's result data type.
+First, the initializing expression of the let-statement is analyzed in order to obtain information about its result data type.
 After the subtree of the expression has been traversed and analyzed, its data type is now known.
 The analyzer now inserts a new entry for the variable's name (e.g. \texttt{two}) into its current scope.
-This variable insertion is displayed in listing \ref{lst:analyzer_scope_insertion}.
+This variable insertion is displayed in Listing~\ref{lst:analyzer_scope_insertion}.
 
-\TSListing[first line=644, last line=657, caption={Insertion of a Variable Into the Current Scope}, label={lst:analyzer_scope_insertion}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\TSListing[ranges={644-657}, caption={Insertion of a Variable Into the Current Scope}, label={lst:analyzer_scope_insertion}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 As seen in line 652, the insertion includes the variable's span.
 Since the span includes the location of where the variable was declared,
-it can later be used in error messages like the one displayed in listing \ref{lst:analyzer_imutable_err}.
+it can later be used in error messages like the one displayed in Listing~\ref{lst:analyzer_imutable_err}.
 Furthermore, the inserted information includes whether the variable was declared as mutable.
 If a variable is mutable, it can be reassigned to.
 Because the variable in our example program was not declared as mutable,
-the error seen in listing \ref{lst:analyzer_imutable_err} was generated as a result.
+the error seen in Listing~\ref{lst:analyzer_imutable_err} was generated as a result.
 By default, the variable is set to non-mutated (line 655).
 Most rush compiler backends use this information about actual mutation in order to implement some optimizations.
 What strikes the eye is that the insertion happens as a condition inside an if-clause.
@@ -178,9 +175,9 @@ If this was not the case, the analyzer will generate an error message informing 
 Among the previously mentioned data, the insertion includes the variable's data type which was obtained by prior analysis of the expression.
 However, we have not yet explained how type determination and annotation works in the analyzer.
 In order to get an understanding of how the analyzer determines types of variables, we must consider how expressions are traversed.
-The code in listing \ref{lst:analyzer_expr} is part of the method responsible for analyzing expressions.
+The code in Listing~\ref{lst:analyzer_expr} is part of the method responsible for analyzing expressions.
 
-\TSListing[first line=1007, last line=1013, caption={Analysis of Expressions During Semantic Analysis}, label={lst:analyzer_expr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\TSListing[ranges={1007-1013}, caption={Analysis of Expressions During Semantic Analysis}, label={lst:analyzer_expr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 The \texttt{node} parameter specifies the expression node generated by the parser,
 it does not contain any type information since it is yet to be analyzed.
@@ -196,12 +193,12 @@ For simple types of expressions like integers or floats, further analysis is omi
 Since these types of expressions are constant, the method can directly return an analyzed version of the expression.
 Since we have now explained how tree traversal and analysis works in general, the question of how types are accessed and saved in the annotated syntax tree remains.
 
-\TSListing[first line=129, last line=146, caption={Obtaining the Type of Expressions}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
+\TSListing[ranges={129-146}, caption={Obtaining the Type of Expressions}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
 
-The code in listing \ref{lst:expr_type_impl} shows how the type of any analyzed expression can be obtained.
+The code in Listing~\ref{lst:expr_type_impl} shows how the type of any analyzed expression can be obtained.
 For constant expressions like \verb|AnalyzedExpression::Int(_)|, the determination of its type is straight-forward.
 Here, the \texttt{result\_type} method returns \verb|Type::Int(0)|.
-In this implementation, the \texttt{Type} enum saves a count which specifies the number of pointer indirections.
+In this implementation, the \texttt{Type} enum saves a count which specifies the amount of pointer indirection.
 For instance, the rush type \texttt{**int} is represented as \verb|Type::Int(2)| because there are two levels of pointer indirection.
 However, if the method is called on a constant integer expression, the resulting level of pointer indirection is zero.
 Therefore, this method is able to return the types of simple constant expressions with no additional effort.
@@ -234,10 +231,10 @@ Here, both operands are integers, thus complying with the specification.
 Therefore, the analyzer accepts this infix-expression and is now aware that it yields another integer.
 After the infix-expression's result type has been determined, it is saved in its own \texttt{result\_type} struct field.
 Infix-expressions are a classical example for tree nodes which save their result type as a struct field on their own.
-Therefore, the type of infix-expressions can be accessed like it is displayed in line 140 of the listing \ref{lst:expr_type_impl}.
-Now that the analysis of the call argument expression has completed, its compatibility with the declared parameter must be validated.
+Therefore, the type of infix-expressions can be accessed like it is displayed in line 140 of the Listing~\ref{lst:expr_type_impl}.
+Now that the analysis of the argument expression has completed, its compatibility with the declared parameter must be validated.
 
-\TSListing[first line=1822, last line=1827, caption={Validation of Argument Type Compatibility in the Analyzer}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\TSListing[ranges={1822-1827}, caption={Validation of Argument Type Compatibility in the Analyzer}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 The listing \ref{lst:analyzer_call_exit} shows a part of the \texttt{arg} function which is responsible for validating that a function call argument is compatible with the declared parameter.
 In the above example, this means that the \texttt{exit} function is to be called with exactly one integer argument.
@@ -254,14 +251,14 @@ For instance, the rush expression $2 + 3$ evaluates to $5$ during compile time i
 This evaluation of expressions during compile time is referred to as \emph{constant folding}.
 Constant folding is often used in order to avoid the emission of otherwise redundant arithmetic instructions.
 As a result of this, the compiled program will run faster since less computation is being performed when the program is executed.
-In order to make such optimization possible, each expression node in the analyzed AST has a method named \texttt{constant} \cite[p.~54]{wirth_compiler_construction_2005}.
+In order to make such optimization possible, each expression node in the analyzed AST has a method named \texttt{constant}~\cite[p.~54]{wirth_compiler_construction_2005}.
 
-\TSListing[first line=148, last line=153, caption={Method for Determining if an Expression is Constant}, label={lst:expr_constant_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
+\TSListing[ranges={148-153}, caption={Method for Determining if an Expression is Constant}, label={lst:expr_constant_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
 
 This method is responsible for determining whether an expression is constant.
 The method returns \texttt{true} if its expression is a constant integer, float, boolean or char.
 Other types of expression, such as a call-expression cannot be constant since such a function call may cause side effects which cannot be determined during compile time.
-This method is vital for constant folding since both the left- and right hand side of infix-expressions need to be constant in order to allow compile-time evaluation.
+This method is vital for constant folding since both the left- and right-hand side of infix-expressions need to be constant in order to allow compile-time evaluation.
 
 Among other optimizations implemented in the analyzer, loop transformation can also have a positive effect on the program's performance during runtime.
 The top listing displays part of a rush program which uses a \texttt{while} loop even though a \texttt{loop} would be faster.
@@ -276,9 +273,9 @@ the \texttt{while} loop will run slower than the \texttt{loop} in this example.
 However, this is only the case because the condition of the loop is a constant \texttt{true}.
 Therefore, using a condition which is always true is redundant and should therefore be omitted.
 If the analyzer detects such a scenario after a while-loop was analyzed, the output node will be converted into a conventional loop.
-Detection of this scenario is implemented in line 855 of listing \ref{lst:analyzer_loops}.
+Detection of this scenario is implemented in line 855 of Listing~\ref{lst:analyzer_loops}.
 
-\TSListing[first line=851, last line=865, caption={Loop Transformation in the Analyzer}, label={lst:analyzer_loops}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\TSListing[ranges={851-865}, caption={Loop Transformation in the Analyzer}, label={lst:analyzer_loops}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 Another scenario in which a \texttt{while} loop can be restructured occurs if the condition always evaluates to \texttt{false}.
 This example is displayed in the listing below.
@@ -286,7 +283,7 @@ This example is displayed in the listing below.
 \TSListing[caption={\texttt{while} Loop Inside a rush Program Which Never Iterates}]{listings/constant_false_while.rush}
 
 Since the loop in the above listing never iterates, it is completely redundant and can therefore be omitted entirely.
-This scenario is detected in line 853 of listing \ref{lst:analyzer_loops}.
+This scenario is detected in line 853 of Listing~\ref{lst:analyzer_loops}.
 This optimization improves runtime efficiency by a small amount since the code performing the very first condition check will not be compiled into the output program.
 Furthermore, the resulting output code will also be of slightly smaller size since the entire loop compilation can be omitted.
 Therefore, implementing such trivial optimizations can significantly contribute to a more efficient output program.

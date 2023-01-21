@@ -1,0 +1,21 @@
+name: Build PDF
+on: [workflow_dispatch, push]
+jobs:
+  run-and-push:
+    runs-on: ubuntu-latest
+    container: rubixdev42/rush-paper-tex:1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Prepare
+        run: make init
+
+      - name: Build
+        run: make build
+
+      - name: Archive main.pdf
+        uses: actions/upload-artifact@v3
+        with:
+          name: paper
+          path: main.pdf

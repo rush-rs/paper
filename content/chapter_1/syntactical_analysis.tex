@@ -20,7 +20,7 @@ For reference, Appendix~\ref{apx:grammar} contains the full grammar of rush.
 \TODO{formal definition of grammars?}
 \TODO{explain 1+ repetitions due to `-'}
 
-\TSListing[float=h, caption={Grammar for Basic Arithmetic in EBNF Notation}, label={lst:ebnf_reference_grammar}]{listings/ebnf_reference.ebnf}
+\Lirsting[float=h, caption={Grammar for Basic Arithmetic in EBNF Notation}, label={lst:ebnf_reference_grammar}]{listings/ebnf_reference.ebnf}
 
 \subsection{Grouping of Characters Into Tokens}
 
@@ -38,7 +38,7 @@ Here every row in the table represents one point in time displaying the lexer's 
 % The \Verb{reader} is an iterator over the input characters, the \Verb{location} saves the current index, column, and line in the source text, and the \Verb{curr_char} and \Verb{next_char} fields holds\ldots
 
 % TODO: why does using \Verb inside caption break compilation for @MikMuellerDev
-\TSListing[ranges={10-16}, float=t, caption={The rush \texttt{Lexer} Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
+\Lirsting[ranges={10-16}, float=t, caption={The rush \texttt{Lexer} Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
 
 \begin{table}[h]
 	\newcommand{\lexerframe}[8][]{\tikz[baseline={(frame.base)}]{
@@ -77,7 +77,7 @@ In the first three rows this count is still 0, as this happens during initializa
 The \Verb{Pow} token, composed of two `\Verb{*}' symbols, requires the lexer to advance two times before it can be returned, which is represented by the two rows in which the call count is 4.
 A simplified \Verb{Token} struct definition for the example language from Listing~\ref{lst:ebnf_reference_grammar} is shown in Listing~\ref{lst:token_simple}.
 
-\TSListing[float=h, caption={Simplified \texttt{Token} Struct Definition}, label={lst:token_simple}]{listings/token_simple.rs}
+\Lirsting[float=h, caption={Simplified \texttt{Token} Struct Definition}, label={lst:token_simple}]{listings/token_simple.rs}
 
 In addition to the current and next character, a lexer also has to keep track of the current position in the source text for it to provide helpful diagnostics with locations to the user.
 This is done in the \Verb{location} field which is incremented every time the lexer advances to the next character.
@@ -146,7 +146,7 @@ By design, they must recognize a node by its first $n=k+1$ tokens, where $n$ is 
 However, due to that restriction, not every context-free language can be parsed by \textcolor{red}{a/an} LL parser.
 An example for that is given in Listing~\ref{lst:ebnf_reference_pratt}.
 
-\TSListing[float=h, caption={Example Language a Traditional LL$(1)$ Parser Cannot Parse}, label={lst:ebnf_reference_pratt}]{listings/ebnf_reference_pratt.ebnf}
+\Lirsting[float=h, caption={Example Language a Traditional LL$(1)$ Parser Cannot Parse}, label={lst:ebnf_reference_pratt}]{listings/ebnf_reference_pratt.ebnf}
 
 Most LL parsers are \emph{recursive-descent} parsers, including the rush parser.
 Implementation of such a recursive-descent parser is rather uncomplicated.
@@ -160,15 +160,15 @@ In Rust the mapping from EBNF grammar notation to type definitions is very simpl
 	\caption{Mapping From EBNF Grammar to Rust Type Definitions}\label{tbl:ebnf_to_rust}
 	\rowcolors{2}{gray!25}{white}
 	\begin{tabularx}{0.95\textwidth}{Ll}
-		\rowcolor{gray!50} EBNF                      & Rust                                                                      \\
+		\rowcolor{gray!50} EBNF                         & Rust                                                                         \\
 		\hline
-		\TSInline{ebnf}{A = B , C ;}                 & \TSInline{rs}{struct A { b: B, c: C }}                                    \\
-		\TSInline{ebnf}{A = B , [ C ] ;}             & \TSInline{rs}{struct A { b: B, c: Option<C> }}                            \\
-		\TSInline{ebnf}{A = B , { C } ;}             & \TSInline{rs}{struct A { b: B, c: Vec<C> }}                               \\
-		\TSInline{ebnf}{A = B , { C }- ;}            & \TSInline{rs}{struct A { b: B, c: Vec<C> }}                               \\
-		\TSInline{ebnf}{A = B | C ;}                 & \TSInline{rs}{enum A { B(B), C(C) }}                                      \\
-		\TSInline{ebnf}{A = B , ( '+' | '-' ) , C ;} & \gape{\makecell[l]{\TSInline{rs}{struct A { b: B, op: Op, c: C }}         \\\TSInline{rs}{enum Op { Plus, Minus }}}} \\
-		\TSInline{ebnf}{A = B , [ ( X | Y ) , C ] ;} & \gape{\makecell[l]{\TSInline{rs}{struct A { b: B, c: Option<(XOrY, C)> }} \\\TSInline{rs}{enum XOrY { X(X), Y(Y) }}}} \\
+		\LirstInline{ebnf}{A = B , C ;}                 & \LirstInline{rs}{struct A { b: B, c: C }}                                    \\
+		\LirstInline{ebnf}{A = B , [ C ] ;}             & \LirstInline{rs}{struct A { b: B, c: Option<C> }}                            \\
+		\LirstInline{ebnf}{A = B , { C } ;}             & \LirstInline{rs}{struct A { b: B, c: Vec<C> }}                               \\
+		\LirstInline{ebnf}{A = B , { C }- ;}            & \LirstInline{rs}{struct A { b: B, c: Vec<C> }}                               \\
+		\LirstInline{ebnf}{A = B | C ;}                 & \LirstInline{rs}{enum A { B(B), C(C) }}                                      \\
+		\LirstInline{ebnf}{A = B , ( '+' | '-' ) , C ;} & \gape{\makecell[l]{\LirstInline{rs}{struct A { b: B, op: Op, c: C }}         \\\LirstInline{rs}{enum Op { Plus, Minus }}}} \\
+		\LirstInline{ebnf}{A = B , [ ( X | Y ) , C ] ;} & \gape{\makecell[l]{\LirstInline{rs}{struct A { b: B, c: Option<(XOrY, C)> }} \\\LirstInline{rs}{enum XOrY { X(X), Y(Y) }}}} \\
 	\end{tabularx}
 \end{table}
 
@@ -223,7 +223,7 @@ For all but one token kind the left precedence is lower than the right one, resu
 The higher the precedences are, the deeper in the tree the resulting expressions will be, and the earlier they are evaluated.
 All unrelated tokens are simply assigned a precedence of 0 for left and right.
 
-\TSListing[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush}, gobble=4]{deps/rush/crates/rush-parser/src/token.rs}
+\Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush}, gobble=4]{deps/rush/crates/rush-parser/src/token.rs}
 
 The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence.
 \ldots

@@ -340,7 +340,7 @@ for match in groups_re.finditer(highlights_lua):
 for key, value in additional_keys.items():
     theme[key] = value
 
-with open('ts2tex.json', 'w') as config_file:
+with open('lirstings.json', 'w') as config_file:
     json.dump(
         {
             'query_search_dirs': ['./deps/**/queries/'],

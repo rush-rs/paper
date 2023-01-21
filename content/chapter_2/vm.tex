@@ -74,7 +74,7 @@ A reason for this speedup is that tree-traversal involves a lot of overhead whic
 
 The code in Listing~\ref{lst:rush_vm_faster} displays a recursive function implemented in rush.
 
-\TSListing[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
+\Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
 
 \noindent
 \begin{figure}[h]
@@ -93,7 +93,7 @@ The code in Listing~\ref{lst:rush_vm_faster} displays a recursive function imple
 		\end{tikzpicture}
 	\end{minipage}%
 	\begin{minipage}{.3\textwidth}
-        \TSListing[raw=true, fancyvrb={frame=none}]{listings/vm_faster_instructions.txt}
+        \Lirsting[raw=true, fancyvrb={frame=none}]{listings/vm_faster_instructions.txt}
 	\end{minipage}
 	\caption{Abstract Syntax Tree and VM Instructions of a Recursive rush Program}\label{fig:tree_vs_vm}
 \end{figure}
@@ -128,7 +128,7 @@ The rush virtual machine is a stack-based interpreter implemented using the Rust
 The machine's architecture is completely fictional and includes a \emph{stack} for storing short-term data, \emph{linear memory} for storing variables, and a \emph{call stack} for managing function calls.
 Like most virtual machines, the rush VM uses a fetch-decode-execute cycle in order to interpret its programs.
 
-\TSListing[ranges={16-26}, caption={Struct Definition of the Vm}, label={lst:vm_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={16-26}, caption={Struct Definition of the Vm}, label={lst:vm_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 Listing~\ref{lst:vm_struct} displays the struct definition of the rush VM\@.
 In line 18, a field called \texttt{stack} is defined.
@@ -186,7 +186,7 @@ The code in Listing~\ref{lst:rush_pointer_simple} displays a rush program in whi
 First, the integer variable \texttt{num} is created.
 In line 3, a pointer variable called \texttt{to\_num} is created by \emph{referencing} the \texttt{num} variable.
 
-\TSListing[caption={Minimal Pointer Example in rush}, label={lst:rush_pointer_simple}, float=H]{listings/simple_pointer.rush}
+\Lirsting[caption={Minimal Pointer Example in rush}, label={lst:rush_pointer_simple}, float=H]{listings/simple_pointer.rush}
 
 In the rush VM, absolute addressing is only used for global variables and pointers.
 Since a pointer specifies the address of another variable, its runtime value will be the absolute address of its target variable.
@@ -196,7 +196,7 @@ This instruction calculates the absolute address of its operand and pushes the r
 Here, the operand is the relative address of the variable to be referenced.
 Listing~\ref{lst:rush_pointer_simple_vm_instructions} shows the VM instructions generated from the rush program in Listing~\ref{lst:rush_pointer_simple}.
 
-\TSListing[raw=true, caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, float=H]{listings/vm_instructions_simple_pointer.txt}
+\Lirsting[raw=true, caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, float=H]{listings/vm_instructions_simple_pointer.txt}
 
 The first instruction \texttt{setmp} (\emph{set memory pointer}) increases the memory pointer by two.
 This is because the \texttt{main} function contains two local variables whose space is to be allocated at the start of the function.
@@ -237,7 +237,7 @@ Figure~\ref{fig:rush_vm_call_stack} displays the state of the VMs call stack aft
 During execution of a call-instruction, the VM pushes a new stack frame onto its call stack.
 Listing~\ref{lst:call_frame_struct} shows how a call frame is implemented.
 
-\TSListing[ranges={26-31}, caption={Struct Definition of a \texttt{CallFrame}}, label={lst:call_frame_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={26-31}, caption={Struct Definition of a \texttt{CallFrame}}, label={lst:call_frame_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 In this implementation, each call frame holds two important pieces of information.
 In line 28 of Listing~\ref{lst:call_frame_struct}, the \texttt{ip} field is declared.
@@ -318,7 +318,7 @@ Since we have covered what the instructions in the lines 24 and 25 do, we can su
 Now that we have explained the semantic meaning of the instructions in Figure~\ref{fig:tree_vs_vm}, we will explain how the fetch-decode-execute cycle works in the VM\@.
 The code in Listing~\ref{lst:vm_run_meth} displays the \texttt{run} method of the rush VM\@.
 
-\TSListing[ranges={168-179}, caption={The \texttt{run} Method of the rush VM}, label={lst:vm_run_meth}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={168-179}, caption={The \texttt{run} Method of the rush VM}, label={lst:vm_run_meth}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 This method manages the entire fetch-decode-execute cycle of the VM\@.
 It is immediately apparent that this method looks relatively simple considering that it plays such of a fundamental role in the VM\@.
@@ -335,7 +335,7 @@ However, if the method returns none of these two possible types, the fetch-decod
 In this code however, one cannot observe the instruction pointer being incremented.
 In order to answer the final question of how the current instruction is executed, and the instruction pointer is incremented, we will now examine the code in Listing~\ref{lst:vm_run_instr_meth}.
 
-\TSListing[ranges={347-359}, caption={Parts of the \texttt{run\_instruction} Method of the rush VM}, label={lst:vm_run_instr_meth}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={347-359}, caption={Parts of the \texttt{run\_instruction} Method of the rush VM}, label={lst:vm_run_instr_meth}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 The code in Listing~\ref{lst:vm_run_instr_meth} displays the last part of the \texttt{run\_instruction} method.
 This method mainly consists of an algorithm mathing the current instruction in order to execute specific code representing the instruction's semantic meaning.
@@ -348,7 +348,7 @@ It is apparent that the execution of these instructions involves relatively litt
 After the instruction has been executed, the instruction pointer is finally incremented and nothing is returned.
 For some special instructions, such as the jump-instructions, the instruction pointer should not be incremented since it would interfere with the jump.
 
-\TSListing[ranges={191-194}, caption={Execution of the \texttt{jmp} Instruction in the rush VM}, label={lst:vm_jmp_instr}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={191-194}, caption={Execution of the \texttt{jmp} Instruction in the rush VM}, label={lst:vm_jmp_instr}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 As seen in Listing~\ref{lst:vm_jmp_instr}, the \texttt{jmp} instruction only sets the instruction pointer to the target index specified in the instruction operand.
 Then, the code returns from the method so that the instruction pointer is not incremented later.

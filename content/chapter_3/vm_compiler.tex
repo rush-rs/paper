@@ -1,9 +1,7 @@
 \subsection{The Compiler Targeting the rush VM}
 
-Since the rush VM interprets instructions directly, there must be a compiler translating the AST into these instructions.
-For this purpose, we have implemented a compiler translating rush into instructions which can be understood by this VM\@.
-Compared to the rush compiler targeting \emph{RISC-V},
-implementation of this compiler has proven to be significantly simpler since the rush VM uses a stack-based design.
+Since the rush VM interprets instructions directly, there must be a compiler targeting its architecture.
+For this purpose, we have implemented a compiler translating rush source code into instructions which can be understood by the VM\@.
 Since the VM's architecture was developed with the features of rush in mind,
 the compiler sometimes requires surprisingly little effort for translating some AST-nodes.
 For instance, the compiler translates infix-expressions, such as $n + m$, into instructions using the \texttt{infix\_expr} method.
@@ -56,11 +54,11 @@ Therefore, the total amount of iterations is 1.
 \begin{figure}[h]
 	\begin{minipage}{.5\textwidth}
 		\centering
-        \Lirsting[fancyvrb={frame=none}]{listings/vm_basic_loop.rush}
+		\Lirsting[fancyvrb={frame=none}]{listings/vm_basic_loop.rush}
 	\end{minipage}%
 	\begin{minipage}{.5\textwidth}
 		\centering
-        \Lirsting[raw=true, fancyvrb={frame=none}]{listings/vm_basic_loop_instructions.txt}
+		\Lirsting[raw=true, fancyvrb={frame=none}]{listings/vm_basic_loop_instructions.txt}
 	\end{minipage}
 	\caption{How Loops are Interpreted by the VM}\label{fig:vm_loops}
 \end{figure}
@@ -103,6 +101,9 @@ Therefore, at the end of each loop's compilation, there will be a list containin
 In line 342 of Listing~\ref{lst:rush_vm_compiler_loop}, the \texttt{self.fill\_blank\_jmps} method is used to set the target indices of the specified jump-instructions to \texttt{pos}.
 We will omit the explanation of this method because it only iterates over the passed list of indices, replacing the target of the jump-instruction at the current index during the process.
 
-As a conclusion, designing and implementing a compiler targeting the rush VM has presented itself as a reasonable task.
-Previously, we have presented positive and negative aspects of writing this compiler.
-For instance, altering the target architecture to mitigate difficulties which occur during the implementation of the compiler has proven itself often to be extremely helpful.
+As a conclusion, design, and implementation of the compiler targeting the rush VM has presented itself as a reasonable task.
+Altering the target architecture to mitigate difficulties which occurred during the implementation of the compiler was often extremely helpful.
+Therefore, compared to the rush compiler targeting \emph{RISC-V},
+implementation of this compiler was significantly simpler.
+Furthermore, the rush VM uses a stack-based design which made implementing its compiler less demanding as well.
+

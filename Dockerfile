@@ -14,7 +14,7 @@ RUN tar -xvf /bin/biber-linux_x86_64-musl.tar.gz -C /bin && \
 
 RUN apk add llvm14 llvm14-libs llvm14-dev llvm14-static \
         libc-dev libxml2-dev libffi-dev g++ \
-        make git jq \
+        make git jq rsync nodejs \
         python3 py3-pip \
         tokei \
         font-jetbrains-mono-nl

@@ -5,7 +5,7 @@ permissions:
 jobs:
   run-and-push:
     runs-on: ubuntu-latest
-    container: rubixdev42/rush-paper-tex:1
+    container: rubixdev42/rush-paper-tex
     steps:
       - name: Checkout
         uses: actions/checkout@v3

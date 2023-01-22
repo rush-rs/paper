@@ -1,5 +1,7 @@
-name: Build PDF
+name: Build PDF and Deploy
 on: [workflow_dispatch, push]
+permissions:
+  contents: write
 jobs:
   run-and-push:
     runs-on: ubuntu-latest
@@ -19,3 +21,14 @@ jobs:
         with:
           name: paper
           path: main.pdf
+
+      - name: Prepare GitHub Pages Deployment
+        run: |
+          mkdir -p dist
+          mv main.pdf dist/main.pdf
+          echo '<meta http-equiv="Refresh" content="0; url=main.pdf" />' >> dist/index.html
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist

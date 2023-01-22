@@ -228,7 +228,41 @@ All unrelated tokens are simply assigned a precedence of 0 for left and right.
 The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence.
 \ldots
 
-\TODO{figure for pratt parsing showing input `\Verb{(1+2*3)/4**5}' with precedences}
+\begin{figure}[h]
+    \newcommand{\precs}[3]{
+        \node(#1_lprec)[prec, below=of #1, xshift=-4mm]{#2};
+        \node(#1_rprec)[prec, below=of #1, xshift= 4mm]{#3};
+        \draw[arrow](#1) -- (#1_lprec);
+        \draw[arrow](#1) -- (#1_rprec);
+    }
+	\centering
+    \begin{tikzpicture}[node distance=4mm and 1cm, prec/.style={font=\footnotesize}]
+		\node(lparen)                 {\Verb{(}};
+		\node(1)     [right=of lparen]{\Verb{1}};
+		\node(+)     [right=of 1]     {\Verb{+}};
+		\node(2)     [right=of +]     {\Verb{2}};
+		\node(*)     [right=of 2]     {\Verb{*}};
+		\node(3)     [right=of *]     {\Verb{3}};
+		\node(rparen)[right=of 3]     {\Verb{)}};
+		\node(/)     [right=of rparen]{\Verb{/}};
+		\node(4)     [right=of /]     {\Verb{4}};
+		\node(**)    [right=of 4]     {\Verb{**}};
+		\node(5)     [right=of **]    {\Verb{5}};
+
+        \precs{lparen}{28}{29}
+        \precs{1}     {0} {0}
+        \precs{+}     {19}{20}
+        \precs{2}     {0} {0}
+        \precs{*}     {21}{22}
+        \precs{3}     {0} {0}
+        \precs{rparen}{0} {0}
+        \precs{/}     {21}{22}
+        \precs{4}     {0} {0}
+        \precs{**}    {26}{25}
+        \precs{5}     {0} {0}
+	\end{tikzpicture}
+	\caption{Token Precedences for Input `\Verb{(1+2*3)/4**5}`}\label{fig:token_precs}
+\end{figure}
 
 \subsubsection{Parser Generators}
 

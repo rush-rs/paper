@@ -1,11 +1,6 @@
 {
-  "query_search_dirs": [
-    "./deps/**/queries/"
-  ],
-  "parser_search_dirs": [
-    "./deps/",
-    "./deps/ebnf/crates/"
-  ],
+  "query_search_dirs": ["./deps/**/queries/"],
+  "parser_search_dirs": ["./deps/", "./deps/ebnf/crates/"],
   "theme": {
     "annotation": "#383a42",
     "attribute": "#0184bc",
@@ -98,7 +93,9 @@
     "symbol.grammar.pascal": "#986801",
     "symbol.grammar.camel": "#0184bc",
     "symbol.grammar.upper": "#c18401",
-    "symbol.grammar.lower": "#e45649"
+    "symbol.grammar.lower": "#e45649",
+    "storageclass.lifetime": "#e45649",
+    "type.qualifier": "#a626a4"
   },
   "ansi_colors": [
     "000000",

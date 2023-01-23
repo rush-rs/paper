@@ -228,6 +228,8 @@ All unrelated tokens are simply assigned a precedence of 0 for left and right.
 The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence.
 \ldots
 
+\Lirsting[ranges={551-558, 568-585, 613-618, 751-759, 770-770}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser Implementation}, gobble=4]{deps/rush/crates/rush-parser/src/parser.rs}
+
 \begin{figure}[h]
     \newcommand{\precs}[3]{
         \node(#1_lprec)[prec, below=of #1, xshift=-4mm]{#2};

@@ -225,17 +225,25 @@ All unrelated tokens are simply assigned a precedence of 0 for left and right.
 
 \Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush}, gobble=4]{deps/rush/crates/rush-parser/src/token.rs}
 
-The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence.
-\ldots
+The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence as seen in Listing~\ref{lst:pratt_expr}.
+It then first matches on the current token kind to decide which expression to parse and stores the result in the \Verb{lhs}\footnote{Short for `left-hand side'} variable.
+Afterwards it checks whether the left precedence of the now current token is bigger than the \Verb{prec} argument.
+When called from elsewhere, like in the condition of a while-loop or in a grouped expression, the \Verb{prec} argument has its minimum value of 0 as shown in Listing~\ref{lst:pratt_grouped}.
+In that case this check will only fail, when the whole expression is over, as every non-operator token is assigned a precedence higher than 0.
+If it does not fail, the \Verb{infix_expr} method is called with the matching operator and the \Verb{lhs}.
+Afterwards \Verb{lhs} is overwritten with the returned value.
+The \Verb{infix_expr} method itself simply stores the right precedence of the operator token, advances to the next token, and calls the \Verb{expression} method again for its right-hand side, but this time with the stored \Verb{right_prec} as the minimum precedence.
 
-\Lirsting[ranges={551-558, 568-585, 613-618, 751-759, 770-770}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser Implementation}, gobble=4]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={733-733, 738-738, 749-749}, float=h, label={lst:pratt_grouped}, caption={Pratt-Parser: Call to \Verb{expression} With the Lowest Precedence}, gobble=4]{deps/rush/crates/rush-parser/src/parser.rs}
+
+\Lirsting[ranges={551-555, 568-583, 613-618, 751-759, 770-770}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser Implementation \TODO{split into 2 listings?}}, gobble=4]{deps/rush/crates/rush-parser/src/parser.rs}
 
 \begin{figure}[h]
-    \newcommand{\precs}[3]{
-        \node(#1_lprec)[prec, below=of #1, xshift=-4mm]{#2};
-        \node(#1_rprec)[prec, below=of #1, xshift= 4mm]{#3};
-        \draw[arrow](#1) -- (#1_lprec);
-        \draw[arrow](#1) -- (#1_rprec);
+    \newcommand{\precs}[4][black]{
+        \node(#2_lprec)[prec, color=#1, below=of #2, xshift=-4mm]{#3};
+        \node(#2_rprec)[prec, color=#1, below=of #2, xshift= 4mm]{#4};
+        \draw[arrow, color=#1](#2) -- (#2_lprec);
+        \draw[arrow, color=#1](#2) -- (#2_rprec);
     }
 	\centering
     \begin{tikzpicture}[node distance=4mm and 1cm, prec/.style={font=\footnotesize}]
@@ -251,17 +259,17 @@ The \Verb{expression} method on the \Verb{Parser} struct is then modified to tak
 		\node(**)    [right=of 4]     {\Verb{**}};
 		\node(5)     [right=of **]    {\Verb{5}};
 
-        \precs{lparen}{28}{29}
-        \precs{1}     {0} {0}
-        \precs{+}     {19}{20}
-        \precs{2}     {0} {0}
-        \precs{*}     {21}{22}
-        \precs{3}     {0} {0}
-        \precs{rparen}{0} {0}
-        \precs{/}     {21}{22}
-        \precs{4}     {0} {0}
-        \precs{**}    {26}{25}
-        \precs{5}     {0} {0}
+        \precs      {lparen}{28}{29}
+        \precs[gray]{1}     {0} {0}
+        \precs      {+}     {19}{20}
+        \precs[gray]{2}     {0} {0}
+        \precs      {*}     {21}{22}
+        \precs[gray]{3}     {0} {0}
+        \precs      {rparen}{0} {0}
+        \precs      {/}     {21}{22}
+        \precs[gray]{4}     {0} {0}
+        \precs      {**}    {26}{25}
+        \precs[gray]{5}     {0} {0}
 	\end{tikzpicture}
 	\caption{Token Precedences for Input `\Verb{(1+2*3)/4**5}`}\label{fig:token_precs}
 \end{figure}

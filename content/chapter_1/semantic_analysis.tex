@@ -25,7 +25,7 @@ Because rush shares its semantic rules across all backends,
 it would be cumbersome to implement semantic validation in each
 backend individually. Therefore, it is rational to implement a separate
 compilation step which is responsible for validating the source program's semantics.
-Among other checks, the so-called \emph{semantic analyzer} \footnote{Later referred to as \enquote{analyzer}} validates types
+Among other checks, the so-called \emph{semantic analyzer}\footnote{Later referred to as \enquote{analyzer}} validates types
 and variable references whilst performing type annotations. The last aspect is
 of particular importance since all compiler backends rely on type information at
 compile time. In order to obtain type information, the abstract syntax
@@ -36,11 +36,11 @@ only validates the program's syntax without performing further validation.
 Therefore, the analyzer traverses the abstract syntax tree previously generated
 by the parser.
 
-In order to highlight why type information is often required at compile time, we will consider Listing~\ref{lst:analyzer-test}.
+In order to highlight why type information is often required at compile time, we will consider Listing~\ref{lst:rush_semantic_simple}.
 The code in this listing displays a basic rush program calculating the sum of two integers and uses the result as its exit code.
 In this example, the exit code of the program will be 5.
 
-\Lirsting[caption={A rush Program Which Adds Two Integers}, label={lst:analyzer-test}, float=H]{listings/simple.rush}
+\Lirsting[caption={A rush Program Which Adds Two Integers}, label={lst:rush_semantic_simple}, float=H]{listings/semantic_analysis_simple.rush}
 
 In this example, the analyzer will first check if the program contains a \texttt{main} function.
 If this is not the case, the analyzer rejects the program because it violates rush's semantic specification.
@@ -97,34 +97,33 @@ consider parts of its implementation and how they behave when analyzing the
 example from above. However, before we can examine how the analyzer's implementation behaves,
 we should first highlight which attributes play a vital role in the analyzer.
 
-\Lirsting[ranges={12-26}, caption={Attributes of the \texttt{analyzer} struct}, label={lst:analyzer_attr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={12-18,26-26}, caption={Attributes of the \texttt{analyzer} struct}, label={lst:analyzer_attr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 Listing~\ref{lst:analyzer_attr} displays the struct fields of the semantic analyzer.
-The field \texttt{diagnostics} contains a list of diagnostics.
+The field \texttt{functions} in line 13 associates a function name to the function's signature.
+Therefore, if a function is called at a later point in time, the analyzer checks if the function exists and can compare if the arguments match the declared parameters.
+The next field, \texttt{diagnostics} contains a list of diagnostics.
 A diagnostic is a struct which represents a message, is intended to be displayed to the user of the compiler.
 Each diagnostics has a severity, such as \emph{warning} or \emph{error} for instance.
 After the analyzer has finished the tree-traversal, all diagnostics are displayed in a user-friendly manner.
-An example for diagnostic messages can be found in Listing~\ref{lst:analyzer_imutable_err}.
-The field \texttt{curr\_func\_name} saves the name of the current function.
-Moreover, the field \texttt{functions} in line 13 associates a function name to the function's signature.
-Therefore, if a function is called at a later point in time, the analyzer checks if the function exists and can compare if the arguments match the declared parameters.
-The \texttt{scopes} field in line 16 is responsible for managing variables.
+The \texttt{scopes} field in line 15 is responsible for managing variables.
 In rush, blocks using braces (\texttt{\{\}}) create new scopes.
 If the analyzer enters such a block, a new scope is pushed onto the \texttt{scopes} stack.
 Each scope maps a variable identifier to some variable-specific data.
 For instance, the analyzer keeps track of variable types, whether variables have been used later, if they are mutated, and the location of where they were declared.
 By saving this much information about each declared variable, the analyzer can produce very helpful and accurate error messages or warnings.
-Such an error message is displayed in Listing~\ref{lst:analyzer_imutable_err}, it occurs when another value is assigned to an immutable variable.
+Such a message containing various diagnostics is displayed in Listing~\ref{lst:analyzer_imutable_err}, it occurs when another value is assigned to an immutable variable.
 
-\Lirsting[ansi=true, caption={Output When Compiling an Invalid rush Program}, float=h, label={lst:analyzer_imutable_err}]{listings/non_mut_variable_error.txt}
+\Lirsting[ansi=true, caption={Output When Compiling an Invalid rush Program}, float=H, label={lst:analyzer_imutable_err}]{listings/non_mut_variable_error.txt}
 
+Moreover, the field \texttt{curr\_func\_name} saves the name of the current function.
 Furthermore, the \texttt{loop\_count} field is used to validate the uses of the \texttt{break} and \texttt{continue} statements.
 Because these statements are only valid inside loop bodies, the value of \texttt{loop\_count} must be $> 0$ when the analyzer encounters such a statement.
 This counter is incremented as soon as the analyzer begins traversal of a loop body.
 After the analyzer has traversed the loop's body, the counter is decremented again.
 Due to this design, nested loops do not cause issues while the validity of the above statements can be guaranteed.
 
-Now that important attributes have been highlighted, we can now consider the example from above again.
+Now that important attributes have been highlighted, we can now consider the example from Listing\ref{lst:rush_semantic_simple}.
 First, the analyzer traverses and analyzes all functions and their bodies.
 For every rush function, the analyzer invokes an internal method responsible for validating functions.
 Among other tasks, this method sets the \texttt{curr\_func\_name} field to the name of the current function and
@@ -132,114 +131,164 @@ inserts a new entry into the \texttt{functions} hashmap, associating the functio
 Because a \texttt{main} function is mandatory in every rush program,
 the analyzer simply checks that the \texttt{functions} hashmap contains an entry for the \texttt{main} function.
 Naturally, this lookup is performed after all functions have been analyzed since the \texttt{main} function can then exist in the hashmap.
-The code in listing \ref{lst:analyzer_sig_main} shows how one part of validating the \texttt{main} function's signature works.
+The code in listing \ref{lst:analyzer_sig_main} shows how validating the \texttt{main} function's signature works.
 
-\Lirsting[ranges={404-419}, caption={Analyzer Validating the Signature of the `\texttt{main}' Function}, label={lst:analyzer_sig_main}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={396-406,418-424,432-435,490-490,535-542}, caption={Analyzer Validating the Signature of the `\texttt{main}' Function}, label={lst:analyzer_sig_main}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-This code is only executed if the \texttt{curr\_func\_name} field of the analyzer holds the value \texttt{main}.
-Therefore, these special checks are only performed for the \texttt{main} function.
-The if-clause in line 405 checks if the node's \texttt{params} vector contains any items.
-If this is the case, the analyzer generates an error message describing the issue.
+This code displays the `\texttt{function\_definition}' method of the analyzer.
+In this listing, only the code relevant for analyzing the `\texttt{main}' function is shown.
+However, this method is used to analyze any function, not just `\texttt{main}'.
+The method  takes a `\texttt{FunctionDefinition}' as its input and returns an `\texttt{AnalyzedFunctionDefinition}'.
+Therefore, it is responsible for analyzing and annotating the definition of a function.
+Since a rush file might contain multiple functions, this method is invoked for each function declared.
+
+In line 401, the method updates the current function name.
+The if-clause in line 403 checks if the method is currently analyzing the main-function.
+In this case, the code inside the if-clause is executed in order to perform special checks on the main-function.
+The next if-clause in line 405 checks if the node's \texttt{params} vector contains any items.
+If the vector contained any items, the main-function's declaration would include parameters.
+If this was the case, the analyzer would generate an error message stating that the main-function must not take any parameters.
 However, we have not yet explained how error handling in the analyzer works.
-When examining the signatures of some of the analyzer's methods, it becomes obvious that these methods do not return errors.
-Instead, the \texttt{self.error} method is invoked.
-This method requires the type of the error to be reported, its message, where it occurred and optional hints to display.
-The error is reported because this method pushes a new \texttt{Diagnostic} struct into the \texttt{diagnostics} vector.
+When examining the signature of this method, it becomes obvious that it cannot return errors.
+Instead, the \texttt{self.error} method is invoked in line 406.
+This method uses information about the error to be generated in order to push a new `\texttt{Diagnostic}' struct into the \texttt{diagnostics} vector.
+Therefore, the `\texttt{diagnostics}' vector will contain any generated errors after analysis has been completed.
+
+In rush, the main-function cannot return a value at runtime.
+Therefore, the return-type of the function always has to be the unit-type.
+Thus, the analyzer validates this constraint in the lines 422 and 423.
+The first if-clause checks if the function contains a manually defined result-type.
+In rush, every function definition without an explicitly defined result type defaults to the unit type.
+Therefore, the inner if-clause is only executed if the user has manually specified a result type of their main-function.
+In this case, the analyzer checks if the manually specified type differs from the required unit-type.
+If this is the case, the analyzer generates another error in line 424 which describes the issue.
+
+After the signature of the main-function has been validated, the method begins traversal of the function's body.
+In line 490, the `\texttt{self.block}' method of the analyzer is invoked using the body (\texttt{node.block}) of the method as its first argument.
+The second boolean argument specifies that the method should not push another scope onto the stack since this is handled by the current method.
+The return-value of this method-call is bound to a variable called `\texttt{block}'.
+This variable represents the completely analyzed and annotated function body.
+Lastly, in the lines 535-541, an `\texttt{AnalyzedFunctionDefinition}' is returned.
+Here, metadata like the function's analyzed parameters, its return-type, its name, or its body are specified.
+Unknown variables like `\texttt{params}' have been defined in the parts of the code which are currently hidden.
 
 During the traversal of the main function's body, the analyzer encounters two \texttt{let} statements in line 2 and 3.
-For analyzing this type of statements, the \texttt{let\_stmt} method is invoked.
+For analyzing this type of statement, the \texttt{let\_stmt} method of the analyzer is invoked.
+The code in Listing~\ref{lst:analyzer_let_stmt} shows the `\texttt{let\_stmt}' method of the analyzer.
 
-\Lirsting[ranges={612-617}, caption={Beginning of the \texttt{let\_stmt} Method}, label={lst:analyzer_let_stmt}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={612-612,617-617,644-646,656-657,680-680,682-688}, caption={Beginning of the `\texttt{let\_stmt}' Method}, label={lst:analyzer_let_stmt}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-First, the initializing expression of the let-statement is analyzed in order to obtain information about its result data type.
+In line 617, the initializing expression of the let-statement is analyzed first in order to obtain information about its result data type.
 After the subtree of the expression has been traversed and analyzed, its data type is now known.
-The analyzer now inserts a new entry for the variable's name (e.g. \texttt{two}) into its current scope.
-This variable insertion is displayed in Listing~\ref{lst:analyzer_scope_insertion}.
-
-\Lirsting[ranges={644-657}, caption={Insertion of a Variable Into the Current Scope}, label={lst:analyzer_scope_insertion}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
-
-As seen in line 652, the insertion includes the variable's span.
-Since the span includes the location of where the variable was declared,
-it can later be used in error messages like the one displayed in Listing~\ref{lst:analyzer_imutable_err}.
-Furthermore, the inserted information includes whether the variable was declared as mutable.
+The analyzer now inserts a new entry for the variable's name (e.g. `\texttt{two}') into its current scope.
+This insertion is performed in line 644.
+The contents of the pushed variable struct are hidden but include its type or its span for instance.
+Since the span includes the location of where the variable was defined, it can later be used in error messages like the one displayed in Listing~\ref{lst:analyzer_imutable_err}.
+Furthermore, the inserted information inside the struct includes whether the variable was declared as mutable.
 If a variable is mutable, it can be reassigned to.
 Because the variable in our example program was not declared as mutable,
 the error seen in Listing~\ref{lst:analyzer_imutable_err} was generated as a result.
-By default, the variable is set to non-mutated (line 655).
-Most rush compiler backends use this information about actual mutation in order to implement some optimizations.
-What strikes the eye is that the insertion happens as a condition inside an if-clause.
-If the insertion returns \texttt{true}, the variable's name was already present in the current scope and its associated data has now been overwritten.
-This overwriting of variables is called \emph{variable shadowing}.
+However, what strikes the eye is that the insertion happens as a condition inside an if-clause.
+If the insertion returns \texttt{true}, the variable's name was already present in the current scope and its previous associated data has now been overwritten.
+The process of overwriting variables by redefining them is called \emph{variable shadowing}.
 Here, the analyzer should display some additional hints or warnings, depending on whether the shadowed variable has been referenced before it was shadowed.
-If this was not the case, the analyzer will generate an error message informing the user about an unused and therefore redundant variable.
+If this was not the case, the analyzer will generate a warning message informing the user about an unused and therefore redundant variable.
 Among the previously mentioned data, the insertion includes the variable's data type which was obtained by prior analysis of the expression.
+
+It is now apparent that the analyzer uses type information of expressions on many occasions just like this one.
 However, we have not yet explained how type determination and annotation works in the analyzer.
 In order to get an understanding of how the analyzer determines types of variables, we must consider how expressions are traversed.
 The code in Listing~\ref{lst:analyzer_expr} is part of the method responsible for analyzing expressions.
 
-\Lirsting[ranges={1007-1013}, caption={Analysis of Expressions During Semantic Analysis}, label={lst:analyzer_expr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={1007-1011,1032-1035,1040-1040,1048-1049}, caption={Analysis of Expressions During Semantic Analysis}, label={lst:analyzer_expr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-The \texttt{node} parameter specifies the expression node generated by the parser,
+The `\texttt{node}' parameter specifies the expression node generated by the parser,
 it does not contain any type information since it is yet to be analyzed.
-It is also apparent that the method returns a value of the type \texttt{AnalyzedExpression},
-which represents an analyzed and annotated expression.
+It is also apparent that the method returns a value of the type `\texttt{AnalyzedExpression}', which represents an analyzed and annotated expression.
 Therefore, this method consumes a non-analyzed expression and transforms it into an analyzed version of itself.
-In this function, the recursive tree-traversal algorithm used in the analyzer is clearly visible.
-For instance, if the current expression is a block-expression (line 1009), the responsible method is called.
-Since rush allows blocks which contain expressions, a block containing another block is a legal construct.
-Therefore, it is possible that the \texttt{expression} method calls itself multiple times recursively.
-Most of the other tree-traversing methods implement a similar recursive behavior as most AST nodes may contain themselves.
-For simple types of expressions like integers or floats, further analysis is omitted.
+For simple types of expressions like integers, floats, or booleans, further analysis is omitted.
 Since these types of expressions are constant, the method can directly return an analyzed version of the expression.
+For more complex types of expressions, like if-expressions for instance, this method calls the appropriate method responsible for analyzing this type of expression.
+This way, implementation of this method stays relatively simple and the maintainability of the codebase increases.
+
+In this function, the recursive tree-traversal algorithm used in the analyzer is clearly visible.
+For instance, if the current expression is a grouped expression like `\texttt{(1 + 2)}`, the code in the lines 1034-1040 is called.
+In line 1035, the `\texttt{expression}' method calls itself recursively using the inner expression of the grouped expression as the call argument.
+Since grouped expressions contain another inner expression, a grouped expression inside another grouped expression is a legal construct in rush.
+Therefore, it is possible that the \texttt{expression} method calls itself multiple times recursively.
+Most of the other tree-traversing methods implement a similar recursive behavior as most types of AST nodes may contain themselves at some point.
+
+\Lirsting[ranges={130-134,142-146}, caption={Obtaining the Type of Expressions}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
+
 Since we have now explained how tree traversal and analysis works in general, the question of how types are accessed and saved in the annotated syntax tree remains.
-
-\Lirsting[ranges={129-146}, caption={Obtaining the Type of Expressions}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
-
 The code in Listing~\ref{lst:expr_type_impl} shows how the type of any analyzed expression can be obtained.
-For constant expressions like \verb|AnalyzedExpression::Int(_)|, the determination of its type is straight-forward.
+For constant expressions like \verb|Int(_)|, the determination of its type is straight-forward.
+This case is displayed in line 132.
 Here, the \texttt{result\_type} method returns \verb|Type::Int(0)|.
 In this implementation, the \texttt{Type} enum saves a count which specifies the amount of pointer indirection.
 For instance, the rush type \texttt{**int} is represented as \verb|Type::Int(2)| because there are two levels of pointer indirection.
 However, if the method is called on a constant integer expression, the resulting level of pointer indirection is zero.
 Therefore, this method is able to return the types of simple constant expressions with no additional effort.
-For more complex constructs like if-expressions,
-the corresponding analyzed AST node saves its result type directly.
-For instance, during analysis of block expressions,
-the responsible function checks if the block contains a trailing expression.
+For more complex constructs like if-expressions, the corresponding analyzed AST node saves its result type directly.
+For instance, during analysis of block expressions, the responsible function checks if the block contains a trailing expression.
 If this is the case, the result type of the block expression is identical to the one of its trailing expression.
-This way, the analyzer is able to get type information about each node of the tree, assuming that it has been analyzed previously.
-In the case of a semantically malformed program,
-the analyzer must somehow continue the tree traversal.
+For instance, the result-type saved in a field on an individual AST node is accessed in line 142.
+In line 144, the result type of a grouped expression is obtained by calling the `\texttt{result\_type}' method recursively.
+By using the previously described method, the analyzer is able to get type information about each node of the tree, assuming that it has been analyzed previously.
+
+In the case of a semantically malformed program, the analyzer must somehow continue the tree traversal.
 Otherwise, only one error could be reported at a time since every traversing method could return a potential error which would terminate the tree traversal.
-To mitigate this issue, we have implemented the \texttt{Unknown} type.
+To mitigate this issue, the \texttt{Unknown} type was implemented.
 If the analyzer encounters a type conflict where one of the conflicting types is \emph{unknown},
-it does not report another error since the unknown type was caused solely by a previous error.
+it does not report another error since the unknown type could have only been caused by a previous error.
 Therefore, errors do not cascade, meaning that an undeclared variable will not cause another type error.
 
-After the let-statements, the \texttt{exit} function is called.
-Here, the analyzer calls the \texttt{call\_expr} function which is responsible for analyzing the validity of function calls.
-First, the call parameter expressions are analyzed.
-Therefore, the expression \texttt{two + three} is traversed before further analysis can proceed.
+
+\Lirsting[ranges={1768-1775}, caption={Validation of Call-Arguments in the Analyzer}, label={lst:analyzer_call}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+
+Below the let-statements in the source program, the \texttt{exit} function is called.
+Here, the analyzer uses the \texttt{call\_expr} method in order to analyze the validity of this function call.
+The code in Listing~\ref{lst:analyzer_call} contains the part of this method which is responsible for validating that the arguments are compatible with the function's parameters.
+For this, the code in the snipped iterates over the provided arguments.
+In each iteration, the `\texttt{self.arg}' method of the analyzer is invoked.
+This method validates that the provided argument matches the provided parameter.
+
+In this example, the argument expression \texttt{two + three} is traversed during this analysis.
 Since the identifiers on the left- and right hand side have been declared by the two let-statements previously,
 obtaining their data types merely involves a lookup of the identifier names inside the current scope's hashmap.
 If an unknown variable was provided, the lookup in the hashmap would yield no value, thus causing an error message to be generated at this point.
-Because the type of the invalid variable is unknown since it was not declared, the \texttt{Unknown} type would be used here in order to prevent cascading errors.
-Because the values of the two variables should be added, the method \texttt{infix\_expr} is called.
+Because the type of the invalid variable is unknown, the placeholder \texttt{Unknown} type would be used in order to prevent cascading errors.
+
+Because the two variables should be added, the method \texttt{infix\_expr} of the analyzer is called.
+This method is responsible for analyzing any kind of infix expression like `\texttt{n || m'}'.
 This method validates several constraints.
 For instance, the operands must both be of the same type.
-Here, both operands are integers, thus complying with the specification.
+In this example, both operands of the addition are integers.
 Therefore, the analyzer accepts this infix-expression and is now aware that it yields another integer.
 After the infix-expression's result type has been determined, it is saved in its own \texttt{result\_type} struct field.
-Infix-expressions are a classical example for tree nodes which save their result type as a struct field on their own.
-Therefore, the type of infix-expressions can be accessed like it is displayed in line 140 of the Listing~\ref{lst:expr_type_impl}.
+Infix-expressions are an example for tree nodes which save their result type as a struct field on their own.
 Now that the analysis of the argument expression has completed, its compatibility with the declared parameter must be validated.
 
-\Lirsting[ranges={1822-1827}, caption={Validation of Argument Type Compatibility in the Analyzer}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={1814-1822,1827-1829}, caption={Validation of Argument Type Compatibility in the Analyzer}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-The listing \ref{lst:analyzer_call_exit} shows a part of the \texttt{arg} function which is responsible for validating that a function call argument is compatible with the declared parameter.
+Listing~\ref{lst:analyzer_call_exit} shows a part of the \texttt{arg} function which is responsible for validating that a function call argument is compatible with the declared parameter.
 In the above example, this means that the \texttt{exit} function is to be called with exactly one integer argument.
 This code will produce an error message if the type of the call argument deviates from the one of the declared parameter.
-Since the example from above presents a syntactically and semantically valid rush program, the analyzer accepts this program and returns its annotated tree.
+In order to validate the compatibility between the provided argument and the declared parameter, the method differentiates between several possible scenarios.
+In line 1817, the method detects the scenario in which the type of either the argument or the parameter is `\texttt{Unknown}'.
+Here, the method should ignore this argument without producing another error.
+
+% TODO: explain the ! type in the rush characteristics chapter
+The next match-arm in line 1818 presents the scenario in which the provided argument has the `\texttt{Never}' type.
+In this case, the analyzer should only add a warning that the call-expression is unreachable.
+Furthermore, the result type of the entire call-expression will also be updated to reflect the never-type.
+However, this scenario does not cause an error to be generated.
+Line 1822 displays the final scenario in which the type of the argument differs from the expected type of the parameter.
+In this case, the method will generate an error describing the situation.
+Again, the concrete error message is omitted for better overview.
+
+In the case of the example program, the analyzer did not generate any error messages since the code presents both a syntactically and semantically valid rush program.
+Therefore, the analyzer accepts this program and returns its syntax-tree with type annotations.
 
 \subsection{Early Optimizations}
 

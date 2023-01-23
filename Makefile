@@ -5,9 +5,8 @@ build: listings/generated
 main.pdf: main.tex listings preamble content lirstings.json
 	latexmk -lualatex -shell-escape -g main.tex
 
-init: fetch_deps.sh gen_config.py
+init: fetch_deps.sh
 	sh fetch_deps.sh
-	python3 gen_config.py
 	cargo install --git https://github.com/rush-rs/lirstings
 
 listings/generated: build_listings.py deps/rush listings/fib.rush listings/simple.rush

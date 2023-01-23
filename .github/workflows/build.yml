@@ -2,6 +2,9 @@ name: Build PDF and Deploy
 on: [workflow_dispatch, push]
 permissions:
   contents: write
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   run-and-push:
     runs-on: ubuntu-latest
@@ -9,6 +12,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Install POSIX tar
+        run: apk add --no-cache tar
+
+      - name: Cache Cargo Target Directory
+        uses: actions/cache@v3
+        with:
+          path: |
+            /root/.cache/cargo
+            /usr/local/cargo/bin
+            /usr/local/cargo/registry/index
+            /usr/local/cargo/registry/cache
+            /usr/local/cargo/git/db
+          key: cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            cargo-${{ hashFiles('**/Cargo.lock') }}
+            cargo-
 
       - name: Prepare
         run: make init

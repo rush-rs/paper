@@ -28,4 +28,4 @@ RUN pip install requests
 RUN wget -O- https://downloads.rubixdev.de/biber-linux_x86_64-musl.tar.gz | tar xzv -C /bin
 
 ENV RUSTFLAGS='-C target-feature=-crt-static'
-RUN cargo install --git https://github.com/rush-rs/lirstings
+ENV CARGO_TARGET_DIR=/root/.cache/cargo

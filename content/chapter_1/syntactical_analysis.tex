@@ -13,14 +13,19 @@ However, grammars for programming languages most often are of type 2 or 3 in the
 \TODO{citation}
 Additionally, it is not uncommon for parser writers to formally define the grammar using some notation.
 Popular options include \emph{BNF}\footnote{Backus-Naur Form, named after the two main inventors~\cite{Backus1960}} and \emph{EBNF}\footnote{Extended Backus-Naur Form, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, the latter of which we use here.
-This paper does not further explain these notations, however Listing~\ref{lst:ebnf_reference_grammar} shows a short example grammar notated using EBNF.
+This paper does not fully explain these notations, however Listing~\ref{lst:ebnf_reference_grammar} shows a short example grammar notated using EBNF.
 For reference, Appendix~\ref{apx:grammar} contains the full grammar of rush.
-\TODO{example for type 1 language?}
-\TODO{explain start symbol}
-\TODO{formal definition of grammars?}
-\TODO{explain 1+ repetitions due to `-'}
+\TODO{example for type 1 language `\Verb{([)]}'?}
+\TODO{explain start symbol?}
+\TODO{formal definition of grammars $G=(N,T,S,P)$?}
 
 \Lirsting[float=h, caption={Grammar for Basic Arithmetic in EBNF Notation}, label={lst:ebnf_reference_grammar}]{listings/ebnf_reference.ebnf}
+
+One thing worth explaining is the `\Verb{-}' at the end of line 5.
+It is used to exclude a set of symbols from the preceding rule.
+As there is no symbol following the dash in this case, the empty word, called $\epsilon$, is excluded from the preceding repetition.
+Thus, the repetition cannot be repeated zero times here, as that would produce the empty word, which is excluded.
+So the notation `\Verb{{ ... }-}' is used to represent repetitions of one or more times, whereas the same without the trailing dash represents repetitions of zero or more times.
 
 \subsection{Grouping of Characters Into Tokens}
 
@@ -136,12 +141,15 @@ The parenthesized $k$ represents a natural number with $k\in\mathbb{N}_0$ descri
 Often $k$ is either $1$ or $0$ for a two or one wide window respectively.
 This window moves just like previously explained for the lexer, and observes $k$ \textbf{tokens}, not characters, simultaneously.
 Since in most cases $k$ is $1$, it is common to omit specifying it and to just speak of `LL' and `LR' parsers.
-\TODO{mention backtracking}
 
-An example for LR parsing is the \emph{shift-reduce} parsing approach.
-\ldots\TODO{explain shift-reduce parsing?}\ldots
+Alternatively to utilizing lookahead tokens, it is possible to create parsers with backtracking.
+Using that approach, a parser has to guess which syntax construct follows, if it can't concretely know based on the first token.
+When it then later detects an unexpected symbol, instead of throwing a syntax error, it cancels and returns to the point of decision-making to try the next possible construct.
+This of course comes with overhead and usually unclear error messages, which is why this method is rarely used and the superior lookahead method is preferable.
 
-LL parsers are usually much simpler to implement, but come with a limitation.
+An example for LR parsing is the \emph{shift-reduce} parsing approach, which is partially explained later on page~\pageref{sec:parser_generators}.
+One thing to note however, is that LR parsers are generally very complicated to implement manually.
+LL parsers on the contrary are usually much simpler to implement, but come with a limitation.
 By design, they must recognize a node by its first $n=k+1$ tokens, where $n$ is the window size.
 However, due to that restriction, not every context-free language can be parsed by \textcolor{red}{a/an} LL parser.
 An example for that is given in Listing~\ref{lst:ebnf_reference_pratt}.
@@ -154,7 +162,7 @@ Assuming the grammar respects the mentioned limitation, every context-free gramm
 In the example grammar from Listing~\ref{lst:ebnf_reference_grammar} on page~\pageref{lst:ebnf_reference_grammar} again, these are all the capitalized rules highlighted in yellow.
 Additionally, a matching node type is defined for each context-free rule, holding the relevant information for execution.
 In Rust the mapping from EBNF grammar notation to type definitions is very simple as displayed in Table~\ref{tbl:ebnf_to_rust}.
-\TODO{struct signature example}
+\TODO{struct signature example?}
 
 \begin{table}[h]
 	\caption{Mapping From EBNF Grammar to Rust Type Definitions}\label{tbl:ebnf_to_rust}
@@ -223,69 +231,96 @@ For all but one token kind the left precedence is lower than the right one, resu
 The higher the precedences are, the deeper in the tree the resulting expressions will be, and the earlier they are evaluated.
 All unrelated tokens are simply assigned a precedence of 0 for left and right.
 
-\Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush}, gobble=4]{deps/rush/crates/rush-parser/src/token.rs}
+\Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush}]{deps/rush/crates/rush-parser/src/token.rs}
 
 The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence as seen in Listing~\ref{lst:pratt_expr}.
 It then first matches on the current token kind to decide which expression to parse and stores the result in the \Verb{lhs}\footnote{Short for `left-hand side'} variable.
 Afterwards it checks whether the left precedence of the now current token is bigger than the \Verb{prec} argument.
-When called from elsewhere, like in the condition of a while-loop or in a grouped expression, the \Verb{prec} argument has its minimum value of 0 as shown in Listing~\ref{lst:pratt_grouped}.
-In that case this check will only fail, when the whole expression is over, as every non-operator token is assigned a precedence higher than 0.
+When called from elsewhere, like in the condition of a while-loop or in a grouped expression, the \Verb{prec} argument has its minimum value of 0 as shown in Listing~\ref{lst:pratt_grouped_expr}.
+In that case, this check will only fail when the whole expression is over, as every non-operator token is assigned a precedence higher than 0.
 If it does not fail, the \Verb{infix_expr} method is called with the matching operator and the \Verb{lhs}.
 Afterwards \Verb{lhs} is overwritten with the returned value.
-The \Verb{infix_expr} method itself simply stores the right precedence of the operator token, advances to the next token, and calls the \Verb{expression} method again for its right-hand side, but this time with the stored \Verb{right_prec} as the minimum precedence.
 
-\Lirsting[ranges={733-733, 738-738, 749-749}, float=h, label={lst:pratt_grouped}, caption={Pratt-Parser: Call to \Verb{expression} With the Lowest Precedence}, gobble=4]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={551-555, 568-583, 613-618}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: Implementation for Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
 
-\Lirsting[ranges={551-555, 568-583, 613-618, 751-759, 770-770}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser Implementation \TODO{split into 2 listings?}}, gobble=4]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={733-743, 749-749}, float=h, label={lst:pratt_grouped_expr}, caption={Pratt-Parser: Call to \Verb{expression} With the Lowest Precedence}]{deps/rush/crates/rush-parser/src/parser.rs}
 
-\begin{figure}[h]
-    \newcommand{\precs}[4][black]{
-        \node(#2_lprec)[prec, color=#1, below=of #2, xshift=-4mm]{#3};
-        \node(#2_rprec)[prec, color=#1, below=of #2, xshift= 4mm]{#4};
-        \draw[arrow, color=#1](#2) -- (#2_lprec);
-        \draw[arrow, color=#1](#2) -- (#2_rprec);
-    }
+The \Verb{infix_expr} method in Listing~\ref{lst:pratt_infix_expr} simply stores the right \TODO{unclear it's the side `right', not `correct'} precedence of the operator token, advances to the next token, and calls the \Verb{expression} method again for its right-hand side, but this time with the stored \Verb{right_prec} as the minimum precedence.
+These simple calls and checks of precedences automatically result in correct grouping and nesting of the expressions.
+
+\Lirsting[ranges={751-759, 770-770}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: Implementation for Infix Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+
+\begin{figure}[hb]
+	\newcommand{\precs}[5][black]{
+		\node(tok_#3)[below of=#3]{#2};
+		\draw[arrow](#3) -- (tok_#3);
+
+		\node(#3_lprec)[prec, color=#1, below of=tok_#3, xshift=-4mm]{#4};
+		\node(#3_rprec)[prec, color=#1, below of=tok_#3, xshift= 4mm]{#5};
+		\draw[arrow, color=#1](tok_#3) -- (#3_lprec);
+		\draw[arrow, color=#1](tok_#3) -- (#3_rprec);
+	}
 	\centering
-    \begin{tikzpicture}[node distance=4mm and 1cm, prec/.style={font=\footnotesize}]
-		\node(lparen)                 {\Verb{(}};
-		\node(1)     [right=of lparen]{\Verb{1}};
-		\node(+)     [right=of 1]     {\Verb{+}};
-		\node(2)     [right=of +]     {\Verb{2}};
-		\node(*)     [right=of 2]     {\Verb{*}};
-		\node(3)     [right=of *]     {\Verb{3}};
-		\node(rparen)[right=of 3]     {\Verb{)}};
-		\node(/)     [right=of rparen]{\Verb{/}};
-		\node(4)     [right=of /]     {\Verb{4}};
-		\node(**)    [right=of 4]     {\Verb{**}};
-		\node(5)     [right=of **]    {\Verb{5}};
+	\begin{tikzpicture}[prec/.style={font=\footnotesize}]
+		\node(lparen)                             {\Verb{(}};
+		\node(1)     [xshift=5mm, right of=lparen]{\Verb{1}};
+		\node(+)     [xshift=5mm, right of=1]     {\Verb{+}};
+		\node(2)     [xshift=5mm, right of=+]     {\Verb{2}};
+		\node(*)     [xshift=5mm, right of=2]     {\Verb{*}};
+		\node(3)     [xshift=5mm, right of=*]     {\Verb{3}};
+		\node(rparen)[xshift=5mm, right of=3]     {\Verb{)}};
+		\node(/)     [xshift=5mm, right of=rparen]{\Verb{/}};
+		\node(4)     [xshift=5mm, right of=/]     {\Verb{4}};
+		\node(**)    [xshift=5mm, right of=4]     {\Verb{**}};
+		\node(5)     [xshift=5mm, right of=**]    {\Verb{5}};
 
-        \precs      {lparen}{28}{29}
-        \precs[gray]{1}     {0} {0}
-        \precs      {+}     {19}{20}
-        \precs[gray]{2}     {0} {0}
-        \precs      {*}     {21}{22}
-        \precs[gray]{3}     {0} {0}
-        \precs      {rparen}{0} {0}
-        \precs      {/}     {21}{22}
-        \precs[gray]{4}     {0} {0}
-        \precs      {**}    {26}{25}
-        \precs[gray]{5}     {0} {0}
+		\precs[gray]{\Verb{LParen}}{lparen}{28}{29}
+		\precs[gray]{\Verb{Int(1)}}{1}     {0} {0}
+		\precs      {\Verb{Plus}}  {+}     {19}{20}
+		\precs[gray]{\Verb{Int(2)}}{2}     {0} {0}
+		\precs      {\Verb{Star}}  {*}     {21}{22}
+		\precs[gray]{\Verb{Int(3)}}{3}     {0} {0}
+		\precs      {\Verb{RParen}}{rparen}{0} {0}
+		\precs      {\Verb{Slash}} {/}     {21}{22}
+		\precs[gray]{\Verb{Int(4)}}{4}     {0} {0}
+		\precs      {\Verb{Pow}}   {**}    {26}{25}
+		\precs[gray]{\Verb{Int(5)}}{5}     {0} {0}
 	\end{tikzpicture}
 	\caption{Token Precedences for Input `\Verb{(1+2*3)/4**5}`}\label{fig:token_precs}
 \end{figure}
 
-\subsubsection{Parser Generators}
+This might be made clearer by Figure~\ref{fig:token_precs}.
+It shows the tokens with their respective left and right precedence for the input `\Verb{(1+2*3)/4**5}', which represents the mathematical expression $\frac{1+2\cdot3}{4^5}$.
+The for this example irrelevant precedences have been grayed out.
+Starting from the left, the parser first encounters \textcolor{red}{a/an} `\Verb{LParen}' token and therefore decides to parse a `\Verb{grouped_expr}'.
+Inside that method, `\Verb{expression}' is again called, again with `\Verb{prec}' being 0.
+The difference is that now the current token is `\Verb{Int(1)}'.
+That token is then parsed as a simple integer expression and stored in `\Verb{lhs}'.
+Now, the left precedence of the `\Verb{Plus}' token, 19, is higher than `\Verb{prec}'s value of 0, so the while-loop is entered.
+In there, the `\Verb{infix_expr}' method is called, which queries the right precedence of the `\Verb{Plus}' token and calls `\Verb{expression}' again, this time with a precedence of 20.
+Skipping to the precedence check, again the current token's left precedence is higher than `\Verb{prec}', the precedences being 21 for the `\Verb{Star}' token and 20 for `\Verb{prec}'.
+Therefore, `\Verb{infix_expression}' is called once again, which call `\Verb{expression}' again, but now during the next precedence check, the left precedence of the following `\Verb{RParen}' token, 0, is not higher than the current precedence of 22.
+That means, the innermost `\Verb{expression}' call returns with a single 3.
+This 3 is then used as the right-hand side for the multiplicative infix expression.
+The same `\Verb{RParen}' precedence check again fails for the `\Verb{expression}' call with a precedence of 20.
+Thus, the `\Verb{2*3}' part together forms the right-hand side of the addition expression.
+Once more, `\Verb{RParen}'s left precedence of 0 is not larger than the initial precedence of 0, hence the parser returns to the `\Verb{grouped_expr}' call with the entire contents in the parentheses.
+Here the right parenthesis is skipped, and the method returns to the outermost `\Verb{expression}' call, assigning the entire grouped expression to `\Verb{lhs}'.
 
-For most intents and purposes it is generally not recommended and necessary to implement parsers, and with that lexers, manually.
+In order to understand the right associativity of the `\Verb{Pow}' token and to improve intuition, the reader is advised to continue going through this procedure for the rest of the example input.
+A curious reader might additionally want to parse the inputs `\Verb{1*2*3}', `\Verb{1**2**3}', and `\Verb{1+(2+3)}' by hand.
+It should then become clear how Pratt-Parsing achieves parsing with precedences without it being encoded in the Grammar, and with that, the node types.
+
+\subsubsection{Parser Generators}\label{sec:parser_generators}
+
+For most intents and purposes it is generally not recommended and necessary to implement parsers, and with that\textcolor{red}{,} lexers, manually.
 \TODO{citation}
-Instead, there are so-called \emph{parser generators} that generate parsers based on some specification of the desired syntax.
-Often parser generators define a domain specific grammar notation for the syntax specification.
-\TODO{some also allow traditional grammar notations, and e.g., `nom' is simply a Rust crate}
-\ldots
-
-\begin{enumerate}
-	\item different strategies (LL, LR) and top-down / bottom-up
-	\item lookahead (to avoid backtracking)
-	\item pratt-parsing
-	\item parser generators
-\end{enumerate}
+Instead, there are so-called \emph{parser generators} that generate parsers based on some specification of the desired syntax and the required precedences.
+Often parser generators define a domain specific grammar notation for the syntax specification, although some parser generators also accept traditional grammar notations as input.
+% As previously discussed, implementing table-driven parsers, like the shift-reduce LR parsers, is way too error-prone to be done by hand.
+% But because of the flexibility and greater language support they bring over LL parsers, it is still preferable to use such a parser for production ready languages.
+Most parser generators target some variation of \emph{table-driven} LR parsers.
+Table-driven parsers use a table, mapping all possible combinations of tokens on the parse stack and lookahead tokens to an action.
+For shift-reduce parsers the possible actions are shifting, that is reading the next input token and pushing it to the stack, and reducing, which pops some number of elements from the stack and in place pushes a node to it.
+The input syntax must therefore either be unambiguous or augmented by precedence rules, so that a complete parser table can be generated.
+\TODO{mention `nom'}

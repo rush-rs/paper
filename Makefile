@@ -7,7 +7,7 @@ main.pdf: main.tex listings preamble content lirstings.json
 
 init: fetch_deps.sh
 	sh fetch_deps.sh
-	cargo install --git https://github.com/rush-rs/lirstings
+	cargo install --git https://github.com/rush-rs/lirstings --force
 
 listings/generated: build_listings.py deps/rush listings/fib.rush listings/simple.rush
 	mkdir -p ./listings/generated/

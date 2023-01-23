@@ -17,11 +17,10 @@ RUN apk add --update \
         llvm14 llvm14-libs llvm14-dev llvm14-static \
         libc-dev libxml2-dev libffi-dev g++ \
         make git jq rsync nodejs \
-        python3 py3-pip \
+        python3 \
         tokei \
         font-jetbrains-mono-nl && \
     rm -rf /var/cache/apk/*
-RUN pip install requests
 
 # the `biber` package in the repos is too new, so we manually donwload version 2.17 from sourceforge
 # RUN wget -O- https://master.dl.sourceforge.net/project/biblatex-biber/biblatex-biber/2.17/binaries/Linux-musl/biber-linux_x86_64-musl.tar.gz?viasf=1 | tar xzv -C /bin

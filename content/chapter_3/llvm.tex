@@ -1,28 +1,30 @@
 \section{Using LLVM for Code Generation}
 
+\TODO{23.01.2023: @MikMuellerDev Continue proofreading here}
+
 LLVM is a software project intended to simplify the construction of a compiler generating highly-performant output programs.
-It originally started as a research project by \emph{Chris Lattner} for his master's thesis at the University of Illinois at Urbana-Champaign \cite{Lattner:MSThesis02}.
+It originally started as a research project by \emph{Chris Lattner} for his master's thesis at the University of Illinois at Urbana-Champaign~\cite{Lattner:MSThesis02}.
 Since then, the project has been widely adopted by the open source community.
 In 2012, the project was rewarded the \emph{ACM Software System Award}, a prestigious recognition of significant software which contributed to science.
 From the point where popularity of the framework grew, it was renamed from \emph{Low Level Virtual Machine} to the acronym it is known by today.
 Today, it can be recognized as one of the largest open source projects~\cite[preface]{Cardoso_Lopes2014-jt}.
-Among many other projects, the Rust programming language depends on the LLVM compiler in order to generate its target-specific code \cite[p.~373]{McNamara2021-hz}.
+Among many other projects, the Rust programming language depends on the LLVM compiler in order to generate its target-specific code~\cite[p.~373]{McNamara2021-hz}.
 Furthermore, the \emph{Clang} C / C++ compiler uses LLVM as its code generating backend~\cite[preface]{Hsu2021-ez}.
 Therefore, production ready compilers for popular programming languages have been implemented using the LLVM framework.
 Besides open-source projects, many companies also use LLVM in their commercial software.
 For instance, since 2005, Apple has started incorporating LLVM into some of its products~\cite[pp.~11-15]{Fandrey}.
-A recent example of software developed by Apple which uses LLVM is the \emph{Swift} programming language which is mainly used for developing IOS apps \cite[preface]{Hsu2021-ez}.
+A recent example of software developed by Apple which uses LLVM is the \emph{Swift} programming language which is mainly used for developing IOS apps~\cite[preface]{Hsu2021-ez}.
 
 \subsection{The Role of LLVM in a Compiler}
 
 In a compiler system using LLVM, it is responsible for generating target-specific code.
 Furthermore, LLVM is known for performing very effective optimizations during code generation so that the translated program runs faster at runtime and uses less memory.
 In order to use LLVM, the system provides and API which is usable by earlier steps of compilation.
-Typically, a compiler frontend must only analyze the source program to create an AST.
+Typically, a compiler frontend must only analyze the source program to create an AST\@.
 Therefore, LLVM represents the \emph{back end} of a compiler system.
 Then, the AST is traversed and the API of LLVM is used to construct an intermediate representation of the program so that the system can understand it.
 Next, LLVM compiles the input program to an arbitrary target architecture.
-As of today, LLVM features many target architectures so that a compiler designer does not have to worry about portability of the output program \cite[preface]{Hsu2021-ez}.
+As of today, LLVM features many target architectures so that a compiler designer does not have to worry about portability of the output program~\cite[preface]{Hsu2021-ez}.
 Listing~\ref{fig:compilation_steps_llvm} shows how LLVM integrates into the previously discussed steps of compilation.
 
 \begin{figure}[h]
@@ -32,14 +34,21 @@ Listing~\ref{fig:compilation_steps_llvm} shows how LLVM integrates into the prev
 		\node (lexical_analysis) [rec, below=of syntactic_analysis_text] {lexical analysis};
 		\node (syntactic_analysis) [rec, fit={(syntactic_analysis_text) (lexical_analysis)}] {};
 
-		\node (semantic_analysis) [rec, right=of syntactic_analysis] {semantic analysis};
+		\node (semantic_analysis) [rec, align=center, right=of syntactic_analysis] {semantic\\analysis};
 		\draw [arrow] (syntactic_analysis) -- (semantic_analysis);
 
-		\node (llvm) [rec, right=of semantic_analysis] {LLVM};
-		\draw [arrow] (semantic_analysis) -- (llvm);
+		\node (ir_generation) [rec, align=center, right=of semantic_analysis] {LLVM IR\\generation};
+		\draw [arrow] (semantic_analysis) -- (ir_generation);
+
+		\node (llvm) [rec, align=center, fill=gray!20, right=of ir_generation] {LLVM\\backend};
+		\draw [arrow] (ir_generation) -- (llvm);
 	\end{tikzpicture}
 	\caption{Steps of Compilation When Using LLVM}\label{fig:compilation_steps_llvm}
 \end{figure}
+
+The updated Figure~\ref{fig:compilation_steps_llvm} now includes two new steps: \emph{LLVM IR generation} and \emph{LLVM backend}.
+The first step generates the target-independent input used by the second step to generate target-specific code.
+A compiler writer must only implement the first step since the second step is entirely represented by LLVM\@.
 
 \subsection{The LLVM Intermediate Representation}
 
@@ -47,11 +56,11 @@ The intermediate representation (\emph{IR}) represents the source program in a l
 Through the use of the LLVM intermediate representation, high-level type information is preserved while the benefits of a low-level representation are introduced.
 This allows LLVM to perform significant more aggressive optimizations at compile time compared to other compiler solutions.
 Furthermore, LLVM communicates a lot of information to the linker.
-As a result of this, many so-called \emph{link time optimizations} can be achieved which are not present in most other compilers \cite[p.~5]{Lattner:MSThesis02}.
+As a result of this, many so-called \emph{link time optimizations} can be achieved which are not present in most other compilers~\cite[p.~5]{Lattner:MSThesis02}.
 Therefore, programs compiled using LLVM as the backend will often run significantly faster due to the many aggressive optimizations introduced by the system.
 
 LLVM provides many APIs for interacting with the IR in memory, so that it can be created by a compiler frontend without it being written onto a file.
-The official API for LLVM is for C++ and C.
+The official API for LLVM is for \emph{C++} and \emph{C}.
 However, there are many unofficial bindings, such as for Rust, Go, or Python.
 For instance, a compiler frontend written in Rust can leverage LLVM, although the system is written in C++.
 A program represented using the IR always obeys the following hierarchy:
@@ -60,14 +69,14 @@ A program represented using the IR always obeys the following hierarchy:
 	\item The top most hierarchical structure is the so-called \emph{module}.
 	      It represents the current file being compiled.
 	\item Each module contains several \emph{functions}.
-	      Often, each function in the source program is represented using a function in the LLVM IR.
+	      Often, each function in the source program is represented using a function in the LLVM IR\@.
 	\item Each function contains several \emph{basic blocks}.
 	      Such a basic block contains a sequence of instructions.
 	      Blocks always have to be terminated using a jumping or returning instruction.
 	      However, a block must never be terminated twice.
 	\item As mentioned above, each basic block contains a sequence of \emph{instructions}.
 	      Each instruction holds a semantic meaning and represents a part of the source program.
-\end{itemize} \cite[p.~211-213]{Hsu2021-ez}.
+\end{itemize}~\cite[p.~211-213]{Hsu2021-ez}.
 
 The IR provides a low-level enough representation in order to allow optimizations in the early stages of compilation.
 However, due to the high-level type information contained in a program represented using the IR,
@@ -89,7 +98,7 @@ The IR was generated by the LLVM targeting rush compiler\footnote{Generated in G
 \Lirsting[ranges={5-30}, raw queries=true, caption={LLVM IR Representation of the Program in Listing~\ref{lst:rush_fib}}, label={lst:llvm_fib}, float=H]{listings/generated/fib.ll}
 
 The code displayed in the snipped is part of a LLVM module.
-In the lines 5 and 29, functions are defined using the \texttt{declare} keyword.
+In the lines 5 and 29, functions are defined using the `\texttt{declare}' keyword.
 It is apparent that the functions in the LLVM module represent the functions from the source rush program.
 Furthermore, if we examine the signature of the \texttt{fib} function in line 5 of the IR,
 it becomes apparent that the function returns an \texttt{i64}.

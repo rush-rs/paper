@@ -1,6 +1,26 @@
 \section{RISC-V: A Compiler for a Modern RISC Architecture}
-
 \subsection{The RISC-V Architecture}
+
+\begin{itemize}
+	\item Introduced in 2011
+	\item UC Berkely research project
+	\item Since then: rising in popularity
+	\item ISA = \enquote{instruction set architecture}
+	\item Was developed for:
+	      \begin{itemize}
+		      \item All sizes of processors: from embedded to high-performance computer
+		      \item compatibility to popular software stacks and programming languages
+		      \item serves as extendable base for customized accelerators
+		      \item Should be stable
+	      \end{itemize}
+	\item One of the few ISAs which were developed this decade instead of the 1970s / 1980s
+	\item Open ISA: unlike most previous ISAs, it is free from a bond to a single comporation
+    \item Base ISA: \qVerb{RV321}.
+        Frozen, will never change, gives assembly programmers and compiler writers a stable target.
+    \item The base instruction set is extendable using extensions like (multiply: \qVerb{RV32M}) or (double-precision floats: \qVerb{RV32D}).
+\end{itemize} \cite[Chapter~1]{Patterson2017}.
+
+\TODO{Also interesting: \cite[p.~10]{Patterson2017}, \cite[Chapter~2]{Patterson2017}.}
 
 \begin{itemize}
 	\item Present Some example instructions

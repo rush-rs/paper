@@ -241,14 +241,14 @@ In that case, this check will only fail when the whole expression is over, as ev
 If it does not fail, the \Verb{infix_expr} method is called with the matching operator and the \Verb{lhs}.
 Afterwards \Verb{lhs} is overwritten with the returned value.
 
-\Lirsting[ranges={551-555, 568-583, 613-618}, path prefix={deps/rush}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: Implementation for Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={551-555, 568-570, _574-583, 613-618}, path prefix={deps/rush}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: Implementation for Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 \Lirsting[ranges={733-743, 749-749}, path prefix={deps/rush}, float=h, label={lst:pratt_grouped_expr}, caption={Pratt-Parser: Implementation for Grouped Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 The \Verb{infix_expr} method in Listing~\ref{lst:pratt_infix_expr} simply stores the right \TODO{unclear it's the side `right', not `correct'} precedence of the operator token, advances to the next token, and calls the \Verb{expression} method again for its right-hand side, but this time with the stored \Verb{right_prec} as the minimum precedence.
 These simple calls and checks of precedences automatically result in correct grouping and nesting of the expressions.
 
-\Lirsting[ranges={751-759, 770-770}, path prefix={deps/rush}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: Implementation for Infix Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={751-751, _756-759, 770-770}, path prefix={deps/rush}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: Implementation for Infix Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 \begin{figure}[hb]
 	\newcommand{\precs}[5][black]{

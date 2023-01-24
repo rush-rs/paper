@@ -6,26 +6,28 @@ LLVM is a software project intended to simplify the construction of a compiler g
 It originally started as a research project by \emph{Chris Lattner} for his master's thesis at the University of Illinois at Urbana-Champaign~\cite{Lattner:MSThesis02}.
 Since then, the project has been widely adopted by the open source community.
 In 2012, the project was rewarded the \emph{ACM Software System Award}, a prestigious recognition of significant software which contributed to science.
-From the point where popularity of the framework grew, it was renamed from \emph{Low Level Virtual Machine} to the acronym it is known by today.
+From the point when popularity of the framework grew, it was renamed from \emph{Low Level Virtual Machine} to the acronym it is known by today.
 Today, it can be recognized as one of the largest open source projects~\cite[preface]{Cardoso_Lopes2014-jt}.
 Among many other projects, the Rust programming language depends on the LLVM compiler in order to generate its target-specific code~\cite[p.~373]{McNamara2021-hz}.
 Furthermore, the \emph{Clang} C / C++ compiler uses LLVM as its code generating backend~\cite[preface]{Hsu2021-ez}.
 Therefore, production ready compilers for popular programming languages have been implemented using the LLVM framework.
-Besides open-source projects, many companies also use LLVM in their commercial software.
+Besides open-source projects, many companies have also incorporated LLVM in their commercial software.
 For instance, since 2005, Apple has started incorporating LLVM into some of its products~\cite[pp.~11-15]{Fandrey}.
 A recent example of software developed by Apple which uses LLVM is the \emph{Swift} programming language which is mainly used for developing IOS apps~\cite[preface]{Hsu2021-ez}.
 
 \subsection{The Role of LLVM in a Compiler}
 
-In a compiler system using LLVM, it is responsible for generating target-specific code.
-Furthermore, LLVM is known for performing very effective optimizations during code generation so that the translated program runs faster at runtime and uses less memory.
+In a compiler system, LLVM is responsible for generating target-specific code and performing optimizations.
+The framework is known for performing very effective optimizations during code generation so that the translated program runs faster at runtime and uses less memory.
 In order to use LLVM, the system provides and API which is usable by earlier steps of compilation.
-Typically, a compiler frontend must only analyze the source program to create an AST\@.
-Therefore, LLVM represents the \emph{back end} of a compiler system.
-Then, the AST is traversed and the API of LLVM is used to construct an intermediate representation of the program so that the system can understand it.
-Next, LLVM compiles the input program to an arbitrary target architecture.
+Typically, a compiler frontend only analyzes the source program to create an AST.
+Next, a separate step of compilation invokes the LLVM framework which carries on from this point\@.
+This component traverses the AST and uses the API of LLVM in order to construct an intermediate representation of the program.
+This way, the framework will be able to understand the semantic meaning of the program.
+Next, LLVM compiles the input program to an output which is specific to an arbitrary target architecture.
 As of today, LLVM features many target architectures so that a compiler designer does not have to worry about portability of the output program~\cite[preface]{Hsu2021-ez}.
 Listing~\ref{fig:compilation_steps_llvm} shows how LLVM integrates into the previously discussed steps of compilation.
+Therefore, the framework represents the \emph{back end} component of a compiler.
 
 \begin{figure}[h]
 	\centering
@@ -40,84 +42,97 @@ Listing~\ref{fig:compilation_steps_llvm} shows how LLVM integrates into the prev
 		\node (ir_generation) [rec, align=center, right=of semantic_analysis] {LLVM IR\\generation};
 		\draw [arrow] (semantic_analysis) -- (ir_generation);
 
-		\node (llvm) [rec, align=center, fill=gray!20, right=of ir_generation] {LLVM\\backend};
+        \node (llvm) [rec, align=center, fill=gray!20, right=of ir_generation] {LLVM\\backend};
 		\draw [arrow] (ir_generation) -- (llvm);
 	\end{tikzpicture}
 	\caption{Steps of Compilation When Using LLVM}\label{fig:compilation_steps_llvm}
 \end{figure}
 
+\TODO{continue here}
+
 The updated Figure~\ref{fig:compilation_steps_llvm} now includes two new steps: \emph{LLVM IR generation} and \emph{LLVM backend}.
 The first step generates the target-independent input used by the second step to generate target-specific code.
-A compiler writer must only implement the first step since the second step is entirely represented by LLVM\@.
+This step traverses the AST in order to generate a semantically equivalent program formulated using LLVM's intermediate representation.
+A compiler writer must only implement the first three steps of this figure as the last step is represented by the framework itself.
 
 \subsection{The LLVM Intermediate Representation}
 
-The intermediate representation (\emph{IR}) represents the source program in a low-level but target-independent way.
-Through the use of the LLVM intermediate representation, high-level type information is preserved while the benefits of a low-level representation are introduced.
-This allows LLVM to perform significant more aggressive optimizations at compile time compared to other compiler solutions.
-Furthermore, LLVM communicates a lot of information to the linker.
-As a result of this, many so-called \emph{link time optimizations} can be achieved which are not present in most other compilers~\cite[p.~5]{Lattner:MSThesis02}.
-Therefore, programs compiled using LLVM as the backend will often run significantly faster due to the many aggressive optimizations introduced by the system.
+The LLVM intermediate representation (\emph{IR}) represents the source program in a low-level manner.
+However, even though this IR is low-level, it is still target-independent.
+Furthermore, the IR also contains detailed type information which is usually uncommon for low-level representations of a program.
+Therefore, high-level type information is preserved while the benefits of a low-level representation are introduced.
+This allows LLVM to perform significant more aggressive optimizations compared to other compiler solutions or frameworks.
+Therefore, programs compiled using LLVM as the backend will often run significantly faster due to the many aggressive optimizations introduced by the framework.
 
-LLVM provides many APIs for interacting with the IR in memory, so that it can be created by a compiler frontend without it being written onto a file.
-The official API for LLVM is for \emph{C++} and \emph{C}.
-However, there are many unofficial bindings, such as for Rust, Go, or Python.
+LLVM provides many APIs for interacting with the IR in memory.
+This way, it can be created by a frontend without the need for a separate file containing the IR.
+If the file containing the IR is written and read by the individual parts of the compiler,
+the same performance issues introduced by multipass compilation would emerge.
+Therefore, LLVM provides official APIs for the \emph{C++} and \emph{C} programming languages.
+However, there are many unofficial bindings, such as for the Rust, Go, or Python programming language.
 For instance, a compiler frontend written in Rust can leverage LLVM, although the system is written in C++.
-A program represented using the IR always obeys the following hierarchy:
+Since LLVM must be able to perform complex program analysis before it can optimize a program,
+its IR introduces many rules and constraints.
+For instance, a program formulated using the IR should always obey the following hierarchy:
 
 \begin{itemize}
 	\item The top most hierarchical structure is the so-called \emph{module}.
 	      It represents the current file being compiled.
 	\item Each module contains several \emph{functions}.
-	      Often, each function in the source program is represented using a function in the LLVM IR\@.
+	      Often, each function in the source program is represented using a function in the IR\@.
 	\item Each function contains several \emph{basic blocks}.
-	      Such a basic block contains a sequence of instructions.
-	      Blocks always have to be terminated using a jumping or returning instruction.
-	      However, a block must never be terminated twice.
-	\item As mentioned above, each basic block contains a sequence of \emph{instructions}.
+	      A basic block contains a sequence of instructions.
+	      Blocks should always be terminated using a jump, return, or unreachable instruction.
+	      However, a basic block must never be terminated twice.
+	\item Each basic block contains a sequence of \emph{instructions}.
 	      Each instruction holds a semantic meaning and represents a part of the source program.
+          For instance, LLVM provides instructions for integer addition or function calls.
 \end{itemize}~\cite[p.~211-213]{Hsu2021-ez}.
 
 The IR provides a low-level enough representation in order to allow optimizations in the early stages of compilation.
-However, due to the high-level type information contained in a program represented using the IR,
+However, due to the high-level type information contained in the IR,
 LLVM is able to perform many aggressive optimizations on the IR during later stages of compilation.
-This way, LLVM can communicate a lot of information to the linker which can then use this information for link-time optimizations.
+This way, the framework can communicate a lot of information to the linker which can then use this information for \emph{link-time} optimizations.
 The virtual instruction set of LLVM is therefore designed as a low-level representation with high-level type information.
-This instruction set represents a virtual architecture which is able to represent most common types processors.
-However, the IR avoids machine specific constraints like register-count or low-level calling conventions.
-The virtual architecture provides an infinite set of virtual registers which can hold the value of primitives like \emph{integers}, \emph{floating-point numbers}, and \emph{pointer}.
+This instruction set describes a virtual architecture which is able to represent an abstraction for most of the common types of processors.
+Although it is low-level, the IR avoids machine specific constraints like registers or calling conventions.
+Instead, the virtual architecture provides an infinite set of virtual registers which can hold the value of primitives like \emph{integers}, \emph{floating-point numbers}, and \emph{pointer}.
 All registers in the IR use the \emph{SSA}\footnote{Short for \enquote{static single assignment}, widely used in optimizing compilers} form in order to allow more optimizations.
 In order to enforce the correctness of the type information included in the IR,
-the operands of an instruction all obey LLVM's type rules~\cite[p.~14-17]{Lattner:MSThesis02}.
+the operands of an instruction all obey LLVM's type rules.
+Therefore, LLVM only processes a program which contains valid type information~\cite[p.~14-17]{Lattner:MSThesis02}.
 
-In order to understand how the LLVM IR represents a program, we now consider the calculation of Fibonacci numbers again.
+In order to understand how a program can be formulated using the LLVM IR, we again consider the rush program for calculating Fibonacci numbers.
 For reference, the rush program used in this example can be found in Listing~\ref{lst:rush_fib} on page~\pageref{lst:rush_fib}.
-The code in Listing~\ref{lst:llvm_fib} displays LLVM IR representing this rush program.
+The code in Listing~\ref{lst:llvm_fib} displays the identical rush program formulated in LLVM IR.
 The IR was generated by the LLVM targeting rush compiler\footnote{Generated in Git commit \rushCommit, automatically built with this document}.
+This compiler is presented in a later chapter since right now, only its output is of relevance.
+The IR displayed in this listing shows a module named `\texttt{main}'.
 
-\Lirsting[ranges={5-30}, raw queries=true, caption={LLVM IR Representation of the Program in Listing~\ref{lst:rush_fib}}, label={lst:llvm_fib}, float=H]{listings/generated/fib.ll}
+\Lirsting[ranges={1-30}, raw queries=true, caption={LLVM IR Representation of the Program in Listing~\ref{lst:rush_fib}}, label={lst:llvm_fib}, float=H]{listings/generated/fib.ll}
 
-The code displayed in the snipped is part of a LLVM module.
-In the lines 5 and 29, functions are defined using the `\texttt{declare}' keyword.
+In the lines 5 and 23, two functions are defined using the `\texttt{declare}' keyword.
 It is apparent that the functions in the LLVM module represent the functions from the source rush program.
-Furthermore, if we examine the signature of the \texttt{fib} function in line 5 of the IR,
-it becomes apparent that the function returns an \texttt{i64}.
-In rush, each \texttt{int} can hold 64-bit signed numbers, therefore the \texttt{i64} LLVM type represents the rush \texttt{int} type.
-Furthermore, we can observe that the function takes an i64 parameter named \texttt{\%0}.
-This parameter represents the \texttt{n} parameter in our rush source program.
+The function's name in the IR matches the name in the source file as it increases readability of the program.
+When examining the signature of the `\texttt{fib}' function in line 5 of the IR,
+it becomes apparent that the function returns a runtime value of the type `\texttt{i64}'.
+In rush, the `\texttt{int}' type represents a 64-bit signed number.
+Therefore, the \texttt{i64} LLVM type represents the rush \texttt{int} type.
+Furthermore, we can observe that the function takes a parameter named \texttt{\%0} of the type `\texttt{i64}'.
+It represents the `\texttt{n}' parameter in the rush source program.
 
-In line 6, the start of the \enquote{entry} block of the \texttt{fib} function is declared using the block's name followed by a colon.
-Since LLVM can perform more optimizations on variables if they are declared in the \texttt{entry} block of a function,
-out compiler uses the \texttt{entry} block solely for variable declarations.
-In line 7, the block is terminated using the \texttt{br}\footnote{Short for \enquote{branch}} instruction.
+In line 6, the start of the `\enquote{entry}' block of the `\texttt{fib}' function is declared using the block's name followed by a colon.
+Since LLVM can perform more optimizations on variables if they are declared in the `\texttt{entry}' block of a function,
+the rush compiler uses the `\texttt{entry}' block solely for variable declarations.
+In line 8, the block is terminated using the `\texttt{br}'\footnote{Short for \enquote{branch}} instruction.
 This instruction jumps to the beginning of the block specified in its operand.
-In this case, the target of the jump is the beginning of the \texttt{body} basic block in the same function.
-Due to constraints introduced by its internal optimizations, LLVM only allows targeting blocks contained in the same function.
+In this case, the target of the jump is the beginning of the `\texttt{body}' basic block in the same function.
+Due to constraints introduced by its internal optimizations, LLVM only allows jumps to target blocks contained in the same function.
 
-In line 10, the \texttt{icmp slt}\footnote{Short for \enquote{integer compare (signed less than)}} is used in order to compare the runtime value of the parameter \texttt{\%0} to a constant 2.
-The boolean result is then saved in the virtual register \texttt{\%i\_lt}.
-Here, it becomes apparent that LLVM's virtual registers can be given arbitrary names.
-In places where this is possible, our compiler will use names which will make reading the IR easier for humans.
+In line 7, the `\texttt{icmp slt}'\footnote{Short for \enquote{integer compare (signed less than)}} is used in order to compare the runtime value of the parameter `\texttt{\%0}' to a constant 2.
+The boolean result is then saved in a virtual register named `\texttt{\%i\_lt}'.
+Since LLVM's virtual registers may have arbitrary names,
+the rush compiler uses names which will make reading of the generated IR easier.
 In line 11, another branch-instruction is used.
 However, this time, the jump is placed under the condition that the value of \texttt{\%i\_lt} is true.
 Here, we can see that LLVM instructions are able to operand on different type of operands depending on what the instruction should do.

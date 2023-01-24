@@ -1,7 +1,7 @@
-Unlike a compiler, an \emph{interpreter} presents a way of executing the source program directly.
-Therefore, the interpreter often omits translation of the source program into target instructions.
+After the syntactical and semantic analysis, there are now multiple different ways to continue.
+The first one shown here is an \emph{interpreter}, which, contrary to a compiler, executes the analyzed program directly.
+That means, no output to be run by another process is produced and written to disk.
+Instead, everything is kept in memory and immediately evaluated by the interpreter.
 \TODO{citation}
-Furthermore, the interpreter for an interpreted source language is always required in order to run a source program.
-However, a compiler is only used for the initial step of translation.
-After this, the generated instructions can usually be interpreted directly, without the need for an executing program.
-In this chapter, we will present two fundamentally different ways of implementing an interpreted programming language.
+Therefore, compared to a compiler, the \emph{interpreter} not only has to be installed on the developer's machine, but also on the target machine.
+This chapter presents two fundamentally different ways of implementing an interpreted programming language.

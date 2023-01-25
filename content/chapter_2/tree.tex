@@ -60,10 +60,10 @@ The other two fatal interrupt kinds are simply passed along when encountered.
 
 To provide a basic overview of a program's execution without too many implementation details, the evaluation of the rush program found in Listing~\ref{lst:tree_example} is presented in the following.
 
-\begin{wrapfigure}{L}{0.4\textwidth}
+\begin{wrapfigure}{L}{0.42\textwidth}
 	\centering
 	\begin{tikzpicture}[node distance=5mm]
-        \node[vstack=11, rectangle split part align=left]{
+        \node(stack)[vstack=11, rectangle split part align=left]{
             \LirstInline{rs}{run(/* ... */)}
             \nodepart{two}{\LirstInline{rs}{call_func("main", vec![])}}
             \nodepart{three}{\LirstInline{rs}{visit_block(/* ... */)}}
@@ -76,6 +76,7 @@ To provide a basic overview of a program's execution without too many implementa
             \nodepart{ten}{\LirstInline{rs}{visit_block(/* ... */)}}
             \nodepart{eleven}{\LirstInline{rs}{visit_statement(/* ... */)}}
         };
+        \draw[arrow] ([xshift=-3.5cm]stack.north) -- ([xshift=-3.5cm]stack.south);
 	\end{tikzpicture}
 	\caption{Call Stack at the Point of Processing the Return Statement}\label{fig:tree_call_stack}
 \end{wrapfigure}

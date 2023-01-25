@@ -9,6 +9,6 @@ init: fetch_deps.sh
 	sh fetch_deps.sh
 	cargo install --git https://github.com/rush-rs/lirstings --force
 
-listings/generated: build_listings.py deps/rush listings/fib.rush listings/simple.rush
+listings/generated: build_listings.py deps/rush listings/fib.rush listings/simple.rush listings/riscv_simple.rush
 	mkdir -p ./listings/generated/
 	python3 build_listings.py

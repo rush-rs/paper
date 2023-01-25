@@ -6,35 +6,37 @@
 	\item A lot more demanding due to platform-specific constraints
 \end{itemize}
 
-\subsection{Low-Level Programming Concepts}
+\section{Low-Level Programming Concepts}
 
 \begin{itemize}
-	\item Assembly \& Assembler
-	\item Basic structure of an ELF assembly program (use RISC-V as a simple example)
-	\item Registers \& why their allocation is a problem
-	\item Stack (with figure) \& Heap (briefly)
-	\item Briefly explain what calling conventions are
+    \item Assembly \& Assembler~\cite[p.~5-6]{Dandamudi2005} % TODO: include figures describing how low-level assembly is?
+    \item Basic structure of an ELF assembly program (use RISC-V as a simple example)~\cite[p.~35]{Patterson2017}
+    \item Registers \& why their allocation is a problem (with figure describing CPU, registers, Memory)~\cite[p.~10]{Patterson2017}
+    \item Stack (with figure) \& Heap (briefly)~\cite[p.40]{Patterson2017}
+	\item Briefly explain what calling conventions are~\cite[p.42]{Patterson2017}
 \end{itemize}
 
-\subsection{CISC and RISC Architectures}
-
-\subsubsection{CISC}
-\begin{itemize}
-	\item X86 (64) as an example (briefly)
-	\item CISC architectures date back to the time in which Assembly was written by hand.
-	      Programs were easier to write and often performed better due to these complex instructions.
-	      Larger quantity of instructions in CISC architectures.
-	\item Complex \& many instructions cause the architecture to be a bit slower for compiled programs
-\end{itemize}
-
-\subsubsection{RISC}
-
-\begin{itemize}
-	\item RISC-V as an example (briefly)
-	\item Rather modern
-	\item Better for modern CPUs which mostly execute machine-written code
-	\item Harder to write manually
-	\item Easier to implement a compiler for
-	\item Usually small and very simple instruction set
-	\item Gain in popularity (ARM / RISC-V)
-\end{itemize}
+% TODO: the below goes under conclusions
+% \section{CISC and RISC Architectures}
+%
+% \subsubsection{CISC}
+% % CISC was chosen to be the first one on purpose
+% \begin{itemize}
+% 	\item X86 (64) as an example (briefly)
+% 	\item CISC architectures date back to the time in which Assembly was written by hand.
+% 	      Programs were easier to write and often performed better due to these complex instructions.
+% 	      Larger quantity of instructions in CISC architectures.
+% 	\item Complex \& many instructions cause the architecture to be a bit slower for compiled programs
+% \end{itemize}
+%
+% \subsubsection{RISC}
+%
+% \begin{itemize}
+% 	\item RISC-V as an example (briefly)
+% 	\item Rather modern
+% 	\item Better for modern CPUs which mostly execute machine-written code
+% 	\item Harder to write manually
+% 	\item Easier to implement a compiler for
+% 	\item Usually small and very simple instruction set
+% 	\item Gain in popularity (ARM / RISC-V)
+% \end{itemize}

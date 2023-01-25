@@ -1,4 +1,11 @@
+let mut m = 42;
+
 fn main() {
-    let mut m = 42;
-    exit(m)
+    m += 1;
+    foo(m);
+    return;
+}
+
+fn foo(n: int) {
+    exit(n)
 }

@@ -4,13 +4,16 @@
 \tikzstyle{rec} = [rectangle, minimum width=3cm, minimum height=1cm,text centered, draw=black]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
-\tikzstyle{stack} = [
+\tikzstyle{vstack} = [
 rectangle split,
-rectangle split horizontal,
 rectangle split parts=#1,
-rectangle split part align=base,
 draw,
 anchor=center,
+]
+\tikzstyle{stack} = [
+rectangle split horizontal,
+rectangle split part align=base,
+vstack=#1,
 ]
 
 % For the linker Figure

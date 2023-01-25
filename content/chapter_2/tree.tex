@@ -1,22 +1,5 @@
 \section{Tree-Walking Interpreters}
-\begin{itemize}
-	\item walks the analyzed tree
-	\item probably the simplest form of language implementation
-	      \begin{itemize}
-		      \item but generally slow
-	      \end{itemize}
-	\item easy to support dynamic typing
-	\item again one method for each node type
-	\item example with variables and function calls (fib?)
-	      \begin{itemize}
-		      \item scopes and value enum
-		      \item backtracking for returns etc.
-		      \item builtin functions
-	      \end{itemize}
-	\item pointers and Rc
-\end{itemize}
-
-A \emph{tree-walking} interpreter is probably the simplest form of programming language implementation, hence it is the first one explained here.
+A \emph{tree-walking} interpreter is probably the simplest form of programming language implementation, which is why it is the first one explained here.
 \TODO{mention slowness here?}
 It requires no further intermediate steps after the analysis but simply accepts the AST as input.
 Just like the parser and analyzer, it walks the tree, hence the name, and therefore again requires one method per node type.
@@ -30,7 +13,7 @@ Why the \qVerb{Value} is wrapped inside \textcolor{red}{a/an} \qVerb{Rc<RefCell<
 Additionally, a map of function names to their tree node is saved.
 The \qVerb{Rc<_>} here is only necessary to conform to Rust's borrowing rules without unnecessarily cloning.
 
-\Lirsting[ranges={7-15}, path prefix={deps/rush}, float=htb, label={lst:tree_struct}, caption={Tree-Walking Interpreter Type Definitions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
+\Lirsting[ranges={8-16}, path prefix={deps/rush}, float=htb, label={lst:tree_struct}, caption={Tree-Walking Interpreter: Type Definitions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
 
 In addition to the struct itself, result types for expressions and statements are defined.
 Statements either return \qVerb{()}\footnote{Rust's `unit' type, a type containing no data, comparable to `void' in other languages. Its notation describes an empty tuple.} on success or an \qVerb{InterruptKind} on failure.
@@ -38,14 +21,98 @@ Expressions use the same error type, but return a \qVerb{Value} on success, hold
 The definitions for both \qVerb{Value} and \qVerb{InterruptKind} are visible in Listing~\ref{lst:tree_value}.
 It is clearly visible that the interpreter simply makes use of Rust's types and does not need to worry about the hidden implementation details.
 
-\Lirsting[ranges={4-11, 20-26}, path prefix={deps/rush}, float=htb, label={lst:tree_value}, caption={Tree-Walking Interpreter \qVerb{Value} and \qVerb{InterruptKind} Definitions}]{deps/rush/crates/rush-interpreter-tree/src/value.rs}
+\Lirsting[ranges={6-13, 22-28}, path prefix={deps/rush}, float=htb, label={lst:tree_value}, caption={Tree-Walking Interpreter: \qVerb{Value} and \qVerb{InterruptKind} Definitions}]{deps/rush/crates/rush-interpreter-tree/src/value.rs}
 
 \qVerb{InterruptKind} describes the different ways the interpreter can be interrupted.
 The first three variants, `return', `break', and `continue', are only partial interrupts, i.e., they do not necessarily stop execution of the whole program.
-Instead, they are `caught' when\ldots
+For example, when the interpreter encounters a \qVerb{break} statement, it creates a \qVerb{InterruptKind::Break} and tracks back until it reached the innermost loop, where the interrupt is then caught and execution is continued after the loop.
 The remaining two variants are for one runtime errors, produced by things like division by zero, and \qVerb{Exit(i64)}, created by rush's builtin \qVerb{exit(int)} function.
 They cause the interpreter to backtrack all the way back to the AST's root and with that cancel execution, as this is the desired behavior for errors and exit calls.
 
+The way \qVerb{Value} is implemented also makes it very easy to support dynamic typing\footnote{In contrast to static typing, with dynamic typing the types of variables and results of expressions are only known at runtime rather than during compile time.}, since it can already be a value of any type.
+The rush interpreter only makes use of the analyzer's guarantees of result types, which could not be done with dynamic typing.
+
+\subsection{Implementation}
+
+\Lirsting[ranges={23-30, _39-41, 56-61}, path prefix={deps/rush}, float=htb, label={lst:tree_run_method}, caption={Tree-Walking Interpreter: Beginning of Execution}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
+
+Listing~\ref{lst:tree_run_method} displays the public \qVerb{run} method of the interpreter that serves as its entry point.
+Since the order of functions in rush does not matter and a function can be called before its definition in the file, the interpreter must first populate its \qVerb{functions} map, before any function code is run.
+Afterwards the global variables are assigned their initial values.
+Only then is the code inside the main function called via the \qVerb{call_func} method.
+After it returns, the entire interpreter either returns a produced runtime error, an exit code caused by a rush call to \qVerb{exit}, or the success exit code `0' otherwise.
+
+\Lirsting[ranges={81-97}, path prefix={deps/rush}, float=htb, label={lst:tree_call_func}, caption={Tree-Walking Interpreter: Calling of Functions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
+
+The \qVerb{call_func} method, visible in Listing~\ref{lst:tree_call_func}, first checks whether a built-in functions was called.
+As the only built-in function in rush is \qVerb{exit}, a simple equality check is enough here.
+In case the called function is in fact the exit function, the first call argument is asserted to be an integer via the \qVerb{unwrap_int} method on \qVerb{Value}, and an exit interrupt kind containing that integer is returned immediately.
+Otherwise, the previously saved tree node of the function to be executed is received from the \qVerb{functions} map.
+A new variable scope for the function's body is then initialized and filled with the arguments passed to the function.
+Afterwards, the function's block is evaluated by calling the \qVerb{visit_block} method in a scoped environment.
+If the block returns an interrupt that is partial, it is turned into the appropriate return value by the \qVerb{into_value} method call.
+For `continue' and `break' this is \qVerb{()} and for \qVerb{InterruptKind::Return(Value)} it is the wrapped value.
+The other two fatal interrupt kinds are simply passed along when encountered.
+
+\subsection{Example}
+
+\Lirsting[float=ht, label={lst:tree_example}, caption={Example rush Program}]{listings/tree_example.rush}
+
+To provide a basic overview of a program's execution without too many implementation details, the evaluation of the rush program found in Listing~\ref{lst:tree_example} is presented in the following.
+
+\begin{wrapfigure}{L}{0.4\textwidth}
+	\centering
+	\begin{tikzpicture}[node distance=5mm]
+        \node[vstack=11, rectangle split part align=left]{
+            \LirstInline{rs}{run(/* ... */)}
+            \nodepart{two}{\LirstInline{rs}{call_func("main", vec![])}}
+            \nodepart{three}{\LirstInline{rs}{visit_block(/* ... */)}}
+            \nodepart{four}{\LirstInline{rs}{visit_statement(/* ... */)}}
+            \nodepart{five}{\LirstInline{rs}{visit_expression(/* ... */)}}
+            \nodepart{six}{\LirstInline{rs}{visit_call_expr(/* ... */)}}
+            \nodepart{seven}{\LirstInline{rs}{visit_expression(/* ... */)}}
+            \nodepart{eight}{\LirstInline{rs}{visit_call_expr(/* ... */)}}
+            \nodepart{nine}{\LirstInline{rs}{call_func("plus_two", vec![40])}}
+            \nodepart{ten}{\LirstInline{rs}{visit_block(/* ... */)}}
+            \nodepart{eleven}{\LirstInline{rs}{visit_statement(/* ... */)}}
+        };
+	\end{tikzpicture}
+	\caption{Call Stack at the Point of Processing the Return Statement}\label{fig:tree_call_stack}
+\end{wrapfigure}
+
+First, the main function gets called by the interpreter's entry point as discussed before.
+In there, \qVerb{visit_block} is called with the main function's block.
+The \qVerb{visit_block} method then iterates over its contained statements and evaluates each one in order with the \qVerb{visit_statement} method.
+In this case, that is only the call to \qVerb{exit}.
+Since calls in rush are considered expressions and expressions can also be used wherever statements are allowed, the \qVerb{visit_statement} method only forwards to \qVerb{visit_expression}, which itself forwards to \qVerb{visit_call_expr}.
+The call expression then evaluates each argument expression by calling \qVerb{visit_expression} again.
+Here, that involves another call expression, this time of the `plus\_two' function.
+It again evaluates its arguments, that being the access of the global variable `global' here, and then runs the function's block.
+The call stack at the point of reaching the return statement, is displayed in Figure~\ref{fig:tree_call_stack}.
+Now the expression \qVerb{num + 2} is evaluated by first evaluating both sides of the \qVerb{+} sign on their own and then adding the results.
+
+Following that, an interrupt of kind `return' is constructed, holding the sum.
+By making use of Rust's \qVerb{?}\footnote{Can be used after expressions returning a \qVerb{Result<_, _>} to return early in case they are the \qVerb{Err(_)} variant.} operator, the interrupt causes early returns in all function calls walking up the call stack to \qVerb{call_func}.
+Thus, the statement \qVerb{global += 4;} is never reached.
+The \qVerb{exit} function now finally has a value for its argument and can be called.
+However, as described earlier, exit is built-in and does not call \qVerb{visit_block}, but instead constructs an \qVerb{InterruptKind::Exit(_)} with the result value, so `42' in this case.
+
 \subsection{Supporting Pointers}\label{sec:tree_pointers}
 
-% RefCell to enforce Rust's borrowing rules at runtime rather than compile time.
+Adding support for pointers in a tree-walking interpreter is actually not as straight forward as it is for the following language implementations, which all have a manually managed memory layout.
+It also depends a lot on the implementing language.
+In languages with a garbage collector, for example Go or Java, the pointer functionality of that language can just be reused, and the cleanup is already managed.
+However, unlike many modern languages, Rust does not have a garbage collector.
+Instead, it makes use of the so-called borrow checker that validates all references at compile time.
+Using default Rust references for pointers while conforming to Rust's borrowing rules turns out to be quite complicated though.
+But it is not required to use them.
+Rust provides an additional method of having pointers to values besides their reference system.
+The \qVerb{Rc<_>} type, short for reference counter, stores its contained value on the heap and provides shared access to it, without any \textbf{one} owner.
+The held value is freed as soon as no more references to it exist.
+This makes it ideal for implementing pointers in a tree-walking interpreter.
+
+However, as mentioned, a reference counter only provides \textbf{shared} access to the contained value.
+In Rust that implies not being able to mutate the value, as that would again break the borrowing rules.
+In order to still support mutable variables while having pointers to them, we can make use of another type the Rust standard library conveniently provides.
+A \qVerb{RefCell<_>} implements so-called \emph{interior mutability}\footnote{Types in Rust that have interior mutability allow mutation through shared references} by enforcing Rust's borrowing rules at runtime.
+By now wrapping values inside both a reference counter and a \Verb{RefCell}, it is possible to support mutable variables and pointers.

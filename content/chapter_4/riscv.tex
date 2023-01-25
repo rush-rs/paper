@@ -51,9 +51,6 @@ Therefore, the popularity and commercial attractively of the technology is appar
 However, unlike most previous ISAs, the RISC-V architecture is a completely open-source project and therefore not controlled by a single large corporate entity.
 Unlike most of the previous ISAs which were developed during the 1970s or 80s, RISC-V is one of the few ISAs which were developed this decade.
 
-\subsubsection{Example Program}
-\TODO{Include listing of a test program here}
-
 \noindent
 \begin{figure}[h]
 	\begin{minipage}{.4\textwidth}
@@ -68,8 +65,20 @@ Unlike most of the previous ISAs which were developed during the 1970s or 80s, R
 The rush program on the left side of Figure~\ref{fig:rush_riscv_split} shows a program which exists.
 In line 2, a mutable variable named \qVerb{m} is defined using the initial value 42.
 Next, the \qVerb{exit} function is called using \qVerb{m} as its argument.
+Therefore, the program should terminate using 42 as its exit-code.
+
+\begin{itemize}
+    \item .global \_start in line 1
+    \item .section .text in line 2
+    \item Line 5: \_start label as program entry
+    \item calling the \qVerb{main} function in line 6
+    \item Line 7, placing the exit-code into register a0 (a0 → first int call argument)
+    \item calling exit in line 8
+\end{itemize}
 
 \subsubsection{Register Layout}
+
+
 
 \subsubsection{Calling Convention}
 

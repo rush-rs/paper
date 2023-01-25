@@ -1,0 +1,4 @@
+fn main() {
+    let mut m = 42;
+    exit(m)
+}

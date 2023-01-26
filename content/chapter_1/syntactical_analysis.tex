@@ -33,17 +33,14 @@ Before the syntax of a program is validated it is common to have a lexer group c
 The set of tokens a language has is the union of the set of all terminal symbols used in context-free grammar rules and the set of regular grammar rules.
 For the language defined in Listing~\ref{lst:ebnf_reference_grammar} these are the five operators `\Verb{+}', `\Verb{-}', `\Verb{*}', `\Verb{/}', `\Verb{**}', and the `integer' non-terminal.
 
+\Lirsting[ranges={10-16}, path prefix={deps/rush}, wrap=L, wrap width=0.4\textwidth, caption={The rush \qVerb{Lexer} Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
+
 The specifics of implementing a lexer are not explored in this paper, however a basic overview is still provided.
 The base principal of a lexer is to iterate over the characters of the input to produce tokens.
 Depending on the target language it might however be required to scan the input using an $n$-sized window i.e., observing $n$ characters at a time.
 In the case of rush this $n$ is 2, resulting in the \Verb{Lexer} struct not only storing the current character but also the next character as seen in Listing~\ref{lst:lexer}.
 For clarity, Table~\ref{tbl:lexer} shows the values of \Verb{curr_char} and \Verb{next_char} during processing of the input `\Verb{1+2**3}'.
 Here every row in the table represents one point in time displaying the lexer's current state.
-% Listing~\ref{lst:lexer} shows the \Verb{Lexer} struct as it is defined in rush.
-% The \Verb{reader} is an iterator over the input characters, the \Verb{location} saves the current index, column, and line in the source text, and the \Verb{curr_char} and \Verb{next_char} fields holds\ldots
-
-% TODO: why does using \Verb inside caption break compilation for @MikMuellerDev
-\Lirsting[ranges={10-16}, path prefix={deps/rush}, float=t, caption={The rush \texttt{Lexer} Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
 
 \begin{table}[h]
 	\newcommand{\lexerframe}[8][]{\tikz[baseline={(frame.base)}]{
@@ -82,7 +79,7 @@ In the first three rows this count is still 0, as this happens during initializa
 The \Verb{Pow} token, composed of two `\Verb{*}' symbols, requires the lexer to advance two times before it can be returned, which is represented by the two rows in which the call count is 4.
 A simplified \Verb{Token} struct definition for the example language from Listing~\ref{lst:ebnf_reference_grammar} is shown in Listing~\ref{lst:token_simple}.
 
-\Lirsting[float=h, caption={Simplified \texttt{Token} Struct Definition}, label={lst:token_simple}]{listings/token_simple.rs}
+\Lirsting[wrap=L, wrap width=0.3\textwidth, caption={Simplified \qVerb{Token} Struct Definition}, label={lst:token_simple}]{listings/token_simple.rs}
 
 In addition to the current and next character, a lexer also has to keep track of the current position in the source text for it to provide helpful diagnostics with locations to the user.
 This is done in the \Verb{location} field which is incremented every time the lexer advances to the next character.

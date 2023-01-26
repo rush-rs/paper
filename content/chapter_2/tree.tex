@@ -21,7 +21,7 @@ Expressions use the same error type, but return a \qVerb{Value} on success, hold
 The definitions for both \qVerb{Value} and \qVerb{InterruptKind} are visible in Listing~\ref{lst:tree_value}.
 It is clearly visible that the interpreter simply makes use of Rust's types and does not need to worry about the hidden implementation details.
 
-\Lirsting[ranges={6-13, 22-28}, path prefix={deps/rush}, float=htb, label={lst:tree_value}, caption={Tree-Walking Interpreter: \qVerb{Value} and \qVerb{InterruptKind} Definitions}]{deps/rush/crates/rush-interpreter-tree/src/value.rs}
+\Lirsting[ranges={6-13, 22-28}, path prefix={deps/rush}, wrap=L, label={lst:tree_value}, caption={Tree-Walking Interpreter: \qVerb{Value} and \qVerb{InterruptKind} Definitions}]{deps/rush/crates/rush-interpreter-tree/src/value.rs}
 
 \qVerb{InterruptKind} describes the different ways the interpreter can be interrupted.
 The first three variants, `return', `break', and `continue', are only partial interrupts, i.e., they do not necessarily stop execution of the whole program.
@@ -60,7 +60,7 @@ The other two fatal interrupt kinds are simply passed along when encountered.
 
 To provide a basic overview of a program's execution without too many implementation details, the evaluation of the rush program found in Listing~\ref{lst:tree_example} is presented in the following.
 
-\begin{wrapfigure}{L}{0.42\textwidth}
+\begin{wrapfigure}{R}{0.42\textwidth}
 	\centering
 	\begin{tikzpicture}[node distance=5mm]
         \node(stack)[vstack=11, rectangle split part align=left]{
@@ -76,7 +76,7 @@ To provide a basic overview of a program's execution without too many implementa
             \nodepart{ten}{\LirstInline{rs}{visit_block(/* ... */)}}
             \nodepart{eleven}{\LirstInline{rs}{visit_statement(/* ... */)}}
         };
-        \draw[arrow] ([xshift=-3.5cm]stack.north) -- ([xshift=-3.5cm]stack.south);
+        \draw[arrow] ([xshift=3.5cm]stack.north) -- ([xshift=3.5cm]stack.south);
 	\end{tikzpicture}
 	\caption{Call Stack at the Point of Processing the Return Statement}\label{fig:tree_call_stack}
 \end{wrapfigure}

@@ -34,7 +34,7 @@ This way, the unit is mostly self-contained an can be executed by the operating 
 Therefore, ELF describes the format of a class of files and not just of an individual type of file~\cite[p.~74-76]{Zhirkov2017-wk}.
 
 Even though a processor only has access to one physical memory unit for both instructions and program data,
-most assembly programs like to separate these types of memory into their separate compontents.
+most assembly programs like to separate these types of memory into their separate components.
 Therefore, an object file and assembly program is divided into so-called \emph{sections}~\cite[p.~19]{Zhirkov2017-wk}.
 
 In ELF programs, important sections which are later used include:
@@ -57,8 +57,8 @@ It is to be mentioned that this list only includes entries which are of importan
     \item Most CPUs have special-purpose registers
 \end{itemize}
 
-Watson 2017: p. 212
-Dandamudi2005: Chapter 2
+% Watson 2017: p. 212
+% Dandamudi2005: Chapter 2
 
 \subsection{Assemblers and Assembly Language}
 
@@ -81,7 +81,7 @@ Like hinted previously, the name of the instruction is a mnemonic.
 In this case, \qVerb{addi} stands for \enquote{add immediate}.
 Furthermore, the exact semantic meaning of the instruction is not immediately apparent.
 At last, the instruction for adding integers differs for most CPU architectures.
-For instance, an equivalent instruction for the x\_86 architecture could be \qVerb{add %rdi, 2}.
+For instance, an equivalent instruction for the x\_86 architecture could be `\texttt{add \%rdi, 2}'.
 Therefore, the fact that instructions differ on each target architecture is clearly apparent.
 
 In order to understand how much abstraction is provided by assembly, we should consider Figure~\ref{fig:abstractions}.
@@ -113,9 +113,7 @@ However, the compiler could also emit binary data directly, thus making its impl
 \TODO{@RubixDev}
 
 
-\newpage
-
-\TODO{RISC vs. CISC \cite[p.~5-6]{Dandamudi2005}}
+\TODO{RISC vs. CISC~\cite[p.~5-6]{Dandamudi2005}}
 % TODO: the below goes under conclusions
 % \section{CISC and RISC Architectures}
 %

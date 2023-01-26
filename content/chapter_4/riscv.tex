@@ -53,6 +53,10 @@ Unlike most of the previous ISAs which were developed during the 1970s or 80s, R
 
 \subsection{Register Layout}
 
+
+RISC-V has 32 registers, ARM-32 16, x86\_32 has 8\\
+Another 32 Float registers, float load / store instructions: \cite[pp.~48f.]{Patterson2017}
+
 \subsection{Memory Access Through the Stack}
 
 \begin{figure}[h]
@@ -143,7 +147,7 @@ The start of the \qVerb{.rodata} section is represented by the \qVerb{.section} 
 Here, a label called \qVerb{m} is defined.
 In this label, the \qVerb{.dword} directive is used to define the global initializer value of the variable.
 In RISC-V, this directive stores 64 bit of information in successive memory doublewords~\cite[p.~39]{Patterson2017}.
-The initializer value of the global variable is $42_{10}$ and represented as $\text{0x2a}_{16}$ in the assembly code. \TODO{Is specification of the base correct here?}
+The initializer value of the global variable is 42 and is represented as \qVerb{0x2a} using hexadecimal in the assembly code. \TODO{Is specification of the base correct here?}
 Since these data labels require their data to be specified in hexadecimal, the trailing comment shows the base 10, human-readable version of the number.
 Because global variable are not saved on the stack, special instructions like \qVerb{ld} are required to interact with global variables stored in the program's data sections.
 

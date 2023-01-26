@@ -1,6 +1,10 @@
 {
   "query_search_dirs": ["./deps/**/queries/"],
   "parser_search_dirs": ["./deps/", "./deps/ebnf/crates/"],
+  "comment_map": {
+    "s": { "line": "#", "block": ["", ""] },
+    "asm": { "line": "#", "block": ["", ""] }
+  },
   "theme": {
     "annotation": "#383a42",
     "attribute": "#0184bc",

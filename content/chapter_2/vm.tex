@@ -13,7 +13,7 @@ Often, one might encounter the term \emph{virtual machine} when talking about em
 This emulation often includes simulating additional devices like the computer's display or its disk.
 In this context however, a \emph{virtual machine}\footnote{May later be shortened to \enquote{VM}} is a software entity which emulates how a computer interprets instructions.
 Just like a real computer, a virtual machine executes low-level instructions directly.
-Therefore, the VM is unable to traverse the AST and therefore relies on a compiler to generate its input instructions.
+However, since the VM is unable to traverse the AST, it depends on a compiler generating its input instructions.
 
 Since a physical processor and a virtual machine share some fundamental traits,
 the architecture of a virtual machine is often a slight deviation from the \emph{von Neumann architecture}.
@@ -52,7 +52,7 @@ Therefore, a virtual machine can also be implemented with the high-level constru
 For instance, the VM might feature specialize break, continue, or loop instructions which are not present in modern-day CPUs.
 Designing the architecture of a virtual machine can sometimes be a challenging task since choosing an adequate set of features may involve a lot of testing iterations.
 Because neither the compiler nor the VM exist in the beginning, one should carefully plan the implementation of their VM's architecture.
-From the point where the architecture is clear, implementation of the VM should normally be a straight-forward task.
+From the point where the architecture is clear, implementing the VM should normally be a straight-forward task.
 
 \subsection{Register-Based and Stack-Based Machines}
 

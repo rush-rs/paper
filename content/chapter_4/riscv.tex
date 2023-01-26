@@ -1,3 +1,5 @@
+\newpage
+
 \section{RISC-V: A Compiler for a Modern RISC Architecture}
 
 %\enquote{RISC-V is a recent, clean-slate, minimalist, and open ISA informed by mistakes of past ISAs. The goal of the RISC-V architects is for it to be effective for all computing devices, from the smallest to the fastest. Following von Neumann’s 70-year-old advice, this ISA emphasizes simplicity to keep costs low while having plenty of registers and transparent instruction speed to help compilers and assembly language programmers map actually important problems to appropriate, quick code.}\cite[p.~11]{Patterson2017}
@@ -40,22 +42,85 @@
 % 	\item Calling convention
 % \end{itemize}
 
-\newpage
-
-The \emph{RISC-V} \emph{ISA}\footnote{Short for: \enquote{instruction set architecture}} is a new and modern \emph{reduced instruction set} architecture focussed on simplicity and extendability.
-It was originally developed at \emph{UC Berkely} in the context of a research project.
-Since its initial introduction in 2011, the architecture has been rapidly growing in popularity.
-During that time, it was managed and led by the \emph{RISC-V foundation}, consisting of many individuals contributing to the project.
-Today, the corporate members of the RISC-V foundation include companies like \emph{Google}, \emph{Microsoft}, \emph{Samsung}, and \emph{IBM}.
-Therefore, the popularity and commercial attractively of the technology is apparent.
-However, unlike most previous ISAs, the RISC-V architecture is a completely open-source project and therefore not controlled by a single large corporate entity.
-Unlike most of the previous ISAs which were developed during the 1970s or 80s, RISC-V is one of the few ISAs which were developed this decade.
+The \emph{RISC-V} \emph{ISA}\footnote{Short for: \enquote{instruction set architecture}} is a new and modern \emph{reduced instruction set} architecture focussing on simplicity and expandability.
+The initial version was developed at \emph{UC Berkely} in the context of another related research project.
+Since its introduction in 2011, the architecture has been rapidly growing in popularity.
+Since the beginning, the project has been managed and led by the \emph{RISC-V foundation}, consisting of many individuals contributing to the project.
+Today, corporate members of the RISC-V foundation include companies like \emph{Google}, \emph{Microsoft}, \emph{Samsung}, and \emph{IBM}.
+Therefore, the general popularity and commercial attraction of the technology is apparent.
+However, unlike most previous ISAs, the RISC-V architecture is a completely \emph{open-source} project and is therefore not controlled by a single large corporate entity.
+This can be regarded as a large competitive advantage over other popular RISC architectures like \emph{ARM}.
+In the past, many ISAs have failed due to them being too restrictive with their licensing, thus preventing widespread commercial adoption.
+However, RISC-V is completely open and free to use, so that many companies like \emph{Google} can leverage the technology commercially whilst contributing to the project.
+Unlike most of the previous ISAs, which were developed during the 1970s or 80s, RISC-V is one of the few ISAs which were developed during this decade.
+Therefore, it seems like RISC-V could be a significant architecture to be used in all sorts of devices in the near future~\cite[preface]{Patterson2017}.
 
 \subsection{Register Layout}
 
+\begin{wraptable}{r}{.4\textwidth}
+	\centering
+	\caption{Common Registers in RISC-V~\cite[p~.155]{Waterman2019}}\label{tbl:riscv_regs}
+	\begin{tabularx}{\linewidth}{l|L}
+		\rowcolor{gray!10} Register   & Purpose                         \\ \hline
+		\texttt{zero}                 & Hardwired zero                  \\ \hline
+		\texttt{ra}                   & Return address                  \\ \hline
+		\texttt{sp}                   & Stack pointer                   \\ \hline
+		\texttt{t0} —  \texttt{t6}    & Temporary                       \\ \hline
+		\texttt{fp}                   & Frame Pointer                   \\ \hline
+		\texttt{a0}, \texttt{a1}      & Function argument, return value \\ \hline
+		\texttt{a2} — \texttt{a7}     & Function argument               \\ \hline
+		\texttt{s1} — \texttt{s11}    & Saved register                  \\ \hline
+		\texttt{fa0}, \texttt{fa1}    & FP args, return value           \\ \hline
+		\texttt{fa2} — \texttt{fa7}   & FP args                         \\ \hline
+		\texttt{fs0} — \texttt{fs11}  & FP saved registers              \\ \hline
+		\texttt{ft0} —  \texttt{ft11} & FP temporaries                  \\
+	\end{tabularx}
+\end{wraptable}
 
-RISC-V has 32 registers, ARM-32 16, x86\_32 has 8\\
-Another 32 Float registers, float load / store instructions: \cite[pp.~48f.]{Patterson2017}
+Most RISC architectures typically have a large number of registers~\cite[Chapter~2]{Dandamudi2005}.
+When compared to other popular architectures, the truth of this statement becomes clear.
+For instance, the \emph{x86\_32} architecture has 8 registers.
+The popular RISC architecture \emph{ARM-32} contains twice that amount, meaning 16 registers.
+However, RISC-V includes 32 registers, meaning drastically more than the previously mentioned architectures.
+Moreover, these 32 registers only include registers holding integer values.
+Just for floating-point numbers, the ISA even provides another 32 registers.
+Like previously explained, using more registers usually leads to increased efficiency of the output program.
+Therefore, a register allocation algorithm targeting the RISC-V architecture could be more aggressive compared to one targeting x\_86 for instance.
+
+The Table~\ref{tbl:riscv_regs} shows most of the registers which the RISC-V platform provides.
+For the registers in this table, their official ABI\footnote{Short for: \enquote{application binary interface}} names have been used in order to make the section easier to read.
+The \qVerb{zero} register is a special integer register on RISC-V.
+Like its name suggests, it always holds the value of a constant 0.
+Unlike other registers, it is read-only, meaning that it can never be overwritten by accident.
+
+The \qVerb{ra} register saves the \emph{return address}.
+For instance, this register is used when the \qVerb{call} instruction is executed.
+First, the address of the instruction after the call-instruction is saved in \qVerb{ra}.
+Next, the CPU jumps to the instruction at the specified location.
+If a return-instructions was to be used later, the value in \qVerb{ra} would be used to jump back to where the call was made.
+
+The \qVerb{sp} and \qVerb{fp} registers are used for managing stack memory.
+Their purpose is explained in a following subsection.
+The \qVerb{t0} — \qVerb{t6} registers are often used to store temporary values used in larger computations.
+Next, the register \qVerb{a0} and \qVerb{a1} can both serve as function call arguments and return values of functions.
+How functions are called using registers will also be explained in a following subsection.
+The remaining a-registers \qVerb{a2} — \qVerb{a7} can only be used as function call arguments.
+The \emph{saved} registers \qVerb{s1} — \qVerb{s11} are typically preserved accross function calls.
+However, this concept will also be explained in more detail later.
+All the previously named registers hold integer values.
+Depending on the exact RISC-V architecture, all registers either hold 32-bit or 64-bit integers.
+
+Just like their integer counterparts, the floating-point registers \qVerb{fa0} and \qVerb{fa1} are used as function call arguments and as return values.
+The registers \qVerb{fa2} — \qVerb{fa7} can only be used as function arguments holding floating-point numbers.
+Just like the \qVerb{sx} registers, the \qVerb{fs0} — \qVerb{fs11} registers are usually preserved accross function calls.
+Last, the \qVerb{ft0} — \qVerb{ft11} registers can be used as temporary registers for floating-point numbers.~\cite[pp.~18f,p.~34]{Patterson2017},~\cite[p~.155]{Waterman2019}.
+
+Now, it has become apparent that RISC-V includes many registers grouped into categories.
+Every category is meant to be used in the specified manner, however, these groups are merely a suggestion of how each register should be used.
+More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra} is given in the next sections.
+
+%RISC-V has 32 registers, ARM-32 16, x86\_32 has 8\\
+%Another 32 Float registers, float load / store instructions: \cite[pp.~48f.]{Patterson2017}
 
 \subsection{Memory Access Through the Stack}
 
@@ -101,7 +166,7 @@ Here, every individual section exists to serve a special purpose.
 For instance, the \qVerb{.text} section stores all CPU instructions to be executed.
 Furthermore, the \qVerb{.data} and \qVerb{.rodata} sections store mutable and read-only data respectively~\cite[p.~76]{Zhirkov2017-wk}.
 In line 5, the \qVerb{_start} label is defined using its name followed by a colon.
-One might realize that the concepts of labels in RISC-V assembly can be compared to the labels and basic blocks introduced in the chapter about LLVM.
+One might realize that the concepts of labels in RISC-V assembly can be compared to the labels and basic blocks introduced in the chapter about LLVM\@.
 However, these labels do not come with all the constraints which were introduced by LLVM basic blocks.
 Therefore, a label in assembly might even contain no instructions, does not have to be terminated and could even be terminated twice.
 Here, terminating instructions mean jump- and return-instructions.
@@ -115,7 +180,7 @@ However, unlike function calls in LLVM, this call instruction must be used along
 In the next line, the \qVerb{li} instruction is used to move the constant integer 0 into the register \qVerb{a0}~\cite[reference]{Patterson2017}.
 In line 8, the \qVerb{exit} function is called, however, one cannot see the definition of this function inside the current file.
 Since the exit-function is defined in a separate file, this scenario presents referencing an external library which is later resolved by the linker.
-The instructions in the lines 7-8 are responsible for terminating the program using exit code 0.
+The instructions in the lines 7--8 are responsible for terminating the program using exit code 0.
 These two instructions are always inserted at the end of the \qVerb{_start} label in order to terminate the program appropriately in case the rush code does not call \qVerb{exit} on its own.
 
 Due to the function call in line 6, we will now shift our focus on the \qVerb{main..main} label in line 10.

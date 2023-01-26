@@ -39,31 +39,17 @@ Therefore, an object file and assembly program is divided into so-called \emph{s
 
 In ELF programs, important sections which are later used include:
 \begin{itemize}
-    \item \texttt{.text} stores the logic of the program represented using CPU instructions
-    \item \texttt{.rodata} stores read-only global data, it is often used for global constants.
-    \item \texttt{.data} stores mutable global data, such as mutable global variables
+	\item \texttt{.text} stores the logic of the program represented using CPU instructions
+	\item \texttt{.rodata} stores read-only global data, it is often used for global constants.
+	\item \texttt{.data} stores mutable global data, such as mutable global variables
 \end{itemize}
 
 It is to be mentioned that this list only includes entries which are of importance later in later sections of the paper~\cite[p.~76]{Zhirkov2017-wk}.
 
-\subsection{Registers}
-
-\begin{itemize}
-    \item Include graphic of computer with registers and memory
-    \item Processors contain numerous registers in order to hold data, instructions, and state information 
-    \item Largely dependent on the type of CPU used
-    \item A large number of registers often improves performance
-    \item RISC architectures typically have a large number of registers
-    \item Most CPUs have special-purpose registers
-\end{itemize}
-
-% Watson 2017: p. 212
-% Dandamudi2005: Chapter 2
-
 \subsection{Assemblers and Assembly Language}
 
 \begin{wrapfigure}{R}{.3\textwidth}
-    \centering
+	\centering
 	\includegraphics[width=.25\textwidth]{./abstractions_draft.png}
 	\caption{\textcolor{red}{DRAFT:} Level of Abstraction provided by Assembly}\label{fig:abstractions}
 \end{wrapfigure}
@@ -90,7 +76,7 @@ In the context of this paper, rush presents roughly the same level of abstractio
 The next lower level of abstraction is provided by assembly.
 Now, the program is no longer independent of its target architecture and is much more demanding to furmulate.
 However, the next lower level of abstraction below assembly is represented by code in machine language.
-As of today, one only rarely encounters a programmer writing programs using this level of abstraction. 
+As of today, one only rarely encounters a programmer writing programs using this level of abstraction.
 Since the machine language program is represented in binary, it is nearly impossible for a human to write or understand.
 However, the machine language is also just an abstraction of the computer's hardware and operating system.
 Therefore, assembly provides enough abstraction to be comprehensible for a human whilst being a low-level representation of the program.
@@ -107,8 +93,116 @@ However, doing so rarely creates any significant benefits other than the omitted
 Furthermore, implementing a compiler using this approach often significantly increases the complexity of the compiler since it now has to perform the role of the assembler as well.
 However, the compiler could also emit binary data directly, thus making its implementation significantly more demanding.
 
+\subsection{Registers}
+
+\begin{wrapfigure}{R}{0.5\textwidth}
+	\centering
+	\begin{tikzpicture}[node distance=2cm]
+		\node(CPU)[center] {CPU};
+		\node(registers)[entity, left of=CPU, yshift=3cm, vstack=4, rectangle split part align=left] {
+			Registers
+			\nodepart{two}{\texttt{r0}}
+			\nodepart{three}{\texttt{r1}}
+			\nodepart{four}{\ldots}
+		};
+		\node(memory)[entity, right of=CPU, yshift=3cm] {Memory};
+
+		% TODO: Maybe use `arrow` instead of `relation` in order to remove spacing
+		\draw [darrow, very thick, double] (CPU) -- node[anchor=east, yshift=-.1cm] {fast} (registers);
+		\draw [darrow] (CPU) -- node[anchor=west] {slow} (memory);
+	\end{tikzpicture}
+	\caption{Relationship Between Registers, Memory, and the CPU}\label{fig:cpu_reg_mem}
+\end{wrapfigure}
+
+Most processors contain numerous registers in order to hold data, instructions, and state information.
+In a computer, registers are sometimes used to hold data stored in variables.
+However, most of the time, registers are used as temporary storage in large computations.
+Registers are used in the latter case because they are way faster than memory.
+Therefore, an algorithm using registers instead of memory will usually run faster.
+However, even though registers are faster than memory, they are not used all the time.
+This is because CPU registers are a limited resource, meaning every register-based CPU only has a finite amount of registers available.
+Registers should therefore be used carefully and only when they are really needed~\cite[pp.~212-214]{Watson2017}.
+
+Figure~\ref{fig:cpu_reg_mem} shows how the CPU interacts with its registers and the computer's memory.
+The connection between the set of registers and the CPU is marked as a short and thick arrow because the connection between the CPU and its registers is very short and fast.
+Although the registers are often physically parts of the CPU, they are displayed as separate entities in this example.
+For the memory, the arrow is long and thin.
+This represents the long and therefore slow connection between the CPU and the memory modules.
+In most modern computers, this connection often spans across several centimeters on the motherboard.
+Therefore, higher latency during memory access is inevitable~\cite[pp.~20-21]{Dandamudi2005}.
+
+Nearly every CPU architecture will include an individual register layout, differing in size, count, and type.
+Therefore, the exact information about registers always depends on which CPU is used.
+As a rule of thumb, having more registers in an architecture will almost always improve performance of that architecture.
+Furthermore, not every register is identical.
+There might be platforms with some general-purpose, some floating-point, and some special-purpose registers.
+For instance, there may be registers which contain information about the CPU's current instruction.
+Furthermore, common architectures also include special-purpose registers for modifying the machine's memory.
+Therefore, there is nearly always an appropriate register matching the requirement~\cite[Chapter~2]{Dandamudi2005}.
+
+\Lirsting[wrap=L, raw=true, ranges={4-6}, wrap width=0.3\textwidth, caption={Example Assembly Program for Explaining Register Allocation}, label={lst:register_alloc}]{listings/register_alloc_simple.s}
+
+For a compiler, the limited amount of registers presents a big challenge.
+Some architectures may require that the operands of arithmetic or logical instructions have been explicitly loaded into registers beforehand.
+In this case, registers would be required in nearly all computations.
+In order to understand how registers management can present a challenge, Listing~\ref{lst:register_alloc} should be considered.
+This snippet displays RISC-V assembly instructions which calculate the sum of the two integets 40 and 2.
+In line 4, the integer value 40 is placed in the register \qVerb{a0}.
+In line 5, another integer, this time 2 is placed in \qVerb{a1}.
+
+Next, the \qVerb{add} instruction is used to calculate the sum of these two integers.
+Since the first operand of the instruction specifies the register in which the result should be placed,
+the original value of 40 in the register \qVerb{a0} would be overwritten by the instruction~\cite[reference]{Patterson2017}.
+Through this example, it becomes apparent that other instructions might use registers unexpectedly.
+Therefore, subtle bugs can be created if an instruction overwrites registers.
+
+In compilers, the process of \emph{register allocation} is responsible for managing how registers are used.
+This process attempts to use registers in a way leading to maximized efficiency of the output program.
+Since accessing registers is often faster, a registers allocation algorithm will try to use registers as often as possible.
+Production-ready compilers often try to keep as much of the frequently accessed data in registers.
+For instance, this frequently accessed data may also include variables which are normally saved in memory.
+It is apparent that in most programs, the number of variables will certainly exceed the capacity provided by registers.
+Therefore, register allocation has to detect when no free registers are available anymore.
+In this case, the compiler has to save data in memory instead of registers.
+This process of saving excess data in memory instead of registers is called \emph{register spilling}.
+Since register spilling introduces a performance penalty, register allocation algorithms often attempt to prevent it as much as possible.
+Therefore, sophisticated algorithms for register allocation are often mandatory as long as the factor of output code performance is non-trivial.
+
+Apart from just managing the use of registers, most allocation algorithms are responsible for many other register-related tasks.
+For instance, register allocation should detect when a variable is no longer needed so that its register can be freed.
+Moreover, register allocation has to ensure that no conflicts between registers are introduced.
+Such a conflict may be that a register is accidentally overwritten by an instruction in a completely unrelated basic block.
+It is apparent that an algorithm performing all these tasks can not be implemented in an ad-hoc manner.
+Instead, this process often requires complex graph algorithms for determining which registers can be used and freed.
+Therefore, implementing register allocation in a compiler is often a very demanding task~\cite[pp.212-214]{Watson2017}.
+Since register allocation represents a complex topic, it will not be explained any further.
+
+% \begin{itemize}
+% 	\item Processors contain numerous registers in order to hold data, instructions, and state information X
+% 	\item Registers are required for two reasons: 1. Very fast storage 2. Most instructions require that the operands are in registers X
+% 	\item Precious ressource have to be used carefully X
+% 	\item \cite[p.~212-214]{Watson2017}
+%
+% 	\item Include graphic of computer with registers and memory X
+% 	\item Largely dependent on the type of CPU used X
+% 	\item A large number of registers often improves performance X
+%
+% 	\item RISC architectures typically have a large number of registers
+% 	\item Most CPUs have special-purpose registers
+% \end{itemize}
+
+% Watson 2017: p. 212
+% Dandamudi2005: Chapter 2
+
+
 \subsection{Using Memory: The Stack and the Heap}
 \TODO{@RubixDev}
+
+\begin{itemize}
+	\item Repetition: When is the stack used instead of registers?
+	\item Insert figure of the stack
+\end{itemize}
+
 \subsection{Calling Conventions}
 \TODO{@RubixDev}
 

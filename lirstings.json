@@ -1,9 +1,11 @@
 {
-  "query_search_dirs": ["./deps/**/queries/"],
+  "query_search_dirs": ["./deps/**/queries/", "./queries/"],
   "parser_search_dirs": ["./deps/", "./deps/ebnf/crates/"],
   "comment_map": {
     "s": { "line": "#", "block": ["", ""] },
-    "asm": { "line": "#", "block": ["", ""] }
+    "asm": { "line": "#", "block": ["", ""] },
+    "hexdump": { "line": ";", "block": ["", ""] },
+    "wat": { "line": ";;", "block": ["(;", ";)"] }
   },
   "theme": {
     "annotation": "#383a42",

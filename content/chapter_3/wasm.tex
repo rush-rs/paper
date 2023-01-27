@@ -1,3 +1,40 @@
 \section{Compilation to WebAssembly}
 
-\TODO{@RubixDev must write this section}
+\begin{enumerate}
+    \item what is WASM and why
+    \item modules
+    \begin{itemize}
+        \item binary and text format (sections, leb128)
+        \item globals, functions, imports, exports, \ldots
+        \item uncommon to target binary format
+    \end{itemize}
+    \item WASI
+    \item basic implementation
+    \begin{itemize}
+        \item leb128
+        \item sections
+        \item \Verb{self.function_body}
+    \end{itemize}
+    \item example program
+\end{enumerate}
+
+The first `external' compilation target presented here is \emph{WebAssembly}, or \emph{WASM} for short.
+\TODO{research origins and goals of WASM and explain them here}
+Unlike the name implies, WebAssembly is not only used in web applications.
+By itself, it is only a specification that can be implemented by runtimes in any context.
+Most modern browsers include such a WebAssembly runtime, but there are also standalone ones, for example \emph{wasmtime} and \emph{wasmer}.
+
+\subsection{WebAssembly Modules}
+
+Every valid WebAssembly file must contain exactly one module.
+\TODO{confirm}
+The WebAssembly specification defines two different representations for these modules.
+First, there is a human-readable text representation, called \emph{WAT}\footnote{WebAssembly Text}, closely resembling S-Expressions\footnote{\TODO{what are S-Expressions}}.
+This is comparable to assembly languages for CPU architectures and is the typical target for compilers.
+Secondly, WebAssembly modules can also be represented using its binary format, which is optimized for size and comparable to the final binary files produced by assemblers.
+Most often these binary modules are constructed from a text module by using a tool such as \emph{wat2wasm} from the \emph{WebAssembly Binary Toolkit (WABT)}.
+However, the rush WebAssembly compiler instead opts to target the binary format directly, highlighting a few reasons for why most compilers should not do this.
+Listing~\ref{lst:wat_demo_wat} and Listing~\ref{lst:wat_demo_hex} on page~\pageref{lst:wat_demo_wat} show the same basic WebAssembly module once as WAT and once as a commented hex dump of the same module in its binary representation as produced by \url{https://webassembly.github.io/wabt/demo/wat2wasm/}.
+
+\Lirsting[float=p, label={lst:wat_demo_wat}, caption={Simple WebAssembly Module in Text Representation}]{listings/wat_demo.wat}
+\Lirsting[float=p, label={lst:wat_demo_hex}, caption={Simple WebAssembly Module in Binary Representation}]{listings/wat_demo.hexdump}

@@ -105,14 +105,14 @@ The \qVerb{t0} — \qVerb{t6} registers are often used to store temporary values
 Next, the register \qVerb{a0} and \qVerb{a1} can both serve as function call arguments and return values of functions.
 How functions are called using registers will also be explained in a following subsection.
 The remaining a-registers \qVerb{a2} — \qVerb{a7} can only be used as function call arguments.
-The \emph{saved} registers \qVerb{s1} — \qVerb{s11} are typically preserved accross function calls.
+The \emph{saved} registers \qVerb{s1} — \qVerb{s11} are typically preserved across function calls.
 However, this concept will also be explained in more detail later.
 All the previously named registers hold integer values.
 Depending on the exact RISC-V architecture, all registers either hold 32-bit or 64-bit integers.
 
 Just like their integer counterparts, the floating-point registers \qVerb{fa0} and \qVerb{fa1} are used as function call arguments and as return values.
 The registers \qVerb{fa2} — \qVerb{fa7} can only be used as function arguments holding floating-point numbers.
-Just like the \qVerb{sx} registers, the \qVerb{fs0} — \qVerb{fs11} registers are usually preserved accross function calls.
+Just like the \qVerb{sx} registers, the \qVerb{fs0} — \qVerb{fs11} registers are usually preserved across function calls.
 Last, the \qVerb{ft0} — \qVerb{ft11} registers can be used as temporary registers for floating-point numbers.~\cite[pp.~18f,p.~34]{Patterson2017},~\cite[p~.155]{Waterman2019}.
 
 Now, it has become apparent that RISC-V includes many registers grouped into categories.
@@ -136,28 +136,54 @@ More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVer
 
 \subsection{Calling Convention}
 
+Programmers often use a \emph{procedure} or \emph{function} in order to structure their programs,
+both to make the program easier to understand and to allow shared logic to be reused.
+Therefore, procedures allow the programmer to focus on one portion of the tasks at the time.
+Often, parameters and returned values act as the interface between the procedure and the remaining code.
+Therefore, procedures present one way of how a high-level programming language provides abstraction.
+During a procedure call, like a function call in rush, many individual steps need to be performed in the program's assembly representation.
+Since assembly does not support the use of high-level functions, most architectures specify their own \emph{calling convention} which describes how low-level procedure calls are to be performed.
+In short, a procedure call in RISC-V assembly consists of the following six steps.
+
+\begin{itemize}
+	\item Placing the arguments for the procedure's parameters in a place were the procedure can access them.
+	\item Transferring control to the procedure using the \qVerb{jal} or \qVerb{call} instruction.
+	\item Acquiring local storage resources the procedure needs, spilling register if required.
+	      This step also often involves allocating stack memory for the procedure's local variables.
+	\item The procedure performed its internal logic by executing its instructions.
+	\item It now places its result value in a place where the caller can access it.
+	      In this step the resources allocated in step 3 are also freed and released.
+	\item Returning control back to the caller code using the \qVerb{ret} instruction since procedures can be called from multiple places in the program.
+\end{itemize}
+
+In order to achieve good performance during function calls, passed arguments are usually kept in registers.
+However, in a previous subsection, we have learned that RISC-V only provides eight registers for the use as function arguments.
+Therefore, if a function is called using more than eight arguments, every remaining argument has to be spilled to memory~\cite[p.~98]{Patterson2017-zq}.
+
+\TODO{explain prologue and epilogue}
+
+
 \subsection{RISC-V Assembly}
 
-\noindent
-\begin{figure}[h]
-	\begin{minipage}{.4\textwidth}
-		\Lirsting[fancyvrb={frame=none}]{listings/riscv_simple.rush}
-	\end{minipage}%
-	\begin{minipage}{.6\textwidth}
-		\Lirsting[ranges={1-31, -4 53-56}, fancyvrb={frame=none}]{listings/generated/riscv_simple.s}
-	\end{minipage}
-    \caption{Rush Program Alongside its RISC-V Output \TODO{place the output in a large minipage or wrapfig}}\label{fig:rush_riscv_split}
-\end{figure}
-
-The rush program on the left side of Figure~\ref{fig:rush_riscv_split} shows a program which exists.
+The Listing~\ref{lst:riscv_simple} shows a rush program containing two functions and a global variable.
+In line 1 of the rush program, the mutable global variable \qVerb{m} is defined with the initial value 42.
+In the main-function, \qVerb{m} is incremented by 1 in line 4.
+Next, in line 5, the \qVerb{foo} function is called using \qVerb{m} as its call argument.
+In line 6, a return-statement is used to terminate the main-function explicitly.
+The body of the \qVerb{foo} function only contains a call to the \qVerb{exit} function.
+Therefore, the \qVerb{foo} function only exits with the specified parameter \qVerb{n}.
+In this case, the exit code of the displayed program will be 43.
+The code in Listing~\ref{lst:riscv_simple_asm} on page~\pageref{lst:riscv_simple_asm} shows the output assembly generated from this program by the rush RISC-V compiler\footnote{Generated in Git commit \rushCommit, automatically built with this document}.
 Because the assembler code of the \qVerb{foo} function would take up too much space in the assembler program, it is intentionally omitted from this listing.
 Since the excluded function does not introduce any new concepts anyway, omitting it will not lead to a loss of explained content.
-In line 1 of the rush program, a mutable global variable named \qVerb{m} is defined using the initial value 42.
-In the main-function, \qVerb{m} is incremented by 1.
-Next, the \qVerb{foo} function is called using m as its call argument.
-In line 6, a return-statement is used to terminate the main-function explicitly.
-However, the \qVerb{foo} function only calls the exit function on its own.
-Therefore, the exit code of the program will be 43.
+
+\Lirsting[float=H, caption={Foo}, label={lst:riscv_simple}]{listings/riscv_simple.rush}
+
+\begin{wrapfigure}{L}{0.5\textwidth}
+	\centering
+	\Lirsting[ranges={1-31, -4 53-56}, fancyvrb={frame=none}]{listings/generated/riscv_simple.s}
+	\caption{Compiler Output from the Rush Program in Listing~\ref{lst:riscv_simple}}\label{lst:riscv_simple_asm}
+\end{wrapfigure}
 
 In line 1, the \qVerb{.global} assembler directive is used to declare the global symbol \qVerb{_start}~\cite[p~.36]{Patterson2017}.
 On most architectures, the \qVerb{_start} label indicates the program's entry point, therefore marking the first instruction to be executed~\cite[p.~19]{Zhirkov2017-wk}
@@ -171,7 +197,7 @@ However, these labels do not come with all the constraints which were introduced
 Therefore, a label in assembly might even contain no instructions, does not have to be terminated and could even be terminated twice.
 Here, terminating instructions mean jump- and return-instructions.
 In line 6, the \qVerb{call} instruction is used to call the \qVerb{main..main} function.
-This pseudoinstruction will jump to the first instruction of the specified target label whilst saving the address of the next instruction after the \qVerb{call} instruction in the register \qVerb{ra}.
+This \emph{pseudoinstruction}\footnote{Like an alias in the assembler which generates multiple conventional instructions from one pseudoinstruction. Therefore, the actual count of instructions will remain low whilst convenience features can be used.} will jump to the first instruction of the specified target label whilst saving the address of the next instruction after the \qVerb{call} instruction in the register \qVerb{ra}.
 Since this register holds the address of the next instruction after the function call, similarities to the call-stack of the rush VM can be noticed~\cite[p.~22]{Patterson2017}.
 What strikes the eye here is that the already familiar \qVerb{main} contains the \qVerb{main..} prefix.
 Due to name mangling implemented by this rush compiler, every function declared in a rush program will contain this prefix.
@@ -212,7 +238,7 @@ The start of the \qVerb{.rodata} section is represented by the \qVerb{.section} 
 Here, a label called \qVerb{m} is defined.
 In this label, the \qVerb{.dword} directive is used to define the global initializer value of the variable.
 In RISC-V, this directive stores 64 bit of information in successive memory doublewords~\cite[p.~39]{Patterson2017}.
-The initializer value of the global variable is 42 and is represented as \qVerb{0x2a} using hexadecimal in the assembly code. \TODO{Is specification of the base correct here?}
+The initializer value of the global variable is 42 and is represented as \qVerb{0x2a} using hexadecimal in the assembly code.
 Since these data labels require their data to be specified in hexadecimal, the trailing comment shows the base 10, human-readable version of the number.
 Because global variable are not saved on the stack, special instructions like \qVerb{ld} are required to interact with global variables stored in the program's data sections.
 
@@ -251,6 +277,8 @@ In line 30, the stack pointer is incremented again in order to deallocate memory
 Finally, the \qVerb{ret} instruction in line 31 is used in order to jump back to the instruction whose address is specified in the \qVerb{ra} register~\cite[reference]{Patterson2017}.
 
 \subsection{The Core Library}
+
+Like seen in the example code in listing xxx
 
 \subsection{The rush Compiler Targeting RISC-V Assembly}
 

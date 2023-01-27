@@ -150,7 +150,7 @@ Otherwise, if control came from the `\texttt{else}' block, the phi-node's result
 However, we have not covered where this virtual register is declared.
 For this, we consider the instructions in the `\texttt{else}' block, starting in line 15 with the `\texttt{add}' instruction.
 In this case, the instruction subtracts 2 from the parameter `\texttt{\%0}' and saves the result in `\Verb|\%i_sum|'.
-However, an addition instruction using a negative operand is used since LLVM's optimization decided that this instruction is likely benefitial.
+However, an addition instruction using a negative operand is used since LLVM's optimization decided that this instruction is likely beneficial.
 This is done in order to create the argument value for the first recursive call to `\texttt{fib}'.
 Next, the `\texttt{call}' instruction is used in order to perform the recursive call.
 Here, the `\Verb|\%i_sum|' register is used as an argument to the call-instruction.
@@ -225,7 +225,7 @@ In line 7 of the IR, the parameter `\texttt{n}' and the variable `\texttt{m}' ar
 What strikes the eye is that the declaration of `\texttt{m}' cannot be seen in the IR\@.
 Instead, the constant value 3 of the variable is used in the addition instruction.
 Therefore, the program uses less memory since a redundant mutable variable is not saved in memory.
-This again shows how advanced LLVM optimization is and how it benifits the program.
+This again shows how advanced LLVM optimization is and how it benefits the program.
 The result of this addition is then used in order to call the `\texttt{exit}' function.
 This function call takes place in line 8 of the IR\@.
 Therefore, the exit code of the program will be 5.

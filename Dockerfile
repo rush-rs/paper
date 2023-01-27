@@ -22,7 +22,7 @@ RUN apk add --update \
         font-jetbrains-mono-nl && \
     rm -rf /var/cache/apk/*
 
-# the `biber` package in the repos is too new, so we manually donwload version 2.17 from sourceforge
+# the `biber` package in the repos is too new, so we manually download version 2.17 from sourceforge
 # RUN wget -O- https://master.dl.sourceforge.net/project/biblatex-biber/biblatex-biber/2.17/binaries/Linux-musl/biber-linux_x86_64-musl.tar.gz?viasf=1 | tar xzv -C /bin
 RUN wget -O- https://downloads.rubixdev.de/biber-linux_x86_64-musl.tar.gz | tar xzv -C /bin
 

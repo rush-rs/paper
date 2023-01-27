@@ -48,10 +48,18 @@ It is to be mentioned that this list only includes entries which are of importan
 
 \subsection{Assemblers and Assembly Language}
 
-\begin{wrapfigure}{R}{.3\textwidth}
+\begin{wrapfigure}{R}{.27\textwidth}
 	\centering
-	\includegraphics[width=.25\textwidth]{./abstractions_draft.png}
-	\caption{\textcolor{red}{DRAFT:} Level of Abstraction provided by Assembly}\label{fig:abstractions}
+	\begin{tikzpicture}[node distance=1cm, inner sep=3mm]
+        \node (lexical_analysis) [entity, fill=none] {High-level languages\\(\emph{C}, \emph{Rust})};
+		\node (syntactic_analysis) [entity, below=of lexical_analysis, align=center] {Assembly language\\level};
+		\draw [arrow] (lexical_analysis) -- (syntactic_analysis);
+		\node (semantic_analysis) [entity, fill=none, below=of syntactic_analysis, align=center] {Machine language\\level};
+		\draw [arrow] (syntactic_analysis) -- (semantic_analysis);
+		\node (codegen) [entity, fill=none, below=of semantic_analysis] {Operating system \\ and Hardware level};
+		\draw [arrow] (semantic_analysis) -- (codegen);
+	\end{tikzpicture}
+	\caption{Level of Abstraction provided by Assembly}\label{fig:abstractions}
 \end{wrapfigure}
 
 Assembly language describes a type of low-level programming languages which are directly influenced by the target architecture.

@@ -136,32 +136,6 @@ More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVer
 
 \subsection{Calling Convention}
 
-Programmers often use a \emph{procedure} or \emph{function} in order to structure their programs,
-both to make the program easier to understand and to allow shared logic to be reused.
-Therefore, procedures allow the programmer to focus on one portion of the tasks at the time.
-Often, parameters and returned values act as the interface between the procedure and the remaining code.
-Therefore, procedures present one way of how a high-level programming language provides abstraction.
-During a procedure call, like a function call in rush, many individual steps need to be performed in the program's assembly representation.
-Since assembly does not support the use of high-level functions, most architectures specify their own \emph{calling convention} which describes how low-level procedure calls are to be performed.
-In short, a procedure call in RISC-V assembly consists of the following six steps.
-
-\begin{itemize}
-	\item Placing the arguments for the procedure's parameters in a place were the procedure can access them.
-	\item Transferring control to the procedure using the \qVerb{jal} or \qVerb{call} instruction.
-	\item Acquiring local storage resources the procedure needs, spilling register if required.
-	      This step also often involves allocating stack memory for the procedure's local variables.
-	\item The procedure performed its internal logic by executing its instructions.
-	\item It now places its result value in a place where the caller can access it.
-	      In this step the resources allocated in step 3 are also freed and released.
-	\item Returning control back to the caller code using the \qVerb{ret} instruction since procedures can be called from multiple places in the program.
-\end{itemize}
-
-In order to achieve good performance during function calls, passed arguments are usually kept in registers.
-However, in a previous subsection, we have learned that RISC-V only provides eight registers for the use as function arguments.
-Therefore, if a function is called using more than eight arguments, every remaining argument has to be spilled to memory~\cite[p.~98]{Patterson2017-zq}.
-
-\TODO{explain prologue and epilogue}
-
 
 \subsection{RISC-V Assembly}
 

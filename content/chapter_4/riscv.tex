@@ -1,6 +1,6 @@
 \newpage
 
-\section{RISC-V: A Compiler for a Modern RISC Architecture}
+\section{RISC-V: Compiling to a Modern RISC Architecture}
 
 %\enquote{RISC-V is a recent, clean-slate, minimalist, and open ISA informed by mistakes of past ISAs. The goal of the RISC-V architects is for it to be effective for all computing devices, from the smallest to the fastest. Following von Neumann’s 70-year-old advice, this ISA emphasizes simplicity to keep costs low while having plenty of registers and transparent instruction speed to help compilers and assembly language programmers map actually important problems to appropriate, quick code.}\cite[p.~11]{Patterson2017}
 % \begin{itemize}
@@ -88,7 +88,7 @@ Like previously explained, using more registers usually leads to increased effic
 Therefore, a register allocation algorithm targeting the RISC-V architecture could be more aggressive compared to one targeting x\_86 for instance.
 
 The Table~\ref{tbl:riscv_regs} shows most of the registers which the RISC-V platform provides.
-For the registers in this table, their official ABI\footnote{Short for: \enquote{application binary interface}} names have been used in order to make the section easier to read.
+For the registers in this table, their official ABI names have been used in order to make the section easier to read.
 The \qVerb{zero} register is a special integer register on RISC-V.
 Like its name suggests, it always holds the value of a constant 0.
 Unlike other registers, it is read-only, meaning that it can never be overwritten by accident.
@@ -119,6 +119,7 @@ Now, it has become apparent that RISC-V includes many registers grouped into cat
 Every category is meant to be used in the specified manner, however, these groups are merely a suggestion of how each register should be used.
 More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra} is given in the next sections.
 
+\TODO{Did I mention how generous the register count in RISC-V is?}
 %RISC-V has 32 registers, ARM-32 16, x86\_32 has 8\\
 %Another 32 Float registers, float load / store instructions: \cite[pp.~48f.]{Patterson2017}
 
@@ -136,6 +137,46 @@ More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVer
 
 \subsection{Calling Convention}
 
+\begin{itemize}
+	\item Prologue
+	      \begin{itemize}
+		      \item Decrement stack pointer
+		      \item Adjust frame pointer
+		      \item Save return address
+	      \end{itemize}
+    \item Epilogue
+        \begin{itemize}
+            \item Restore stack- and frame pointer
+            \item Load previously saved return address
+            \item Return to the caller instruction
+        \end{itemize}
+\end{itemize}
+
+An interesting observation is that labels can be called as if they were functions.
+However, the \qVerb{call} instruction is only a pseudoinstruction which jumps to the target label whilst performing additional work during the process.
+The prologue is responsible for allocating space on the stack by incrementing \emph{sp} and \emph{fp} according to the amount of memory required in its function.
+Here, the values of the registers for the frame pointer and the return address are saved on the stack.
+
+This way, their values can be restored later before returning from this function.
+In line 15, the frame pointer is adjusted according to the modifications made to the stack pointer.
+The comment in the next line indicates the end of the prologue.
+In short, the prologue performs important initialization before any other code of the newly called function is executed.
+
+Just like the name suggests, the epilogue is used to free any resources allocated by the function's prologue.
+For instance, the frame pointer is restored to its state before the function call.
+Furthermore, the epilogue restores the value saved in the \qVerb{ra} register in order to restore the return address.
+Since the return address is vital for returning to the next instruction after the function call in the caller function, it is restored here so that this function returns control to the correct caller instruction.
+Since the return address of the caller function is saved in the prologue, nested function calls will cause no issues.
+If the prologue would not save the return address on the stack, a nested function call would overwrite the return address of the parent function, therefore creating a bug~\cite[p.33]{Patterson2017}.
+Again, this design contains a lot of similarities to the call-design of the rush VM\@.
+In the VM, the process of saving and restoring the return address was managed automatically by the VM\@.
+However, here, the programmer has to manually pay attention to saving and restoring this important piece of data.
+Therefore, implementing a call stack is definitely more demanding in RISC-V assembly than in the rush VM\@.
+
+\subsection{The Core Library}
+
+Like seen in the example code in listing xxx\\
+Since the exit-function is defined in a separate file, this scenario presents referencing an external library which is later resolved by the linker.
 
 \subsection{RISC-V Assembly}
 
@@ -145,11 +186,11 @@ In the main-function, \qVerb{m} is incremented by 1 in line 4.
 Next, in line 5, the \qVerb{foo} function is called using \qVerb{m} as its call argument.
 In line 6, a return-statement is used to terminate the main-function explicitly.
 The body of the \qVerb{foo} function only contains a call to the \qVerb{exit} function.
-Therefore, the \qVerb{foo} function only exits with the specified parameter \qVerb{n}.
+Therefore, the \qVerb{foo} function only exits using the specified parameter \qVerb{n} as the exit code.
 In this case, the exit code of the displayed program will be 43.
 The code in Listing~\ref{lst:riscv_simple_asm} on page~\pageref{lst:riscv_simple_asm} shows the output assembly generated from this program by the rush RISC-V compiler\footnote{Generated in Git commit \rushCommit, automatically built with this document}.
 Because the assembler code of the \qVerb{foo} function would take up too much space in the assembler program, it is intentionally omitted from this listing.
-Since the excluded function does not introduce any new concepts anyway, omitting it will not lead to a loss of explained content.
+Since the excluded function does not introduce any new concepts anyway, omitting it will not lead to a loss of explained concepts.
 
 \Lirsting[float=H, caption={Foo}, label={lst:riscv_simple}]{listings/riscv_simple.rush}
 
@@ -160,48 +201,39 @@ Since the excluded function does not introduce any new concepts anyway, omitting
 \end{wrapfigure}
 
 In line 1, the \qVerb{.global} assembler directive is used to declare the global symbol \qVerb{_start}~\cite[p~.36]{Patterson2017}.
-On most architectures, the \qVerb{_start} label indicates the program's entry point, therefore marking the first instruction to be executed~\cite[p.~19]{Zhirkov2017-wk}
-Object files using the ELF format are usually partitioned into several sections.
-Here, every individual section exists to serve a special purpose.
-For instance, the \qVerb{.text} section stores all CPU instructions to be executed.
-Furthermore, the \qVerb{.data} and \qVerb{.rodata} sections store mutable and read-only data respectively~\cite[p.~76]{Zhirkov2017-wk}.
-In line 5, the \qVerb{_start} label is defined using its name followed by a colon.
-One might realize that the concepts of labels in RISC-V assembly can be compared to the labels and basic blocks introduced in the chapter about LLVM\@.
-However, these labels do not come with all the constraints which were introduced by LLVM basic blocks.
-Therefore, a label in assembly might even contain no instructions, does not have to be terminated and could even be terminated twice.
-Here, terminating instructions mean jump- and return-instructions.
+On most architectures, the \qVerb{_start} label indicates a program's entry point, therefore marking the first instruction to be executed~\cite[p.~19]{Zhirkov2017-wk}.
+In line 5, the \qVerb{_start} label is defined by placing a colon after its name.
 In line 6, the \qVerb{call} instruction is used to call the \qVerb{main..main} function.
-This \emph{pseudoinstruction}\footnote{Like an alias in the assembler which generates multiple conventional instructions from one pseudoinstruction. Therefore, the actual count of instructions will remain low whilst convenience features can be used.} will jump to the first instruction of the specified target label whilst saving the address of the next instruction after the \qVerb{call} instruction in the register \qVerb{ra}.
-Since this register holds the address of the next instruction after the function call, similarities to the call-stack of the rush VM can be noticed~\cite[p.~22]{Patterson2017}.
-What strikes the eye here is that the already familiar \qVerb{main} contains the \qVerb{main..} prefix.
-Due to name mangling implemented by this rush compiler, every function declared in a rush program will contain this prefix.
-However, unlike function calls in LLVM, this call instruction must be used alongside the previously explained low-level calling conventions of RISC-V.
+This \emph{pseudoinstruction}\footnote{A macro generating multiple instructions from one pseudoinstruction. Therefore, the actual count of ISA instructions remains low whilst convenience features can be used in assembly~\cite[p.~68]{Dandamudi2005}.} will jump to the first instruction of the specified target label whilst saving the address of the next instruction after the \qVerb{call} instruction in the register \qVerb{ra}~\cite[p.~22]{Patterson2017}.
+Since this register holds the address of the next instruction after the function call, similarities to the call-stack of the rush VM can be noticed.
+What strikes the eye here is that the already familiar \qVerb{main} function is prepended by the \qVerb{main..} prefix.
+Since this rush compiler implements name mangling\footnote{Compilers often \emph{mangle} names in order to create a unique name for every function~\cite[pp.~119-120]{Levine2000}},
+every function declared in a rush program will contain this prefix.
+However, unlike high-level function calls in LLVM, this call instruction is used alongside the previously explained low-level calling conventions of RISC-V.
 
-In the next line, the \qVerb{li} instruction is used to move the constant integer 0 into the register \qVerb{a0}~\cite[reference]{Patterson2017}.
-In line 8, the \qVerb{exit} function is called, however, one cannot see the definition of this function inside the current file.
-Since the exit-function is defined in a separate file, this scenario presents referencing an external library which is later resolved by the linker.
-The instructions in the lines 7--8 are responsible for terminating the program using exit code 0.
+In the next line, the \qVerb{li} instruction is used to load the constant integer 0 into the register \qVerb{a0}~\cite[reference]{Patterson2017}.
+Like explained in the previous section about the RISC-V calling convention,
+the register \qVerb{a0} is used for the first integer call argument.
+In line 8, the \qVerb{exit} function is called, however, one cannot see the definition of this function in the current file.
+This is because the exit function is provided by the rush RISC-V corelib which was explained previously.
+Since 0 was previously placed inside the register for the first integer call argument, the \qVerb{exit} function is called using 0 as the argument.
+Therefore, the instructions in the lines 7--8 are responsible for terminating the program using the exit code 0.
 These two instructions are always inserted at the end of the \qVerb{_start} label in order to terminate the program appropriately in case the rush code does not call \qVerb{exit} on its own.
+This is required in order to prevent a segmentation fault which occurs if the program is not terminated properly.
 
 Due to the function call in line 6, we will now shift our focus on the \qVerb{main..main} label in line 10.
-An interesting observation is that labels can be called as if they were functions.
-However, the \qVerb{call} instruction is only a pseudoinstruction which jumps to the target label whilst performing additional work during the process.
 In line 11, the first line of the \qVerb{main} function, a comment indicates the beginning of the function's prologue.
-In the rush compiler's implementation, each function contains a \emph{prologue} and an \emph{epilogue}.
-The prologue is responsible for allocating space on the stack by incrementing \emph{sp} and \emph{fp} according to the amount of memory required in its function.
+Just like demanded by the RISC-V calling convention, the rush compiler emits code for a \emph{prologue} and an \emph{epilogue} into each function.
 
-For instance, the \qVerb{addi} instruction in line 12 is used to decrement the value of the \qVerb{sp} register by 16.
-However, an addition instruction is used even though subtraction is required.
+As described in the previous sections about calling conventions, one task of the prologue is allocating stack space.
+In this prologue, the \qVerb{addi} instruction in line 12 subtracts 16 from the value stored in the \qVerb{sp}.
+Here, an addition instruction is used even though subtraction is required.
 In RISC-V, the \qVerb{addi} instruction requires one register and one immediate value as its operands.
-The latter is the cause for the trailing \qVerb{i} (\emph{immediate}) in the instruction's name.
+Due to the third operand being an \emph{immediate} value, the trailing \qVerb{i} (\emph{immediate}) appears in the instruction's name.
 Since this immediate value can be negative, an additional instruction for immediate subtraction is redundant~\cite[reference]{Patterson2017}.
-This example shows how the ISA omits redundant instructions were feasible.
+This example shows how the RISC-V ISA omits redundant instructions in places where it is feasible.
 In this case, the stack pointer is decremented by 16 since two 8-byte values are stored on the stack in the lines 13 and 14.
-Here, the values of the registers for the frame pointer and the \emph{return address} (\emph{ra}) are saved on the stack.
-This way, their values can be restored later before returning from this function.
-In line 15, the frame pointer is adjusted according to the modifications made to the stack pointer.
-The comment in the next line indicates the end of the prologue.
-In short, the prologue performs important initialization before any other code of the newly called function is executed.
+Here, the values of the registers for the frame pointer and the return address are saved on the stack.
 
 The comment in line 17 indicates the start of the function's body.
 First, the previously explained \qVerb{li} instruction in line 18 places a constant 1 in register \qVerb{a0}.
@@ -213,46 +245,34 @@ Here, a label called \qVerb{m} is defined.
 In this label, the \qVerb{.dword} directive is used to define the global initializer value of the variable.
 In RISC-V, this directive stores 64 bit of information in successive memory doublewords~\cite[p.~39]{Patterson2017}.
 The initializer value of the global variable is 42 and is represented as \qVerb{0x2a} using hexadecimal in the assembly code.
-Since these data labels require their data to be specified in hexadecimal, the trailing comment shows the base 10, human-readable version of the number.
+Since these data labels require their contents to be specified in hexadecimal, the trailing comment shows the base 10, human-readable version of the number.
 Because global variable are not saved on the stack, special instructions like \qVerb{ld} are required to interact with global variables stored in the program's data sections.
 
-Now, the register \qVerb{a0} would contain 1 and \qVerb{a1} would contain 42.
+At this point, the register \qVerb{a0} would contain 1 and \qVerb{a1} would contain 42.
 In line 20, the \qVerb{add} instruction is used in order to save the sum of \qVerb{a0} and \qVerb{a1} in the register \qVerb{a2}.
-Now, the value of \qVerb{a2} would be 43.
-Next, the \qVerb{sd} instruction in line 21, saves the value of the register \qVerb{a2} at the memory location of the global variable \qVerb{m}, meaning that m is updated to reflect its new value 43.
+Now, the value saved in \qVerb{a2} would be 43.
+Next, the \qVerb{sd} instruction in line 21 saves the value of the register \qVerb{a2} at the memory location of the global variable \qVerb{m}, meaning that \qVerb{m} is updated to reflect its new value 43.
 It now becomes apparent that these instructions are responsible for the add-assign expression in line 4 of the rush program.
-Another interesting observation is that the \qVerb{sd} instruction uses the temporary register \qVerb{t6} for saving temporary data~\cite[reference]{Patterson2017}.
+Another interesting observation is that the last operand of the \qVerb{sd} instruction specifies the temporary register \qVerb{t6}.
+The instruction uses this register for saving temporary data during the process of saving data in \qVerb{m}~\cite[reference]{Patterson2017}.
 
-Next, the previously explained \qVerb{ld} instruction in line 22 is used in order to load the value of the global variable into the register \qVerb{a0}.
+In line 22, the previously explained \qVerb{ld} instruction is used in order to load the value of the same variable into the register \qVerb{a0}.
 Then, the \qVerb{call} instruction in line 23 is used in order to call the \qVerb{foo} function using the value of m as its argument.
 However, one cannot easily observe how call arguments are passed here.
 Like explained previously, the first integer argument of a function call must be placed in the register \qVerb{a0}.
-Since \qVerb{m} was loaded into \qVerb{a0} previously, it is used as the call argument for \qVerb{foo} automatically.
-Therefore, the \qVerb{foo} function would be called using 43 as its argument value.
+Since \qVerb{m} was loaded into \qVerb{a0} previously, it will be used as the call argument for \qVerb{foo} automatically.
+Therefore, the \qVerb{foo} function is called using 43 as the first argument.
 
-Since the \qVerb{foo} instruction only calls the \qVerb{exit} function, its explanation will not be beneficial through the introduction of new concepts.
+Since the \qVerb{foo} instruction only calls the \qVerb{exit} function, its explanation will not be beneficial for introducing new concepts.
+Therefore, we will omit the explanation of the assembler output of the \qVerb{foo} function.
 The final instruction of the main-function's body is the \qVerb{j} instruction in line 24.
 This instruction will cause the CPU to jump to the address of the specified label.
 In this example, the CPU will jump to the first instruction of the \qVerb{epilogue_0} label~\cite[p.~17]{Patterson2017}.
 Therefore, the rush compiler uses the \qVerb{call} instruction for jumps caused by function calls and the \qVerb{j} instruction for jumps between blocks of the current function.
 
-Like previously hinted, every function has a \emph{prologue} and an \emph{epilogue}.
-Just like the name suggests, the epilogue is used to free any resources allocated by the function's prologue.
-For instance, the frame pointer is restored to its state before the function call.
-Furthermore, the epilogue restores the value saved in the \qVerb{ra} register in order to restore the return address.
-Since the return address is vital for returning to the next instruction after the function call in the caller function, it is restored here so that this function returns control to the correct caller instruction.
-Since the return address of the caller function is saved in the prologue, nested function calls will cause no issues.
-If the prologue would not save the return address on the stack, a nested function call would overwrite the return address of the parent function, therefore creating a bug~\cite[p.33]{Patterson2017}.
-Again, this design contains a lot of similarities to the call-design of the rush VM\@.
-In the VM, the process of saving and restoring the return address was managed automatically by the VM\@.
-However, here, the programmer has to manually pay attention to saving and restoring this important piece of data.
-Therefore, implementing a call stack is definitely more demanding in RISC-V assembly than in the rush VM\@.
-In line 30, the stack pointer is incremented again in order to deallocate memory used by the function.
+Like explained previously, every function has a \emph{prologue} and an \emph{epilogue}.
+Since one of the tasks handled by the epilogue is releasing resources allocated by the prologue, the function's stack pointer is incremented in line 30.
 Finally, the \qVerb{ret} instruction in line 31 is used in order to jump back to the instruction whose address is specified in the \qVerb{ra} register~\cite[reference]{Patterson2017}.
-
-\subsection{The Core Library}
-
-Like seen in the example code in listing xxx
 
 \subsection{The rush Compiler Targeting RISC-V Assembly}
 

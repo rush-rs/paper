@@ -12,3 +12,7 @@ init: fetch_deps.sh
 listings/generated: build_listings.py deps/rush listings/fib.rush listings/simple.rush listings/riscv_simple.rush
 	mkdir -p ./listings/generated/
 	python3 build_listings.py
+
+clean:
+	eztex c
+	rm -f lirstings.cache.json

@@ -119,10 +119,6 @@ Now, it has become apparent that RISC-V includes many registers grouped into cat
 Every category is meant to be used in the specified manner, however, these groups are merely a suggestion of how each register should be used.
 More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra} is given in the next sections.
 
-\TODO{Did I mention how generous the register count in RISC-V is?}
-%RISC-V has 32 registers, ARM-32 16, x86\_32 has 8\\
-%Another 32 Float registers, float load / store instructions: \cite[pp.~48f.]{Patterson2017}
-
 \subsection{Memory Access Through the Stack}
 
 \begin{figure}[h]
@@ -133,6 +129,7 @@ More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVer
 \begin{itemize}
 	\item In the current implementation, \qVerb{sp} includes legal memory locations
 	\item \qVerb{fp} points to the first address after the last legal one
+    \item The stack grows into lower memory regions
 \end{itemize}
 
 \subsection{Calling Convention}

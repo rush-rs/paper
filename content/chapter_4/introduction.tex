@@ -28,8 +28,11 @@ Therefore, ELF describes the format of a class of files and not just of an indiv
 Even though a processor only has access to one physical memory unit for both instructions and program data,
 most assembly programs like to separate these types of memory into their separate components.
 Therefore, an object file and assembly program is divided into so-called \emph{sections}~\cite[p.~19]{Zhirkov2017-wk}.
-
-In ELF programs, important sections which are later used include:
+% Object files using the ELF format are usually partitioned into several sections.
+% Here, every individual section exists to serve a special purpose.
+% For instance, the \qVerb{.text} section stores all CPU instructions to be executed.
+% Furthermore, the \qVerb{.data} and \qVerb{.rodata} sections store mutable and read-only data respectively~\cite[p.~76]{Zhirkov2017-wk}.
+In ELF programs, some of the important sections are:
 \begin{itemize}
 	\item \texttt{.text} stores the logic of the program represented using CPU instructions
 	\item \texttt{.rodata} stores read-only global data, it is often used for global constants.
@@ -71,6 +74,18 @@ At last, the instruction for adding integers differs for most CPU architectures.
 For instance, an equivalent instruction for the x\_86 architecture could be `\texttt{add \%rdi, 2}'.
 Therefore, the fact that instructions differ on each target architecture is clearly apparent.
 
+As seen above, the application code in form of instructions is placed in the \qVerb{.text} section of an ELF binary.
+In most assembly dialects, the programmer is able to partition the code manually using sections.
+If the assembly code is assembled to an ELF object file, the \qVerb{.text} section of the assembly should contain all the instructions.
+Just like parts of the LLVM IR, the \qVerb{.text} section of an assembly program obeys a hierarchy.
+This section contains many labels which mark the beginning of a new basic block.
+However, these basic blocks do not come with all the constraints which are to be followed when using LLVM IR\@.
+For instance, a block in assembly might even contain no instructions, does not have to be terminated and could even be terminated twice.
+Here, terminating instructions mean jump- and return-instructions.
+Therefore, the constraints in assembly are much weaker than the ones introduced by LLVM\@.
+Because an assembly usually omits complex optimizations, struct rules constraining the assembly code can be omitted too.
+
+Since assembly provides significantly less abstraction than high-level languages, the question of how much abstraction is lost emerges.
 In order to understand how much abstraction is provided by assembly, we should consider Figure~\ref{fig:abstractions}.
 Here, the highest level of abstraction is provided by high-level programming languages like C or Rust.
 In the context of this paper, rush presents roughly the same level of abstraction like these languages.

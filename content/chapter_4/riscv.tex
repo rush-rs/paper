@@ -134,6 +134,33 @@ More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVer
 
 \subsection{Calling Convention}
 
+Just like previously explained, most architectures provide a calling convention which dictates how low-level function calls should be managed.
+For most architectures, the calling convention is part of the ISA's official specification.
+In the case of RISC-V, the calling convention is specified in a separate document~\cite{RiscvABI}.
+
+The first step of calling a function involves placing the arguments in a place where the function can access them.
+For RISC-V, this involves placing the arguments into specialized registers.
+Like described in the Table~\ref{tbl:riscv_regs}, only special classes of registers can be used as call arguments.
+For integer arguments, the first arguments are placed in the registers \qVerb{a0}--\qVerb{a7}
+For instance, the first two arguments of the rush function call `\LirstInline{rush}{foo(40, 2, 3.14)}' would be placed in the registers \qVerb{a0} and \qVerb{a1}.
+However, the third argument is a floating-point number and can therefore not be placed inside an integer register.
+Therefore, the first floating-point argument register \qVerb{fa0} contains the argument \qVerb{3.14}.
+In this case, all arguments can be held in regisers and spilling would not be required.
+
+In case the function accepted nine or more integer arguments,
+all ruther integer arguments upward of the ninth position would have to be spilled on the stack.
+Here, the successive registers \qVerb{a0}--\qVerb{a7} would contain the first eight integer arguments of the called function.
+The argument at position 9 however is then spilled on the stack since there are no registers left which could contain the additional argument.
+
+\begin{figure}[h]
+	\includegraphics[width=.3\textwidth]{./riscv_call_stack_draft.png}
+	\caption{\textcolor{red}{DRAFT:} Spilled Call Registers on the RISC-V Architecture}\label{fig:riscv_stack}
+\end{figure}
+
+\TODO{CITATION}
+
+\TODO{HERE}
+
 \begin{itemize}
 	\item Prologue
 	      \begin{itemize}

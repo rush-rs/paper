@@ -162,7 +162,7 @@ For a compiler, the limited amount of registers presents a big challenge.
 Some architectures may require that the operands of arithmetic or logical instructions have been explicitly loaded into registers beforehand.
 In this case, registers would be required in nearly all computations.
 In order to understand how registers management can present a challenge, Listing~\ref{lst:register_alloc} should be considered.
-This snippet displays RISC-V assembly instructions which calculate the sum of the two integets 40 and 2.
+This snippet displays RISC-V assembly instructions which calculate the sum of the two integers 40 and 2.
 In line 4, the integer value 40 is placed in the register \qVerb{a0}.
 In line 5, another integer, this time 2 is placed in \qVerb{a1}.
 
@@ -195,6 +195,7 @@ Since register allocation represents a complex topic, it will not be explained a
 
 \subsection{Using Memory: The Stack and the Heap}
 \TODO{@RubixDev: write this subsection}
+\TODO{Useful information:~\cite[p.~99]{Patterson2017-zq}}
 
 \begin{itemize}
 	\item Repetition: When is the stack used instead of registers?
@@ -217,7 +218,7 @@ On most architectures, a low-level procedure call might take place like the foll
 \begin{itemize}
 	\item The caller places the call arguments in a place where the procedure can access them.
 	\item Control is transferred to the procedure, often using a jump or specialized call instruction.
-	      This specialized instruction often saves the return address in a special register so that function returns are easier.
+        This specialized instruction often saves the \emph{return address}\footnote{A link to the caller site, allows the called procedure to jump back to the caller~\cite[p.~99]{Patterson2017-zq}.} in a special register so that function returns are easier.
 	\item The first task the called function performs is acquiring local storage resources needed by the procedure.
 	      Often, registers are spilled if required.
 	      Furthermore, stack memory for the procedure's local variables is often allocated in this step.

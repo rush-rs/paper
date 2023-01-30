@@ -129,37 +129,91 @@ More information on the special registers like \qVerb{sp}, \qVerb{fp}, and \qVer
 \begin{itemize}
 	\item In the current implementation, \qVerb{sp} includes legal memory locations
 	\item \qVerb{fp} points to the first address after the last legal one
-    \item The stack grows into lower memory regions
+	\item The stack grows into lower memory regions
 \end{itemize}
 
 \subsection{Calling Convention}
 
+\begin{wrapfigure}{R}{0.42\textwidth}
+	\centering
+	\begin{tikzpicture}[node distance=5mm]
+		\node(stack)[
+			vstack=6,
+			rectangle split part fill={none, none, gray!20, gray!20, none, none},
+			rectangle split part align=left,
+		]{
+			\nodepart{one}{{\texttt{\tiny 24(sp)}} fp$_0$}
+			\nodepart{two}{{\texttt{\tiny 16(sp)}} ra$_0$}
+			\nodepart{three}{{\texttt{\tiny 08(sp)}} argument 2}
+			\nodepart{four}{{\texttt{\tiny 00(sp)}} argument 1}
+			\nodepart{five}{{\texttt{\tiny 8(sp)}} fp$_1$}
+			\nodepart{six}{{\texttt{\tiny 0(sp)}} ra$_1$}
+		};
+		\draw [thick, dashed] ([xshift=-.5cm, yshift=-.33cm]stack.four west) --  node[anchor=west, xshift=2cm, align=center] {\scriptsize function\\ \scriptsize boundary} ([xshift=.5cm, yshift=-.33cm]stack.four east);
+
+		\node(sp)[left of=stack, xshift=-2.2cm, yshift=-0.32cm, align=left] {\scriptsize SP$_0$ \\ \scriptsize FP$_1$};
+		\draw[arrow, shorten >= 2pt](sp) -- (stack.four west);
+
+		\node(fp)[left of=stack, xshift=-2.2cm, yshift=2.26cm] {\scriptsize FP$_0$};
+		\draw[arrow, shorten >= 2pt](fp) -- ([yshift=.74cm]stack.one west);
+
+		\node(sp)[left of=stack, xshift=-2.2cm, yshift=-1.6cm] {\scriptsize SP$_1$};
+		\draw[arrow, shorten >= 2pt](sp) -- (stack.six west);
+	\end{tikzpicture}
+	\caption{Spilled Registers During a RISC-V Function Call \TODO{Every row should be equal in height}}\label{fig:riscv_call_spill}
+\end{wrapfigure}
+
 Just like previously explained, most architectures provide a calling convention which dictates how low-level function calls should be managed.
 For most architectures, the calling convention is part of the ISA's official specification.
-In the case of RISC-V, the calling convention is specified in a separate document~\cite{RiscvABI}.
+In the case of RISC-V, the calling convention is specified in a separate document~\cite{RiscvABI2022}.
 
 The first step of calling a function involves placing the arguments in a place where the function can access them.
 For RISC-V, this involves placing the arguments into specialized registers.
 Like described in the Table~\ref{tbl:riscv_regs}, only special classes of registers can be used as call arguments.
 For integer arguments, the first arguments are placed in the registers \qVerb{a0}--\qVerb{a7}
-For instance, the first two arguments of the rush function call `\LirstInline{rush}{foo(40, 2, 3.14)}' would be placed in the registers \qVerb{a0} and \qVerb{a1}.
+For instance, the first two arguments of the rush function call
+% TODO: this is broken? \LirstInline{rush}{let mut}
+\qVerb{foo(40, 2, 3.14)} would be placed in the registers \qVerb{a0} and \qVerb{a1}.
 However, the third argument is a floating-point number and can therefore not be placed inside an integer register.
 Therefore, the first floating-point argument register \qVerb{fa0} contains the argument \qVerb{3.14}.
 In this case, all arguments can be held in regisers and spilling would not be required.
 
 In case the function accepted nine or more integer arguments,
-all ruther integer arguments upward of the ninth position would have to be spilled on the stack.
+all further integer arguments upward of the ninth position would have to be spilled on the stack.
 Here, the successive registers \qVerb{a0}--\qVerb{a7} would contain the first eight integer arguments of the called function.
-The argument at position 9 however is then spilled on the stack since there are no registers left which could contain the additional argument.
+The argument at position 9 however is then spilled on the stack since there are no registers left which could contain the additional argument~\cite[p~.8]{RiscvABI2022}.
 
-\begin{figure}[h]
-	\includegraphics[width=.3\textwidth]{./riscv_call_stack_draft.png}
-	\caption{\textcolor{red}{DRAFT:} Spilled Call Registers on the RISC-V Architecture}\label{fig:riscv_stack}
-\end{figure}
+The Figure~\ref{fig:riscv_call_spill} displays a possible state of the call stack during a function call which uses ten integer arguments.
+If ten integer arguments are used, two arguments would have to be spilled on the stack.
+In the figure, the spilled registers are placed in the stack cells \enquote{argument 1} and \enquote{argument 2}.
+Here, the cell \enquote{argument 1} would hold the ninth argument whilst \enquote{argument 2} holds the tenth argument.
+Therefore, all spilled argument registers will be placed in the stack frame of the caller function.
+Normally, variables saved on the stack are aligned to reflect their sizes.
+In case of spilled argument registers however, every argument will occupy exactly 8 bytes on the stack, even if the data type itself requires less space.
 
-\TODO{CITATION}
+Now that the first step of a procedure call is explained, the question of how the second step works in RISC-V remains.
+In the second step, the underlying procedure call is made using a specialized instruction.
+In RISC-V assembly, one typically uses the call \emph{pseudoinstruction}\footnote{A macro generating multiple instructions from one pseudoinstruction. Therefore, the actual count of ISA instructions remains low whilst convenience features can be used in assembly~\cite[p.~68]{Dandamudi2005}.}.
+This instruction will jump to the first instruction of the specified target label whilst saving the address of the next instruction after the \qVerb{call} instruction in the register \qVerb{ra}~\cite[p.~22]{Patterson2017}.
+As hinted previously, the \qVerb{ra} register saves the \emph{return address}.
+Therefore, the return address is set every time a function call is performed.
+% TODO: Since this register holds the address of the next instruction after the function's call-instruction, similarities to the call-stack of the rush VM can be noticed?
 
-\TODO{HERE}
+During the third step of the function call, the called function acquires local storage resources.
+To be precise, the function decrements the stack pointer by the amount required by the stack frame.
+Therefore, the function allocates as much stack space as required for storing local variables and other data.
+Additionally, the frame pointer and return address are saved on the stack so that nested function calls do not cause issues.
+For instance, if the return address was not saved on the stack, a nested function call would overwrite its stored value.
+In this case, the parent function could no longer return since the return address now holds an incorrect value.
+In order to mitigate issues like this, the return address and frame pointer are saved on the stack.
+Figure~\ref{fig:riscv_call_spill} shows that the two registers are saved at the top-most position of the new stack frame.
+
+% \begin{figure}[h]
+% 	\includegraphics[width=.3\textwidth]{./riscv_call_stack_draft.png}
+% 	\caption{\textcolor{red}{DRAFT:} Spilled Call Registers on the RISC-V Architecture}\label{fig:riscv_stack}
+% \end{figure}
+
+\TODO{Continue here}
 
 \begin{itemize}
 	\item Prologue
@@ -168,12 +222,12 @@ The argument at position 9 however is then spilled on the stack since there are 
 		      \item Adjust frame pointer
 		      \item Save return address
 	      \end{itemize}
-    \item Epilogue
-        \begin{itemize}
-            \item Restore stack- and frame pointer
-            \item Load previously saved return address
-            \item Return to the caller instruction
-        \end{itemize}
+	\item Epilogue
+	      \begin{itemize}
+		      \item Restore stack- and frame pointer
+		      \item Load previously saved return address
+		      \item Return to the caller instruction
+	      \end{itemize}
 \end{itemize}
 
 An interesting observation is that labels can be called as if they were functions.
@@ -228,8 +282,6 @@ In line 1, the \qVerb{.global} assembler directive is used to declare the global
 On most architectures, the \qVerb{_start} label indicates a program's entry point, therefore marking the first instruction to be executed~\cite[p.~19]{Zhirkov2017-wk}.
 In line 5, the \qVerb{_start} label is defined by placing a colon after its name.
 In line 6, the \qVerb{call} instruction is used to call the \qVerb{main..main} function.
-This \emph{pseudoinstruction}\footnote{A macro generating multiple instructions from one pseudoinstruction. Therefore, the actual count of ISA instructions remains low whilst convenience features can be used in assembly~\cite[p.~68]{Dandamudi2005}.} will jump to the first instruction of the specified target label whilst saving the address of the next instruction after the \qVerb{call} instruction in the register \qVerb{ra}~\cite[p.~22]{Patterson2017}.
-Since this register holds the address of the next instruction after the function call, similarities to the call-stack of the rush VM can be noticed.
 What strikes the eye here is that the already familiar \qVerb{main} function is prepended by the \qVerb{main..} prefix.
 Since this rush compiler implements name mangling\footnote{Compilers often \emph{mangle} names in order to create a unique name for every function~\cite[pp.~119-120]{Levine2000}},
 every function declared in a rush program will contain this prefix.
@@ -299,4 +351,3 @@ Since one of the tasks handled by the epilogue is releasing resources allocated 
 Finally, the \qVerb{ret} instruction in line 31 is used in order to jump back to the instruction whose address is specified in the \qVerb{ra} register~\cite[reference]{Patterson2017}.
 
 \subsection{The rush Compiler Targeting RISC-V Assembly}
-

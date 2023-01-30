@@ -1,21 +1,21 @@
 \section{Compilation to WebAssembly}
 
 \begin{enumerate}
-    \item what is WASM and why
-    \item modules
-    \begin{itemize}
-        \item binary and text format (sections, leb128)
-        \item globals, functions, imports, exports, \ldots
-        \item uncommon to target binary format
-    \end{itemize}
-    \item WASI
-    \item basic implementation
-    \begin{itemize}
-        \item leb128
-        \item sections
-        \item \Verb{self.function_body}
-    \end{itemize}
-    \item example program
+	\item what is WASM and why
+	\item modules
+	      \begin{itemize}
+		      \item binary and text format (sections, leb128)
+		      \item globals, functions, imports, exports, \ldots
+		      \item uncommon to target binary format
+	      \end{itemize}
+	\item WASI
+	\item basic implementation
+	      \begin{itemize}
+		      \item leb128
+		      \item sections
+		      \item \Verb{self.function_body}
+	      \end{itemize}
+	\item example program
 \end{enumerate}
 
 The first `external' compilation target presented here is \emph{WebAssembly}, or \emph{WASM} for short.
@@ -38,3 +38,57 @@ Listing~\ref{lst:wat_demo_wat} and Listing~\ref{lst:wat_demo_hex} on page~\pager
 
 \Lirsting[float=p, label={lst:wat_demo_wat}, caption={Simple WebAssembly Module in Text Representation}]{listings/wat_demo.wat}
 \Lirsting[float=p, label={lst:wat_demo_hex}, caption={Simple WebAssembly Module in Binary Representation}]{listings/wat_demo.hexdump}
+
+Focusing on the text representation first, the shown module contains one function that takes two \qVerb{i32}s as parameters and returns a single \qVerb{i32}.
+An \qVerb{i32} in WebAssembly represents an uninterpreted 32-Bit integer, that is, it is not clear whether the integer is signed or unsigned from the type itself.
+Instead, values of this type can be interpreted as either signed or unsigned by different instructions.
+For instance, the instruction \qVerb{i32.eq}, which checks for equality between two \qVerb{i32} values, behaves the same no matter the integer's signedness.
+In contrast, \qVerb{i32.lt_s} and \qVerb{i32.lt_u} are two instructions both querying whether one \qVerb{i32} is less than another, once for signed and once for unsigned integers as denoted by the suffix.
+
+The mentioned function is exported by the module under the name `addTwo' to make it accessible from outside.
+What exactly `outside' is depends on the context the module is run in.
+WebAssembly is \emph{stack based} and has one primary stack each instruction operates on.
+The first two instructions of the `addTwo' function retrieve the local variable of the given index and push its value to the stack.
+`Locals' in WebAssembly are simple values separate from the main stack.
+Function parameters are always the first locals, but additional ones can be added, too.
+After the two instructions ran, the stack now contains the values of the two function parameters.
+They are then added by \qVerb{i32.add} which pops the top two elements off the stack and pushes the sum back on.
+The return value implicitly is always what remains on the stack at the end of a function body.
+
+Now focusing on the hex dump of the same module in binary in Listing~\ref{lst:wat_demo_hex}.
+A WebAssembly binary file always starts with the four bytes \qVerb{00 61 73 6d} called the \emph{WASM binary magic} and representing a zero byte followed by the string `asm' using ASCII representation.
+This is used by other programs to easily identify binary files as WebAssembly modules.
+Following that is the version of the binary format, stored as a 32-Bit integer in Little-Endian\footnote{Little-Endian starts with the least significant byte first, whereas Big-Endian starts with the most significant byte}.
+At the time of writing it is always `1'.
+
+The binary module is then split into different sections each containing one kind of information about the whole.
+Empty sections can be omitted.
+Each section begins with its identifier, followed by the section size in bytes.
+Most sections contain one vector of relevant data, and vectors always start with the count of elements they contain, and continue with the elements themselves.
+The first section present here is the `Type' section.
+It declares different types used by the module, most importantly, the function signatures.
+The `Function' section then contains the number of functions of the current module and simply references to the `Type' section for each function's signature.
+The module's exports are declared in the `Export' section.
+Finally, the `Code' section contains the actual instructions for each function.
+It is again stored as a vector, containing function bodies for all functions defined in the `Function' section in the same order.
+Each function body begins with its size in bytes, continues with the instructions, and ended by an \qVerb{end} instruction represented by a \qVerb{0b} byte.
+
+The `wat2wasm' tool used here additionally adds a custom `name' section.
+Custom sections always have the ID `0' and must provide a custom name using ASCII.
+This `name' section has its own specification separate from the main module specification, and is used to provide names for functions and variables that can then be used by development tools like `wasm2wat'.
+
+Apart from exporting, WebAssembly modules can also import functions from outside.
+Only the name and type signature must be provided and the WebAssembly runtime will then have to provide an implementation when running.
+Furthermore, WebAssembly does not only have local variables, but also global ones, accessible from every function.
+These must be initialized with some constant value and can either be mutable or immutable.
+
+One may already have noticed that except for the version number at the start, all sizes, indices, lengths, and so on, have been stored using just a single byte.
+But, this is not because those can only reach a maximum of 255, but instead WebAssembly uses the LEB128 encoding for integer literals in binary modules.
+It is a space efficient way to store integers by only ever needing as many bytes as necessary for a number.
+The encoding details are not explained here however, and our implementation for the rush compiler simply uses a pre-existing crate\footnote{A crate is a library in Rust terms} called `leb128'.
+
+\subsection{WASI: The WebAssembly System Interface}
+
+\subsection{Implementation}
+
+\subsection{Example}

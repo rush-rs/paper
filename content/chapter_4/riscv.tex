@@ -206,50 +206,59 @@ Additionally, the frame pointer and return address are saved on the stack so tha
 For instance, if the return address was not saved on the stack, a nested function call would overwrite its stored value.
 In this case, the parent function could no longer return since the return address now holds an incorrect value.
 In order to mitigate issues like this, the return address and frame pointer are saved on the stack.
-Figure~\ref{fig:riscv_call_spill} shows that the two registers are saved at the top-most position of the new stack frame.
+Figure~\ref{fig:riscv_call_spill} shows that the two registers are saved at the two positions on the top of the new stack frame.
+This part of the function is often called the \emph{prologue} as it is executed before any of the function's internal code.
+
+After the code of the function has been executed, the so-called \emph{epilogue} is executed.
+Since the frame pointer and return address have been saved on the stack during the prologue,
+the epilogue restores these registers by loading their values from the stack.
+Furthermore, the amount which was subtracted from the stack pointer in the prologue is now added to the pointer in order to restore it to its original state before the function call.
+Here, incrementing the stack pointer represents deallocating the previously acquired stack space.
+However, the memory in the stack frame is not actually deleted since only the stack pointer is modified.
+Even though the used memory is not explicitly deleted, it is still freed since it will probably be overwritten by the next function call.
+If the prologue would not save the return address on the stack, a nested function call would overwrite the return address of the parent function, therefore creating a bug~\cite[p.33]{Patterson2017}.
+By saving the return address on the stack, nested function calls do not cause difficulties.
+It is apparent that this design contains a lot of similarities to the call-stack of the rush VM\@.
+However, in the VM, the process of saving and restoring the return address was managed automatically by the VM,
+whereas, here, the programmer has to manually pay attention to saving and restoring this important piece of data.
+Therefore, implementing function calls is definitely more demanding in RISC-V assembly than in the rush VM\@.
+
+In case a function returns a value, it must be communicated to the caller so that it can access it.
+For integer-based types, the first return value of a function is placed in the register \qVerb{a0}
+whilst floating-point numbers are placed in the register \qVerb{fa0}.
+This way, the caller code can obtain a function's return value by accessing the \qVerb{a0} and \qVerb{fa0}
+registers respectively. If a function does not return a value, these steps are just omitted.
+It is to be mentioned that character and boolean values are also placed inside the \qVerb{a0} register since these types can be represented by integers.
+
+Lastly, the epilogue contains a return-instruction which should jump to the place where the function was called.
+This \emph{ret} instruction reads the value stored in \qVerb{ra} in order to jump to this address.
+
 
 % \begin{figure}[h]
 % 	\includegraphics[width=.3\textwidth]{./riscv_call_stack_draft.png}
 % 	\caption{\textcolor{red}{DRAFT:} Spilled Call Registers on the RISC-V Architecture}\label{fig:riscv_stack}
 % \end{figure}
 
-\TODO{Continue here}
+% \TODO{Continue here}
+%
+% \begin{itemize}
+% 	\item Prologue
+% 	      \begin{itemize}
+% 		      \item Decrement stack pointer X
+% 		      \item Adjust frame pointer    X
+% 		      \item Save return address     X
+% 	      \end{itemize}
+% 	\item Epilogue
+% 	      \begin{itemize}
+% 		      \item Restore stack- and frame pointer X
+% 		      \item Load previously saved return address X
+% 		      \item Return to the caller instruction
+% 	      \end{itemize}
+% \end{itemize}
+%
 
-\begin{itemize}
-	\item Prologue
-	      \begin{itemize}
-		      \item Decrement stack pointer
-		      \item Adjust frame pointer
-		      \item Save return address
-	      \end{itemize}
-	\item Epilogue
-	      \begin{itemize}
-		      \item Restore stack- and frame pointer
-		      \item Load previously saved return address
-		      \item Return to the caller instruction
-	      \end{itemize}
-\end{itemize}
-
-An interesting observation is that labels can be called as if they were functions.
-However, the \qVerb{call} instruction is only a pseudoinstruction which jumps to the target label whilst performing additional work during the process.
-The prologue is responsible for allocating space on the stack by incrementing \emph{sp} and \emph{fp} according to the amount of memory required in its function.
-Here, the values of the registers for the frame pointer and the return address are saved on the stack.
-
-This way, their values can be restored later before returning from this function.
-In line 15, the frame pointer is adjusted according to the modifications made to the stack pointer.
-The comment in the next line indicates the end of the prologue.
-In short, the prologue performs important initialization before any other code of the newly called function is executed.
-
-Just like the name suggests, the epilogue is used to free any resources allocated by the function's prologue.
-For instance, the frame pointer is restored to its state before the function call.
-Furthermore, the epilogue restores the value saved in the \qVerb{ra} register in order to restore the return address.
-Since the return address is vital for returning to the next instruction after the function call in the caller function, it is restored here so that this function returns control to the correct caller instruction.
-Since the return address of the caller function is saved in the prologue, nested function calls will cause no issues.
-If the prologue would not save the return address on the stack, a nested function call would overwrite the return address of the parent function, therefore creating a bug~\cite[p.33]{Patterson2017}.
-Again, this design contains a lot of similarities to the call-design of the rush VM\@.
-In the VM, the process of saving and restoring the return address was managed automatically by the VM\@.
-However, here, the programmer has to manually pay attention to saving and restoring this important piece of data.
-Therefore, implementing a call stack is definitely more demanding in RISC-V assembly than in the rush VM\@.
+Due to the lack of functions in RISC-V assembly,
+\emph{labels} can be called using the \qVerb{call} pseudoinstruction.
 
 \subsection{The Core Library}
 

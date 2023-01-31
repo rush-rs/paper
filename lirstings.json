@@ -101,6 +101,7 @@
     "symbol.grammar.upper": "#c18401",
     "symbol.grammar.lower": "#e45649",
     "storageclass.lifetime": "#e45649",
+    "storageclass": "#986801",
     "type.qualifier": "#a626a4"
   },
   "ansi_colors": [

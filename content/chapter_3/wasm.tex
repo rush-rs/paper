@@ -87,8 +87,40 @@ But, this is not because those can only reach a maximum of 255, but instead WebA
 It is a space efficient way to store integers by only ever needing as many bytes as necessary for a number.
 The encoding details are not explained here however, and our implementation for the rush compiler simply uses a pre-existing crate\footnote{A crate is a library in Rust terms} called `leb128'.
 
-\subsection{WASI: The WebAssembly System Interface}
+\subsection{The WebAssembly System Interface}
+
+Since WebAssembly itself does not provide any guarantees about the runtime environment, it does not provide ways to interact with the environment, except, of course, for module imports and exports.
+That is why an additional specification called the \emph{WebAssembly System Interface}, short \emph{WASI}, was created for WebAssembly modules that wish to communicate with an operating system.
+Any runtime supporting WASI must provide a set of functions comparable to \emph{system calls} on Linux or Windows.
+These can then be imported from a WebAssembly module to do things like writing to a console and exiting with a specific exit code.
+Both wasmtime and wasmer implement the WASI interface.
+
+A WebAssembly module making use of WASI must export one function under the name \qVerb{_start} that acts as the entry point.
+The rush WebAssembly compiler only ever imports WASI's \qVerb{proc_exit} function which takes one 32-Bit integer as an argument and terminates execution with the given code.
+
+\TODO{anything else to explain/mention here?}
 
 \subsection{Implementation}
 
+\Lirsting[ranges={324-328}, path prefix={deps/rush}, wrap=R, fancyvrb={numbers=right}, label={lst:wasm_instructions}, caption={Definition of Instruction Opcodes}]{deps/rush/crates/rush-compiler-wasm/src/instructions.rs}
+
+The rush WebAssembly compiler directly targets the binary format.
+This complicates compilation in a few ways, but removes the need for any external dependencies.
+First, public constants are defined for all instructions and all types in separate files.
+Listing~\ref{lst:wasm_instructions} shows an extract.
+
+The \qVerb{Compiler} struct has a lot of fields for various purposes.
+Only a few are shown in Listing~\ref{lst:wasm_compiler} and explained here.
+To begin, a few fields regarding the currently compiled function are defined.
+The \qVerb{function_body} contains the bytes with instructions for this function, and \qVerb{locals} stores which locals the function has along with their types.
+In the binary format the locals are stored as a WebAssembly vector, that is, it starts with the number of locals, followed by each local.
+Since the compiler cannot know the count of local variables beforehand, it stores them as a vector of byte vectors first.
+This way, in the end it can first append the vector's length to the final output and then concatenate the contents.
+
+\Lirsting[ranges={11-15, 26-31, 37-39, 58-58}, path prefix={deps/rush}, float=h, label={lst:wasm_compiler}, caption={\qVerb{Compiler} Struct Definition of the WebAssembly Compiler}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
+
+\TODO{explain other shown fields}
+
 \subsection{Example}
+
+\TODO{example}

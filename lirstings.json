@@ -126,7 +126,8 @@
     "symbol.grammar.camel": "$cyan",
     "symbol.grammar.upper": "$orange",
     "symbol.grammar.lower": "$red",
-    "storageclass.lifetime": "$red"
+    "storageclass.lifetime": "$red",
+    "storageclass": "$yellow"
   },
   "ansi_colors": [
     "000000",

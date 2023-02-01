@@ -116,11 +116,34 @@ The \qVerb{function_body} contains the bytes with instructions for this function
 In the binary format the locals are stored as a WebAssembly vector, that is, it starts with the number of locals, followed by each local.
 Since the compiler cannot know the count of local variables beforehand, it stores them as a vector of byte vectors first.
 This way, in the end it can first append the vector's length to the final output and then concatenate the contents.
+The three following fields all map names to indices.
+One for local variable scopes, one for the global scope, and one for function names.
+Each index itself is stored as a vector of bytes, as it uses the aforementioned LEB128 encoding which can vary in length.
+Finally, one field for every supported section is defined.
+They are of type \qVerb{Vec<Vec<u8>>} for the same reason as \qVerb{locals}.
 
 \Lirsting[ranges={11-15, 26-31, 37-39, 58-58}, path prefix={deps/rush}, float=h, label={lst:wasm_compiler}, caption={\qVerb{Compiler} Struct Definition of the WebAssembly Compiler}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
 
-\TODO{explain other shown fields}
+Listing~\ref{lst:wasm_compiler_entry} contains the compiler's entry point function.
+Some details are left out, but essentially it simply calls another method to compile the program itself and then concatenates all sections together to form the final binary.
+It also already imports all required functions from WASI and exports blank linear memory as required by WASI.
+The \qVerb{Self::section} helper function is used to add the section identifier, byte length, and element count for each section.
+
+\Lirsting[ranges={70-70, 81-81, 104-109, 124-126}, path prefix={deps/rush}, float=h, label={lst:wasm_compiler_entry}, caption={Entry Point of the WASM Compiler}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
+
+Inside the \qVerb{self.program} method, the global variables are defined and initialized, and all function signatures are added to the `Type' section and `Function' section and the \qVerb{self.functions} map.
+Afterwards, it calls \qVerb{self.function_definition} for every defined function.
+This has to happen in these two steps, because rush allows functions to be called before their definition in the file.
+For every function body, first all statements and the optional trailing expression are compiled by their respective methods, and then the values of \qVerb{self.function_body} and \qVerb{self.locals} along with their combined length are appended to the code section.
+
+All other nodes have a matching method defined again, as every time an AST is traversed.
+Each of those methods simply pushes instructions to \qVerb{self.function_body}.
+Because WebAssembly is stack-based, none of them has to return any value, not even the expressions.
+They simply add their instructions to the resulting code and call methods for nested nodes beforehand.
+By the stack's nature, this will result in correct behavior, just like in the VM.
+
+\TODO{function calls?}
 
 \subsection{Example}
 
-\TODO{example}
+\TODO{example?}

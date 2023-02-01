@@ -194,6 +194,8 @@ In case of spilled argument registers however, every argument will occupy exactl
 Now that the first step of a procedure call is explained, the question of how the second step works in RISC-V remains.
 In the second step, the underlying procedure call is made using a specialized instruction.
 In RISC-V assembly, one typically uses the call \emph{pseudoinstruction}\footnote{A macro generating multiple instructions from one pseudoinstruction. Therefore, the actual count of ISA instructions remains low whilst convenience features can be used in assembly~\cite[p.~68]{Dandamudi2005}.}.
+Due to a lack of functions in assembly, the call-instruction uses the name of its target label as one operand.
+Therefore, labels can be called as if they were functions.
 This instruction will jump to the first instruction of the specified target label whilst saving the address of the next instruction after the \qVerb{call} instruction in the register \qVerb{ra}~\cite[p.~22]{Patterson2017}.
 As hinted previously, the \qVerb{ra} register saves the \emph{return address}.
 Therefore, the return address is set every time a function call is performed.
@@ -257,20 +259,33 @@ This \emph{ret} instruction reads the value stored in \qVerb{ra} in order to jum
 % \end{itemize}
 %
 
-Due to the lack of functions in RISC-V assembly,
-\emph{labels} can be called using the \qVerb{call} pseudoinstruction.
-
 \subsection{The Core Library}
 
-Like seen in the example code in listing xxx\\
-Since the exit-function is defined in a separate file, this scenario presents referencing an external library which is later resolved by the linker.
+Like hinted in the section about the linker on page~\pageref{sec:linker},
+a program might use functionality provided by external libraries.
+In case of the rush RISC-V compiler, external functions are used for character-arithmetic,
+the mathematical power operator, and \emph{kernel}\footnote{\TODO{Explaination + Citation}} system-calls,
+like \emph{exit}\footnote{Terminates the execution of the program with an arbitrary exit code}.
+Since these concepts must introduce additional logic, the compiler should not be emitted their instructions everytime they are used.
+In that case, the repeated emission of redundant instructions would result in enlarged and unnecessary complex output code.
+In order to mitigate these issues, the compiler simply inserts call-instructions referencing external functions.
+External functions can be called just like any other function, however, their definition is not found in the same assembly file.
+As described previously, resolving these external calls is later handled by the linker.
+For this compiler, we later refer to this target specific library code by the term \emph{corelib}.
+
+For instance, a function for mathematical power operations is implemented in the corelib.
+Therefore, the compiler can emit a procedure call to this method every time rush's \qVerb{**} operator is used in the source program.
+For this project, the entire corelib is written in RISC-V assembly.
+However, it is often rational to implement a corelib or standardlib using a high-level language like C.
+Since the corelib's functions are specified in separate files, they are packaged into an \emph{archive file}\footnote{\TODO{What are archives + Citation}} which is later used by the linker.
 
 \subsection{RISC-V Assembly}
 
 The Listing~\ref{lst:riscv_simple} shows a rush program containing two functions and a global variable.
 In line 1 of the rush program, the mutable global variable \qVerb{m} is defined with the initial value 42.
-In the main-function, \qVerb{m} is incremented by 1 in line 4.
-Next, in line 5, the \qVerb{foo} function is called using \qVerb{m} as its call argument.
+In line 4 of the main-function, \qVerb{m} is incremented by 1.
+Next, in line 5, the \qVerb{foo} function is called using \qVerb{m} as the only call argument.
+\TODO{continue here}
 In line 6, a return-statement is used to terminate the main-function explicitly.
 The body of the \qVerb{foo} function only contains a call to the \qVerb{exit} function.
 Therefore, the \qVerb{foo} function only exits using the specified parameter \qVerb{n} as the exit code.
@@ -279,7 +294,7 @@ The code in Listing~\ref{lst:riscv_simple_asm} on page~\pageref{lst:riscv_simple
 Because the assembler code of the \qVerb{foo} function would take up too much space in the assembler program, it is intentionally omitted from this listing.
 Since the excluded function does not introduce any new concepts anyway, omitting it will not lead to a loss of explained concepts.
 
-\Lirsting[float=H, caption={Foo}, label={lst:riscv_simple}]{listings/riscv_simple.rush}
+\Lirsting[float=H, caption={Example rush Program Containing Two Functions}, label={lst:riscv_simple}]{listings/riscv_simple.rush}
 
 \begin{wrapfigure}{L}{0.5\textwidth}
 	\centering

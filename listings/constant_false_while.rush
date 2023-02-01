@@ -1,3 +1,5 @@
-while false {
-    // this loop will never iterate
+fn main() {
+    while false {
+        // this loop will never iterate
+    }
 }

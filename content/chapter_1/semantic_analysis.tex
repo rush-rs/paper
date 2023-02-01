@@ -313,8 +313,8 @@ Among other optimizations implemented in the analyzer, loop transformation can a
 The top listing displays part of a rush program which uses a \texttt{while} loop even though a \texttt{loop} would be faster.
 The other listing displays the same algorithm implemented using the faster \texttt{loop}.
 
-\Lirsting[caption={Redundant \texttt{while} Loop Inside a rush Program}]{listings/constant_true_while.rush}
-\Lirsting[caption={Faster Loop Algorithm Implemented in rush}]{listings/faster_loop.rush}
+\Lirsting[ranges={3-5}, caption={Redundant \texttt{while} Loop Inside a rush Program}]{listings/constant_true_while.rush}
+\Lirsting[ranges={3-5}, caption={Faster Loop Algorithm Implemented in rush}]{listings/faster_loop.rush}
 
 The \texttt{loop} implementation is more efficient since the condition check is omitted before each iteration.
 Because the \texttt{while} loop checks that its head condition is true before it starts the next iteration,
@@ -329,7 +329,7 @@ Detection of this scenario is implemented in line 855 of Listing~\ref{lst:analyz
 Another scenario in which a \texttt{while} loop can be restructured occurs if the condition always evaluates to \texttt{false}.
 This example is displayed in the listing below.
 
-\Lirsting[caption={\texttt{while} Loop Inside a rush Program Which Never Iterates}]{listings/constant_false_while.rush}
+\Lirsting[ranges={2-4}, caption={\texttt{while} Loop Inside a rush Program Which Never Iterates}]{listings/constant_false_while.rush}
 
 Since the loop in the above listing never iterates, it is completely redundant and can therefore be omitted entirely.
 This scenario is detected in line 853 of Listing~\ref{lst:analyzer_loops}.

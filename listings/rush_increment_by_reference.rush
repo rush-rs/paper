@@ -1,0 +1,9 @@
+fn main() {
+    let mut answer = 42;
+    modify(&answer);
+    exit(answer);
+}
+
+fn modify(n: *int) {
+    *n += 1;
+}

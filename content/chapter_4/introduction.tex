@@ -203,8 +203,8 @@ Since register allocation represents a complex topic, it will not be explained a
 \begin{itemize}
 	\item Repetition: When is the stack used instead of registers?
 	\item Insert very figure of the stack.
-    \item Only mention that there are stack pointers and why they are needed; do not explain how they point / behave exactly
-    \item Stack can be indexed
+	\item Only mention that there are stack pointers and why they are needed; do not explain how they point / behave exactly
+	\item Stack can be indexed
 \end{itemize}
 
 \subsection{Calling Conventions}
@@ -221,7 +221,7 @@ On most architectures, a low-level procedure call might take place like the foll
 \begin{itemize}
 	\item The caller places the call arguments in a place where the procedure can access them.
 	\item Control is transferred to the procedure, often using a jump or specialized call instruction.
-        This specialized instruction often saves the \emph{return address}\footnote{A link to the caller site, allows the called procedure to jump back to the caller~\cite[p.~99]{Patterson2017-zq}.} in a special register so that function returns are easier.
+	      This specialized instruction often saves the \emph{return address}\footnote{A link to the caller site, allows the called procedure to jump back to the caller~\cite[p.~99]{Patterson2017-zq}.} in a special register so that function returns are easier.
 	\item The first task the called function performs is acquiring local storage resources needed by the procedure.
 	      Often, registers are spilled if required.
 	      Furthermore, stack memory for the procedure's local variables is often allocated in this step.
@@ -271,3 +271,70 @@ Therefore, the prologue is executed as the first code when calling the function 
 
 It is to be mentioned that implementing a compiler which respects the calling convention of its target architecture is not required.
 However, following the convention is often reasonable in order to preserve \emph{ABI}\footnote{Short for \enquote{application binary interface}, allows calling foreign functions from another program} compatibility of the compiled program.
+
+\subsection{Referencing Variables Using Pointers}
+
+A \emph{pointer} is a variable which contains the memory address of another variable.
+Sometimes, pointers are mandatory for solving a specific computational problem.
+Furthermore, leveraging pointers often leads to more efficient and compact code~\cite[p.~93]{Ritchie1988}.
+A problem which can only be solved by using pointers is displayed in the rush program in Listing~\ref{lst:rush_increment_by_value}.
+
+\Lirsting[float=H, caption={Rush Program Trying to Alter the Variable Behind an Argument}, label={lst:rush_increment_by_value}]{listings/rush_increment_by_value.rush}
+
+This rush program contains the \qVerb{main} and \qVerb{modify} functions.
+In line 2 of the \qVerb{main} function, the mutable variable \qVerb{answer} is defined with an initial value of 42.
+Next, the \qVerb{modify} function is called, passing the variable as the call argument.
+In line 4, the program exits, using the value of \qVerb{answer} as its exit code.
+In the signature of the \qVerb{modify} function, the \qVerb{n} parameter is declared as a mutable integer.
+Next, in line 8 of this function, the value of the parameter is incremented by 1.
+One might expect that the function call in line 3 causes the variable \qVerb{answer} to be incremented by 1.
+This seems likely since both the parameter and the variable are declared as mutable using the \qVerb{mut} keyword.
+However, since rush passes function arguments by value and not by reference, the called function has no direct way of altering the variable behind the passed parameter
+\footnote{Passing by value means that the value of the argument is copied for the function call}.
+In order to solve this problem, pointers are required.
+The code in Listing~\ref{lst:rush_increment_by_reference} displays a rush program which is able to solve this problem.
+
+\Lirsting[float=H, caption={Rush Program Altering the Variable Behind an Argument}, label={lst:rush_increment_by_reference}]{listings/rush_increment_by_reference.rush}
+
+Most parts of this rush program look similar to the one displayed in Listing~\ref{lst:rush_increment_by_value}.
+However, some parts of the code have been adjusted so that they use pointers.
+First, the signature of the \qVerb{modify} function looks slightly different.
+Now, the function takes a parameter of type \qVerb{*int} instead of \qVerb{int}.
+The syntax \qVerb{*type} describes a pointer to the type specified after the \qVerb{*}.
+Thus, the function now takes a parameter which is a pointer to an integer variable.
+In rush, pointers allow full read-write access to the target of the variable.
+The parameter is not declared as mutable since the target variable behind the pointer and not the pointer itself should be incremented.
+In line 8, the variable stored in the pointer is incremented.
+When assigning to the target variable behind a pointer, the pointer first needs to be dereferenced using the \qVerb{*} prefix operator.
+
+In rush, dereferencing a pointer is accomplished using the \qVerb{*} operator before the pointer's identifier.
+The process of \emph{dereferencing} a pointer involves accessing the value of the variable the pointer points to~\cite[p.~94]{Ritchie1988}.
+For instance, a pointer variable named \qVerb{p} would be dereferenced by using the following rush expression: `\LirstInline{rush}{*p}'.
+
+In rush, only pointers targeting an existing variable can be created.
+In order to create a pointer to an existing variable, rush's \qVerb{&} prefix operator is used.
+This operator \emph{references} the target variable in order to return a pointer value.
+\emph{Referencing} a variable produces the memory address of that variable, often in form of an integer value~\cite[p.~95]{Ritchie1988}.
+Theoretically, since the resulting value is only a normal integer, it can also be treated similarly.
+Therefore, creating a new pointer variable involves following steps:
+
+\begin{enumerate}
+	\item Producing the absolute memory address of a variable
+	\item Saving the resulting integer as a variable on the stack as if it was a conventional integer
+\end{enumerate}
+
+It is apparent that implementing pointers should often be relatively straight-forward since the underlying principle consists of only these two simple steps.
+However, some target architectures of a compiler might make the implementation of pointers more difficult.
+Therefore, the statement in line 8 increments the value of the variable stored in \qVerb{n} by 1.
+Here, only the value of the pointer is copied when being used as an argument.
+Since the pointer only saves the address of its target, the copy does not affect the target variable by any means.
+Because rush pointers allow write-access, \qVerb{answer} can be incremented by using a pointer.
+
+Due to this write-access, the analyzer only allows the referencing (\qVerb{&}) operator to be used on mutable variables.
+As seen in the updated program, there is no need for the resulting pointer to be mutable since it only stores a read-only address.
+
+A special trait of pointers in rush is that they are able to introduce \emph{undefined behavior}\footnote{The runtime behavior of such scenarios is undefined and might vary on every architecture} into a program.
+This however only occurs if the pointer is used as a return value of a function in which it references a local variable.
+This problem occurs because the memory used by that function is often freed after the function has executed.
+Therefore, pointers should be used with caution since the semantic analyzer cannot guarantee that they are used correctly.
+

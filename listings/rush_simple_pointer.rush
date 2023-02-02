@@ -1,0 +1,5 @@
+fn main() {
+    let mut a = 42;
+    let to_a = &a;
+    exit(*to_a)
+}

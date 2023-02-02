@@ -161,8 +161,8 @@ These special registers, like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra}, are thorou
 	\hspace{-3.25cm}
 	\begin{tikzpicture}[scale=.9]
 		\small
-        % TODO: also use longer arrow in top `fp_main`?
-        \stackTopFixed{...} \cellcom{\scriptsize 32(sp)} \cellptr{\scriptsize \tt fp\,$_\text{main}$}
+		% TODO: also use longer arrow in top `fp_main`?
+		\stackTopFixed{...} \cellcom{\scriptsize 32(sp)} \cellptr{\scriptsize \tt fp\,$_\text{main}$}
 		\startframe
 		\cell{fp} \cellcom{\scriptsize 24(sp)}
 		\cell{ra} \cellcom{\scriptsize 16(sp)}
@@ -173,10 +173,10 @@ These special registers, like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra}, are thorou
 		\cell{fp} \cellcom{\scriptsize 8(sp)}
 		\cell{ra} \cellcom{\scriptsize 0(sp)} \cellptrA{\scriptsize \texttt{sp\,$_\text{foo}$}}
 		\finishframe{\tt foo}
-        % TODO: uncomment the line below?
+		% TODO: uncomment the line below?
 		%\stackbottom
 	\end{tikzpicture}
-    \caption{Example Stack Layout in RISC-V}\label{fig:riscv_basic_stack}
+	\caption{Example Stack Layout in RISC-V}\label{fig:riscv_basic_stack}
 \end{wrapfigure}
 
 As mentioned in the dedicated \TODO{(sub)} section about the stack, it presents a way to save data outside of registers.
@@ -226,34 +226,28 @@ Additionally, one can observe that the \qVerb{main} function's
 stack frame contains cells which save the two variables which are defined in the body of the function.
 Since the code in the function's body (where the variables are defined) is executed after \qVerb{fp} and \qVerb{ra} have been saved on the stack,
 the cells containing these variables appear lower in the stack.
-Another interesting observation is that the more recently declared variables are also saved in lower cells of the stack frame, thus following the \emph{LIFO} principle.
+Another interesting observation is that the more recently declared variables are also saved in lower cells of the stack frame.
+Therefore, the order in which variables are saved in the stack follows the \emph{LIFO} principle which is common in stacks.
 
-\TODO{refer to itemize below}
+In this example, in the stack frame of the function \qVerb{main}, the registers \qVerb{fp} and \qVerb{ra} require 16 bytes of memory together.
+Therefore, the variable \qVerb{a} can be saved at the next 8 bytes of memory, meaning -24(fp).
+This way, the variable is saved at the memory region from -24(fp) until the start of -16(fp) or 16(sp) in this example.
+Therefore, each stack cell requires exactly as much memory as shown in the figure.
+Just like described earlier, different rush types require different quantities of memory.
+A character for instance only uses 1 byte of memory.
+Thus, the entire variable \qVerb{b} is saved at -25(fp), meaning one byte below the end of the variable \qVerb{a}.
+This way, each variable only uses as much memory as it actually requires.
 
-\begin{itemize}
-	% \item In the current implementation, \qVerb{sp} includes legal memory locations X
-	% \item \qVerb{fp} points to the first address after the last legal one X
-	% \item The stack grows into lower memory regions X
-	% \item Stack is slower than registers: this should be explained by @RubixDev
-	\item Show which instructions can be used for accessing the stack (briefly)
-	\item Explain example rush program
-	      \begin{itemize}
-		      \item How \qVerb{fp}  and \qVerb{ra} are saved X
-		      \item Addressing either by \qVerb{sp} or \qVerb{fp} X
-		      \item Why are variables saved relative to \qVerb{fp} and the special registers relative to \qVerb{fp}
-		      \item How can the compiler keep track of variables? (HashMap)
-		      \item How can we observe alignment here?
-	      \end{itemize}
-\end{itemize}
+However, the question of how the compiler is able to keep track of saved variables remains.
+For this, the compiler maps a variable's name to a memory location.
+To be precise, the compiler contains a \emph{HashMap} which associates a variable's name with its \qVerb{fp} offset.
+In case of the program in Listing~\ref{lst:rush_riscv_stack}, the variable \qVerb{a} is associated with a \qVerb{fp} offset of -24.
+If the variable is referenced at a later point, the compiler performs a simple lookup of the variable's memory address.
 
-\lipsum[2-4]
-
-% \begin{figure}[h]
-% 	\includegraphics[width=\textwidth]{./riscv_stack_draft.png}
-% 	\caption{\textcolor{red}{DRAFT:} Stack Memory on the RISC-V architecture}\label{fig:riscv_stack}
-% \end{figure}
-
+\TODO{How can we observe alignment here?}
 \subsection{Calling Convention}\label{sec:riscv_calling_conv}
+
+\TODO{did I mention that arguments are saved on the stack?}
 
 \begin{wrapfigure}{R}{0.42\textwidth}
 	\centering
@@ -444,17 +438,19 @@ This is required in order to prevent a segmentation fault which occurs if the pr
 
 Due to the function call in line 6, we will now shift our focus on the \qVerb{main..main} label in line 10.
 In line 11, the first line of the \qVerb{main} function, a comment indicates the beginning of the function's prologue.
-Just like demanded by the RISC-V calling convention, the rush compiler emits code for a \emph{prologue} and an \emph{epilogue} into each function.
+Just like demanded by the RISC-V calling convention, the rush compiler emits code for a \emph{prologue} and an \emph{epilogue} for each function.
 
 As described in the previous sections about calling conventions, one task of the prologue is allocating stack space.
-In this prologue, the \qVerb{addi} instruction in line 12 subtracts 16 from the value stored in the \qVerb{sp}.
+In this prologue, the \qVerb{addi} instruction in line 12 subtracts 16 from the value stored in \qVerb{sp}.
+Since subtraction is used, the stack pointer is decremented, leading to the stack progressing into lower memory.
+Therefore, this instruction increases the size of the stack, thus allocating memory.
 Here, an addition instruction is used even though subtraction is required.
 In RISC-V, the \qVerb{addi} instruction requires one register and one immediate value as its operands.
 Due to the third operand being an \emph{immediate} value, the trailing \qVerb{i} (\emph{immediate}) appears in the instruction's name.
 Since this immediate value can be negative, an additional instruction for immediate subtraction is redundant~\cite[reference]{Patterson2017}.
 This example shows how the RISC-V ISA omits redundant instructions in places where it is feasible.
 In this case, the stack pointer is decremented by 16 since two 8-byte values are stored on the stack in the lines 13 and 14.
-Here, the values of the registers for the frame pointer and the return address are saved on the stack.
+Just like described in the previous subsection about the stack, these registers are always saved on the stack.
 
 The comment in line 17 indicates the start of the function's body.
 First, the previously explained \qVerb{li} instruction in line 18 places a constant 1 in register \qVerb{a0}.
@@ -498,9 +494,21 @@ Finally, the \qVerb{ret} instruction in line 31 is used in order to jump back to
 \subsection{Supporting Pointers}
 
 \begin{itemize}
-	\item REF: Saving the absolute address of a variable into another variable
-	\item DEREF: Loading the address stored in the pointer first, then load value at the specified address
+	\item Refer back to the previous section about pointers
+	\item Show code snippet of a small rush program
 \end{itemize}
+
+The code in Listing~\ref{lst:rush_simple_pointer} shows a rush program in which a variable is referenced to create a pointer which is then dereferenced.
+In line 2, the mutable variable \qVerb{a} is defined using an initial value of 42.
+Next, in line 3, the variable is referenced in order to use the resulting address to define the variable \qVerb{to_a}.
+
+\begin{minipage}{.34\textwidth}
+    \Lirsting[float=H, fancyvrb={frame=none}, caption={Example rush Program Containing a Pointer}, label={lst:rush_simple_pointer}]{listings/rush_simple_pointer.rush}
+\end{minipage}%
+\hspace{3.5cm}
+\begin{minipage}{.55\textwidth}
+	\Lirsting[float=H, fancyvrb={frame=none}, ranges={10-10,18-24}, caption={RISC-V Assembly Output from Listing~\ref{lst:rush_simple_pointer}}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
+\end{minipage}
 
 \subsection{The rush Compiler Targeting RISC-V Assembly}
 

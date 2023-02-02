@@ -161,8 +161,8 @@ These special registers, like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra}, are thorou
 	\hspace{-3.25cm}
 	\begin{tikzpicture}[scale=.9]
 		\small
-        \stackTopFixed{...}
-        \cellptr{\scriptsize \tt fp\,$_\text{main}$}
+        % TODO: also use longer arrow in top `fp_main`?
+        \stackTopFixed{...} \cellcom{\scriptsize 32(sp)} \cellptr{\scriptsize \tt fp\,$_\text{main}$}
 		\startframe
 		\cell{fp} \cellcom{\scriptsize 24(sp)}
 		\cell{ra} \cellcom{\scriptsize 16(sp)}
@@ -173,25 +173,73 @@ These special registers, like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra}, are thorou
 		\cell{fp} \cellcom{\scriptsize 8(sp)}
 		\cell{ra} \cellcom{\scriptsize 0(sp)} \cellptrA{\scriptsize \texttt{sp\,$_\text{foo}$}}
 		\finishframe{\tt foo}
-		\stackbottom
+        % TODO: uncomment the line below?
+		%\stackbottom
 	\end{tikzpicture}
-	\caption{\TODO{Write a caption}}\label{fig:TODO}
+    \caption{Example Stack Layout in RISC-V}\label{fig:riscv_basic_stack}
 \end{wrapfigure}
 
-\lipsum[1]
+As mentioned in the dedicated \TODO{(sub)} section about the stack, it presents a way to save data outside of registers.
+This subsection explains special conventions followed when using stack memory on RISC-V.
+Just like previously explained, most stacks are accessed through the specialized pointers.
+On RISC-V, there is a \emph{stack pointer} which is saved in the \qVerb{sp} register.
+Furthermore, the \qVerb{fp} register contains the \emph{frame pointer}.
+
+Like most memory stacks, the RISC-V stack grows downwards, meaning it progresses into lower memory regions.
+In the current implementation of the rush RISC-V compiler, the stack pointer points to the last legal memory cell of the current stack frame.
+Therefore, \qVerb{sp} points on the cell with the lowest address of the current stack frame.
+On the other hand, the frame pointer \qVerb{fp} points to the cell above the end of the current stack frame.
+Therefore, the frame pointer always points to a memory cell which is illegal to use by the current function.
+Thus, a stack frame is defined by its upper and lower bounds, represented by \qVerb{fp} and \qVerb{sp}, respectively.
+
+In order to understand how the above behavior is used in practice, Figure~\ref{fig:riscv_basic_stack} is to be considered.
+Furthermore, the rush program in Listing~\ref{lst:rush_riscv_stack} should be considered.
 
 \Lirsting[caption={A rush Program Containing Two Variables}, label={lst:rush_riscv_stack}, float=H]{listings/riscv_stack.rush}
 
+This snipped shows a rush program which contains two functions.
+In the \qVerb{main} function of this program, two variables are defined.
+The \qVerb{a} variable holds the integer value 42 whilst the \qVerb{b} variable contains the char value \qVerb{z}.
+In line 4, the \qVerb{foo} function is called.
+Figure~\ref{fig:riscv_basic_stack} shows the state of the stack at the point when this function was called.
+The braces on the left side of the stack group the stack into frames.
+On the right side of each stack cell, its relative address can be observed.
+As explained previously, each stack cell is accessible either by offsetting \qVerb{sp}
+or \qVerb{fp}. The stack pointers of each stack frame can are displayed by the arrows on the right side of the stack.
+
+The stack shown in this figure contains two frames, one for each function involved in the call.
+Since the \qVerb{main} function is called first, it is displayed at the top of the figure.
+Normally, the last pushed element of a stack is located at the top, however, just as described,
+this stack progresses towards lower memory, meaning that it grows downwards.
+Since the \qVerb{main} function calls the \qVerb{foo} function, the stack frame for the \qVerb{foo} function is located at the bottom of the stack.
+
+It is apparent that every stack frame saves the \qVerb{fp} and \qVerb{ra} registers at its top position.
+These two special registers are saved at the two top positions of each call before any of the code in the function's body is executed.
+Why these registers are saved on the stack is explained in Subsection~\ref{sec:riscv_stack} about the calling convention.
+Since every stack frame contains these two elements,
+the minimum size $s$ of a RISC-V stack frame in bytes must be $s = \frac{2 \times \text{Size}\,_\text{int}}{8}$.
+Since $s$ is dependent on the integer-size of the RISC-V architecture, the minimum required memory differs per RISC-V architecture.
+For instance, if the 64-bit version of RISC-V was used, the minimum size would be 16 bytes ($s = \frac{2 \times 64}{8} = 16$).
+However, if the 32-bit version of the architecture was used, $s$ would be only 8 bytes ($s = \frac{2 \times 32}{8} = 8$).
+
+Additionally, one can observe that the \qVerb{main} function's
+stack frame contains cells which save the two variables which are defined in the body of the function.
+Since the code in the function's body (where the variables are defined) is executed after \qVerb{fp} and \qVerb{ra} have been saved on the stack,
+the cells containing these variables appear lower in the stack.
+Another interesting observation is that the more recently declared variables are also saved in lower cells of the stack frame, thus following the \emph{LIFO} principle.
+
+\TODO{refer to itemize below}
+
 \begin{itemize}
-	\item In the current implementation, \qVerb{sp} includes legal memory locations
-	\item \qVerb{fp} points to the first address after the last legal one
-	\item The stack grows into lower memory regions
-	\item Stack is slower than registers
+	% \item In the current implementation, \qVerb{sp} includes legal memory locations X
+	% \item \qVerb{fp} points to the first address after the last legal one X
+	% \item The stack grows into lower memory regions X
+	% \item Stack is slower than registers: this should be explained by @RubixDev
 	\item Show which instructions can be used for accessing the stack (briefly)
 	\item Explain example rush program
 	      \begin{itemize}
-		      \item How \qVerb{fp}  and \qVerb{ra} are saved
-		      \item Addressing either by \qVerb{sp} or \qVerb{fp}
+		      \item How \qVerb{fp}  and \qVerb{ra} are saved X
+		      \item Addressing either by \qVerb{sp} or \qVerb{fp} X
 		      \item Why are variables saved relative to \qVerb{fp} and the special registers relative to \qVerb{fp}
 		      \item How can the compiler keep track of variables? (HashMap)
 		      \item How can we observe alignment here?

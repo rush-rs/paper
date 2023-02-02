@@ -1,0 +1,29 @@
+% ============================================================= %
+% ==== FIXES and additionns for the `drawstack.sty` package === %
+% ============================================================= %
+
+% FEAT: Slight variation of the `\cellptr` command.
+% The output of this command has a longer arrow with a steeper angle
+\newcommand{\cellptrA}[1]{
+	\draw[<-,line width=0.7pt] (0.1,\value{cellnb}) +(2,\value{ptrnb}*0.1) -- +(3.4,\value{ptrnb}*0.75);
+	\draw (3.5,\value{ptrnb}*0.8+\value{cellnb}) node[anchor=west] {#1};
+	\addtocounter{ptrnb}{1}
+}
+
+% TODO: decide whether the colors of the stack should be customized
+%\tikzstyle{freecell}=[fill=gray!10]
+%\tikzstyle{occupiedcell}=[fill=gray!10!orange!10,draw=blue!30!black]
+%\tikzstyle{padding}=[fill=yellow!20,draw=blue!30!black]
+%\tikzstyle{highlight}=[draw=orange!50!black,text=orange!50!black]
+
+% HACK: These two commands are required in order to allow cell pointers targeing the stacktop
+\newcommand{\llcellFixed}[3]{
+    \addtocounter{cellnb}{-#1}
+    \setcounter{ptrnb}{0}
+    \draw[#2] (0,\value{cellnb})
+    +(-2,.5) -- +(-2,-.5) -- +(2,-.5) -- +(2,.5);
+    \draw (0,\value{cellnb}+#1/2-0.5)  node(currentcell) {#3};
+}
+
+\newcommand{\stackTopFixed}[2][freecell]{%
+\llcellFixed{1}{#1}{#2}}

@@ -157,26 +157,13 @@ These special registers, like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra}, are thorou
 % 	\caption{Spilled Registers During a RISC-V Function Call \TODO{Every row should be equal in height}}\label{fig:riscv_call_spill}
 % \end{wrapfigure}
 
-
-% TODO: place this in a preamble
-\newcommand{\cellptrA}[1]{
-	\draw[<-,line width=0.7pt] (0.1,\value{cellnb}) +(2,\value{ptrnb}*0.1) -- +(3.4,\value{ptrnb}*0.75);
-	\draw (3.5,\value{ptrnb}*0.8+\value{cellnb}) node[anchor=west] {#1};
-	\addtocounter{ptrnb}{1}
-}
-
-%\tikzstyle{freecell}=[fill=blue!10,draw=blue!30!black]
-%\tikzstyle{occupiedcell}=[fill=gray!10!orange!10,draw=blue!30!black]
-%\tikzstyle{padding}=[fill=yellow!20,draw=blue!30!black]
-%\tikzstyle{highlight}=[draw=orange!50!black,text=orange!50!black]
-
 \begin{wrapfigure}{L}{0.39\textwidth}
 	\hspace{-3.25cm}
 	\begin{tikzpicture}[scale=.9]
 		\small
-		\stacktop
+        \stackTopFixed{...}
+        \cellptr{\scriptsize \tt fp\,$_\text{main}$}
 		\startframe
-		\cellcom{\scriptsize 32(sp)} \cellptr{\scriptsize \texttt{fp\,$_\text{main}$}}
 		\cell{fp} \cellcom{\scriptsize 24(sp)}
 		\cell{ra} \cellcom{\scriptsize 16(sp)}
 		\cell{a: int} \cellcom{\scriptsize -24(fp)} \cellptrA{\scriptsize \texttt{sp\,$_\text{main}$}}

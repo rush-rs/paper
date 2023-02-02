@@ -13,6 +13,7 @@ RUN apk add --update \
         texmf-dist-bibtexextra \
         texmf-dist-formatsextra \
         texmf-dist-latexextra \
+        texmf-dist-science \
         \
         llvm14 llvm14-libs llvm14-dev llvm14-static \
         libc-dev libxml2-dev libffi-dev g++ \

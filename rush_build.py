@@ -22,7 +22,7 @@ def llvm_gen_ir(source: str, output: str):
     print(f'generated {output_path}')
 
 
-def riscv_asm(source: str, output: str):
+def riscv_asm(source: str, output: str, line_width: int):
     input_path = os.path.realpath(source)
     output_path = os.path.realpath(output)
 
@@ -30,7 +30,7 @@ def riscv_asm(source: str, output: str):
     os.chdir('./deps/rush/crates/rush-compiler-risc-v/')
 
     subprocess.run(
-        f'cargo r {input_path}',
+        f'cargo r {input_path} {line_width}',
         shell=True,
     ).check_returncode()
 
@@ -82,6 +82,12 @@ if __name__ == '__main__':
         riscv_asm(
             './listings/riscv_simple.rush',
             './listings/generated/riscv_simple.s',
+            32,
+        )
+        riscv_asm(
+            './listings/rush_simple_pointer.rush',
+            './listings/generated/riscv_rush_simple_pointer.s',
+            17,
         )
     else:
         print(f'Invalid command-line argument: {sys.argv[1]}')

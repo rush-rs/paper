@@ -493,25 +493,124 @@ Finally, the \qVerb{ret} instruction in line 31 is used in order to jump back to
 
 \subsection{Supporting Pointers}
 
-\begin{itemize}
-	\item Refer back to the previous section about pointers
-	\item Show code snippet of a small rush program
-\end{itemize}
+In Subsection~\ref{sec:pointers}, we have explained how pointers can be used in rush.
+Since every rush backend should support all features of the language, pointers also need to be implemented for the RISC-V architecture.
+In order to get a rough understanding of how pointers work in this compiler, the code in Listing~\ref{lst:rush_simple_pointer} and~\ref{lst:rush_simple_pointer_asm} are to be considered.
+
+\begin{minipage}{.34\textwidth}
+	\center
+	\Lirsting[float=H, fancyvrb={frame=none}, caption={Example rush Program Containing a Pointer}, label={lst:rush_simple_pointer}]{listings/rush_simple_pointer.rush}
+\end{minipage}%
+\hspace{3cm}
+\begin{minipage}{.45\textwidth}
+	\center
+	\Lirsting[float=H, fancyvrb={frame=none}, ranges={10-10,18-24}, caption={RISC-V Assembly Output from Listing~\ref{lst:rush_simple_pointer}}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
+\end{minipage}
+
 
 The code in Listing~\ref{lst:rush_simple_pointer} shows a rush program in which a variable is referenced to create a pointer which is then dereferenced.
 In line 2, the mutable variable \qVerb{a} is defined using an initial value of 42.
 Next, in line 3, the variable is referenced in order to use the resulting address to define the variable \qVerb{to_a}.
+In line 4, the \qVerb{to_a} pointer variable is dereferenced in order to use the value of \qVerb{a} as the exit code of the program.
 
-\begin{minipage}{.34\textwidth}
-    \Lirsting[float=H, fancyvrb={frame=none}, caption={Example rush Program Containing a Pointer}, label={lst:rush_simple_pointer}]{listings/rush_simple_pointer.rush}
-\end{minipage}%
-\hspace{3.5cm}
-\begin{minipage}{.55\textwidth}
-	\Lirsting[float=H, fancyvrb={frame=none}, ranges={10-10,18-24}, caption={RISC-V Assembly Output from Listing~\ref{lst:rush_simple_pointer}}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
-\end{minipage}
+
+Listing~\ref{lst:rush_simple_pointer_asm} includes the most significant part of the compiler output which represents this rush program\footnote{Generated in Git commit \rushCommit, automatically built with this document}.
+In line 18 of this listing, the integer value 42 is placed in the register \qVerb{a0}.
+Next, \qVerb{a0} is saved on the stack at \qVerb{-24(fp)} using the \qVerb{sd} instruction.
+Like the comment suggests, the instruction in line 20 is used in order to reference a.
+Here, the \qVerb{addi} instruction is used to subtract 24 from the value stored in the \qVerb{fp} register.
+The result of this subtraction is saved in the register \qVerb{a0}.
+Therefore, the register now contains the absolute memory address of the \qVerb{a} variable.
+Since the syntax \qVerb{-24(fp)} means that the variable is saved at $fp - 24$, the subtraction uses the exact same information which is already known about the variable.
+Here, instead of using the saved memory location of the variable like \qVerb{x(fp)}, the information is used in order to calculate the absolute address of the target variable.
+This computation can only be performed at runtime since the value of \qVerb{fp} is not known at compile time.
+In line 21, the \qVerb{a0} register which contains the memory address is also saved on the stack.
+Therefore, the \qVerb{a} variable is saved at \qVerb{-24(fp)} whilst \qVerb{to_a} is saved at \qVerb{-32(fp)}.
+
+In order to access the value of \qVerb{a}, \qVerb{to_a} is dereferenced in line 4 of the rush program.
+For this, the memory address stored in the variable \qVerb{to_a} first needs to be loaded from the stack.
+Here, the \qVerb{ld} instruction in line 22 of the assembly output is used.
+The instruction will load the memory address stored at \qVerb{-32(fp)} (in \qVerb{to_a}) into the \qVerb{a0} register.
+Next, another \qVerb{ld} instruction in line 23 is used in order to load the value of the variable saved at the previously fetched memory address.
+What strikes the eye is that \qVerb{0(a0)} instead of \qVerb{x(fp)} is used for specifying the target memory address of the load instruction.
+In this case, \qVerb{0(a0)} means that the instruction should load its value from the address saved in \qVerb{a0} with an offset of 0.
+Since an offset of 0 is used, the practical description of the instruction is that it loads a value saved at the memory address specified in \qVerb{a0}.
+Because \qVerb{a0} contains the memory address of the \qVerb{a} variable, the instruction loads 42 into the \qVerb{a0} register.
 
 \subsection{The rush Compiler Targeting RISC-V Assembly}
 
+Just like the other compilers presented in this paper, this one also traverses the annotated AST using the postorder technique.
+Unlike the LLVM or WASM compiler, this compiler emits RISC-V assembly files which are later assembled by the assembler.
+
+\subsubsection{Struct Fields}
+
+Before any complex code samples can be considered, important struct fields of the compiler first need to be explained.
+The rust code in Listing~\ref{lst:riscv_compiler_attr} shows important struct fields of the rush compiler targeting RISC-V.
+
+\Lirsting[ranges={11-11,15-15,19-34}, caption={Fields of the RISC-V \qVerb{Compiler} Struct}, label={lst:riscv_compiler_attr}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+
+In line 15, the field \qVerb{blocks} is declared.
+This field holds a vector containing values of the type \qVerb{Block}.
+That type provides an abstraction representing a label with its basic block in the assembly output.
+Therefore, this struct needs to contain a string field for its label and a vector for its instructions.
+The Listing~\ref{lst:riscv_instruction_enum} shows parts of the Rust code which declares the \qVerb{Instruction} enum.
+
+\Lirsting[ranges={62-62,74-76,114-114}, caption={The \qVerb{Instruction} Enum in the RISC-V Compiler}, label={lst:riscv_instruction_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/instruction.rs}
+
+Although the listing shows only a few of the implemented instructions, this enum contains all instruction variants which the compiler might need at a later point.
+Depending on the type of instruction, the corresponding enum includes fields which define its operands.
+For instance, the \qVerb{Li} variant in line 74 represents the \qVerb{li} instruction in assembly.
+This instruction loads the immediate integer value specified in the second operand into the register specified in the first operand.
+Due to this, the enum also contains a field for a value of the type \qVerb{IntRegister} and a field for a 64-bit signed integer.
+The Rust code in Listing~\ref{lst:riscv_intregister_enum} shows parts of the declaration of the \qVerb{IntRegister} enum.
+Like the name implies, this enum holds all possible registers which the architecture provides.
+
+\Lirsting[ranges={107-107,137-139,145-145}, caption={The \qVerb{IntRegister} Enum in the RISC-V Compiler}, label={lst:riscv_intregister_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
+
+Even though just the integer registers are shown in this listing, a similar enum for floating-point registers also exists in this implementation.
+Another important struct field is declared in line 19 of Listing~\ref{lst:riscv_compiler_attr}.
+The \qVerb{curr_block} field saves the index of the basic block which is currently being inserted to.
+Next, the \qVerb{data_section} and \qVerb{rodata_section} fields in line 21 and 22 are declared.
+Just like the ELF sections, these vectors contain declarations of global variables in the program.
+Here, each vector holds items of the type \qVerb{DataObj}.
+Since this type specifies data which should be saved in these sections, it contains a string field for the label and an enum field for the actual data saved in the object.
+For instance, if the compiler encounters a global variable declaration, a new data object is inserted into the correct section, depending on whether the global variable has been declared as mutable or not.
+
+In line 25, the \qVerb{curr_fn} field is declared.
+This field saves a value of the type \qVerb{Function}.
+The \qVerb{Function} struct contains a counter of the stack allocations of the current function in bytes and the label of the epilogue block of the current function.
+The former is incremented every time a variable declaration is compiled.
+This is required in order to allocate the correct amount of stack memory during a function's prologue.
+\TODO{describe let and prologue later}
+
+Just like in the other compilers, this one also features a \qVerb{loops} field which saves important labels of the current loop being compiled.
+This field is declared in line 27 and holds a vector of \qVerb{Loop} structs.
+Each \qVerb{Loop} struct saves the label of the loop's head and the label of the basic block which follows after the loop's body.
+\TODO{Explain loop labels later}
+
+Furthermore, the \qVerb{scopes} field in line 29 is managed to associate a variable to some important metadata.
+This metadata includes the variables type and its \emph{stack memory position}.
+Just like explained in the previous sections, each cell of the stack memory is accessible by specifying a unique index.
+The compiler saves this unique index in this HashMap so that it can refer back to the variable later.
+Of course, this only works for variables which are saved on the stack.
+However, these HashMaps are not used for saving global variables.
+Instead, the \qVerb{globals} field in line 31 is used.
+Just like the HashMaps in the \qVerb{scopes} field, this map also associates a variable's name to a value of the type \qVerb{Variable}.
+This time however, each variable contains the data label under which the global variable was declared.
+Last, the \qVerb{used_registers} field in line 33 is declared.
+It plays a vital role in the compiler's register allocation algorithm.
+
+By only considering the compiler's struct fields, it has become apparent that this implementation provides several abstractions over the bare strings in which assembly is normally formatted.
+Due to this, implementation of the actual compiler is a lot more structured and reliable.
+During development of the compiler, this approach has often proven itself to be optimal.
+
 \begin{itemize}
 	\item Traverses the tree
+	\item Show struct fields
+	\item Explain register allocation and flow of expressions / values
+	\item Explain functions
+	\item Explain let statements
+	\item Explain calls
+	\item Explain loops
+	\item Explain floats
 \end{itemize}

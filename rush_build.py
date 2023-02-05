@@ -89,6 +89,11 @@ if __name__ == '__main__':
             './listings/generated/riscv_rush_simple_pointer.s',
             17,
         )
+        riscv_asm(
+            './listings/simple_add.rush',
+            './listings/generated/rush_simple_add.s',
+            17,
+        )
     else:
         print(f'Invalid command-line argument: {sys.argv[1]}')
         exit(1)

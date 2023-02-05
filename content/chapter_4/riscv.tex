@@ -604,9 +604,66 @@ By only considering the compiler's struct fields, it has become apparent that th
 Due to this, implementation of the actual compiler is a lot more structured and reliable.
 During development of the compiler, this approach has often proven itself to be optimal.
 
+\subsubsection{Data Flow and Register Allocation}
+
+An important characteristic of a compiler is how it represents runtime data at compile time.
+In assembly, runtime data is represented by registers which will contain values at runtime.
+Since this rush compiler emits RISC-V assembly, it also represents data by using registers internally.
+In the previous paragraphs, we have learned how this implementation uses abstractions in order to represent assembly constructs, including registers.
+
+For reference, the LLVM compiler represents runtime values by passing virtual registers internally.
+Similarly, this compiler also passes abstractions representing registers in order to represent the data flow of the program being compiled.
+Unlike in LLVM, there is only a finite amount of registers available.
+Therefore, this compiler also manages register allocation so that programs can be represented using this limited number of registers.
+In under to understand the implementation, the code in Listing~\ref{lst:rush_riscv_simple_sum} and Listing~\ref{lst:rush_riscv_simple_sum} is to be considered.
+The former listing contains a rush program which adds two integer variables together in order to use the result as its exit code.
+The latter shows parts of the assembly output representing the logic in the \qVerb{main} function.
+
+\begin{minipage}{.34\textwidth}
+	\center
+	\Lirsting[caption={Rush Program Calculating the Sum of Integers}, label={lst:rush_riscv_simple_sum}, float=H]{listings/simple_add.rush}
+\end{minipage}%
+\hspace{3cm}
+\begin{minipage}{.45\textwidth}
+	\center
+	\Lirsting[ranges={18-25},caption={Assembly Output of Rush Program in Listing~\ref{lst:asm_riscv_simple_sum}}, label={lst:rush_riscv_simple_sum}, float=H]{listings/generated/rush_simple_add.s}
+\end{minipage}
+
+In the lines 2 and 3 of the rush program, the integer variables \qVerb{a} and \qVerb{b} are declared.
+In line 4, the \qVerb{exit} function is invoked, using the sum of these variables as the call argument.
+
+In the line 22 of the assembly output, the runtime value of the \qVerb{a} variable is loaded into the register \qVerb{a0}.
+Next, the same operation is performed for the \qVerb{b} variable.
+However, this time, the instruction writes its result in the \qVerb{a1} register instead of the \qVerb{a0} register.
+This is because the previously loaded value in \qVerb{a0} would be overwritten if this was the case.
+Since both the value of the variable \qVerb{a} and \qVerb{b} are required for the addition, overwriting this register would result in a wrong calculation.
+This is am example of how register allocation is required in order to manage registers and to prevent such bugs.
+
+Unlike the register allocation algorithm of a production ready compiler like LLVM, this one only tries to use the registers without causing conflicts like the previously explained one.
+Therefore, this algorithm does not emphasize performance and instead only performs mandatory task which are required for making a program work.
+For instance, all variables are saved on the stack in order to keep all registers unused and free for use in temporary calculations and operations like this one.
+Since this algorithm only performs rudimentary register allocation, its implementation is also significantly easier.
+
+
 \begin{itemize}
-	\item Traverses the tree
-	\item Show struct fields
+    \item If a register cannot be overwritten, mark it as \enquote{used}
+    \item Each function decides which target register will hold its result
+    \item Registers are acquired from a pool of registers
+    \item the first free register from this pool is taken when a new register is requested
+    \item For instance, a new integer register can be acquired by calling the \qVerb{self.alloc_ireg} method.
+    \item If this function is called repeatedly, it would always return the same register, \qVerb{a0} for instance.
+    \item Therefore, registers can be marked as \qVerb{used}.
+    \item In this case, the method would return the next free register after the last used one
+    \item \TODO{include graphic here}
+    \item Such a pool exists for both integer and floating-point registers
+    \item Include rust code which calls the \qVerb{alloc_ireg} and \qVerb{use_reg} methods (in the \qVerb{infix_expr} method)
+    \item The latter inserts a register into the \qVerb{used_registers} vector in order to block it temporarely
+    \item Show code of the \qVerb{alloc_ireg} method and explain how it works and why it works like this
+\end{itemize}
+
+\begin{itemize}
+	\item Traverses the tree X
+	\item Show struct fields X
 	\item Explain register allocation and flow of expressions / values
 	\item Explain functions
 	\item Explain let statements

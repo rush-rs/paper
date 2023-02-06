@@ -644,6 +644,13 @@ Therefore, this algorithm does not emphasize performance and instead only perfor
 For instance, all variables are saved on the stack in order to keep all registers unused and free for use in temporary calculations and operations like this one.
 Since this algorithm only performs rudimentary register allocation, its implementation is also significantly easier.
 
+The core principle of the register allocator is that each method which can return a register decides which register it returns itself.
+In order to choose an output register, each of those method uses the helper method \qVerb{alloc_ireg}.
+This method returns the first available register from a register pool.
+The register pool contains all possible registers which can hold a required data type.
+This compiler contains two pools: one for integer registers and one for floating-point registers.
+
+However, if 
 
 \begin{itemize}
     \item If a register cannot be overwritten, mark it as \enquote{used}

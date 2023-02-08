@@ -626,7 +626,7 @@ The latter shows parts of the assembly output representing the logic in the \qVe
 \hspace{3cm}
 \begin{minipage}{.45\textwidth}
 	\center
-	\Lirsting[ranges={18-25},caption={Assembly Output of Rush Program in Listing~\ref{lst:asm_riscv_simple_sum}}, label={lst:rush_riscv_simple_sum}, float=H]{listings/generated/rush_simple_add.s}
+	\Lirsting[ranges={18-25},caption={Assembly Output of Rush Program in Listing~\ref{lst:rush_riscv_simple_sum}}, label={lst:asm_riscv_simple_sum}, float=H]{listings/generated/rush_simple_add.s}
 \end{minipage}
 
 In the lines 2 and 3 of the rush program, the integer variables \qVerb{a} and \qVerb{b} are declared.
@@ -650,7 +650,7 @@ The rust code in Listing~\ref{lst:riscv_alloc_ireg} shows the \qVerb{alloc_ireg}
 
 \Lirsting[ranges={175-186}, path prefix={deps/rush}, float=h, label={lst:riscv_alloc_ireg}, caption={\qVerb{alloc_ireg} Method of the RISC-V rush Compiler}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
 
-This method returns the first available register from the register pool containing either integer registers\footnote{The \quote{i} in \qVerb{alloc_ireg} hints that it allocates integer registers}.
+This method returns the first available register from the register pool containing either integer registers\footnote{The \enquote{i} in \qVerb{alloc_ireg} hints that it allocates integer registers}.
 Such a register pool contains all possible registers which can hold the data type of that class of registers.
 This compiler contains two pools: one for integer registers and one for floating-point registers.
 In line 175 of Listing~\ref{lst:riscv_alloc_ireg}, the signature of the method is shown.
@@ -673,6 +673,40 @@ For this, another simple helper method called \qVerb{release_reg} is implemented
 
 \TODO{insert graphic}\\
 \TODO{explain when registers are marked as used}
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+        \node(stack)[stack=6, rectangle split part align=center,
+			rectangle split part fill={gray!20, gray!20, none, none, none, none},
+            text width=10ex, text centered, inner xsep=0]{
+            \shortstack{used\\\\\texttt{a0}}
+            \nodepart{two}{\shortstack{used\\\\\texttt{a1}}}
+            \nodepart{three}{\shortstack{unused\\\\\texttt{a2}}}
+			\nodepart{four}{\ldots}
+            \nodepart{five}{\shortstack{unused\\\\\texttt{a7}}}
+			\nodepart{six}{\ldots}
+		};
+		\node(ff)[below of=stack, yshift=-.5cm] {\scriptsize first free};
+		\draw[arrow, shorten >= 4pt](ff) -- (stack.three south);
+	\end{tikzpicture}
+	\caption{Integer Register Pool of the RISC-V rush Compiler}\label{fig:riscv_iregister_pool}
+\end{figure}
+
+Figure~\ref{fig:riscv_iregister_pool} shows an abstract representation of the compiler's integer register pool.
+Here, the pool contains all integer registers of the compiler.
+In this figure, only the first section of the pool which contains the \qVerb{ax} registers can be seen.
+The gray cells at the beginning indicate that these registers are currently in use by the compiler.
+Of course, this information is not saved in the register pool since the \qVerb{used_registers} vector saves this data.
+In the figure, the arrow points to the first free register, meaning the one which follows the last used register \qVerb{a1}.
+Therefore, if the \qVerb{alloc_ireg} method was called when the state of the registers is equivalent to the one displayed in Figure~\ref{fig:riscv_iregister_pool}, it would return the register \qVerb{a2}.
+By considering this example, it has become apparent that the method always returns the first free integer register.
+In the compiler, an equivalent pool for float registers also exists.
+
+However, we still do not known when the compiler marks certain registers as used.
+In order to understand this problem, the compilation of the rush expression \LirstInline{rush}{n + m} is to be considered.
+
+\TODO{insert listing of infix compilation}
 
 \begin{itemize}
 	\item If a register cannot be overwritten, mark it as \enquote{used} X

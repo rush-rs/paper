@@ -637,7 +637,7 @@ Next, the same operation is performed for the \qVerb{b} variable.
 However, this time, the instruction writes its result in the \qVerb{a1} register instead of the \qVerb{a0} register.
 This is because the previously loaded value in \qVerb{a0} would be overwritten if this was the case.
 Since both the value of the variable \qVerb{a} and \qVerb{b} are required for the addition, overwriting this register would result in a wrong calculation.
-This is am example of how register allocation is required in order to manage registers and to prevent such bugs.
+This is an example of how register allocation is required in order to manage registers and to prevent such bugs.
 
 Unlike the register allocation algorithm of a production ready compiler like LLVM, this one only aims to use registers without causing conflicts like the previously explained one.
 Therefore, this algorithm does not emphasize performance and instead only performs mandatory task which are required for making a program work.
@@ -671,20 +671,17 @@ Due to the simplicity of this method, a listing of its code is intentionally omi
 If a register is no longer used and can be overwritten again, it is also simply removed from the \qVerb{used_registers} vector.
 For this, another simple helper method called \qVerb{release_reg} is implemented.
 
-\TODO{insert graphic}\\
-\TODO{explain when registers are marked as used}
-
 \begin{figure}
 	\centering
 	\begin{tikzpicture}
-        \node(stack)[stack=6, rectangle split part align=center,
+		\node(stack)[stack=6, rectangle split part align=center,
 			rectangle split part fill={gray!20, gray!20, none, none, none, none},
-            text width=10ex, text centered, inner xsep=0]{
-            \shortstack{used\\\\\texttt{a0}}
-            \nodepart{two}{\shortstack{used\\\\\texttt{a1}}}
-            \nodepart{three}{\shortstack{unused\\\\\texttt{a2}}}
+			text width=10ex, text centered, inner xsep=0]{
+			\shortstack{used\\\\\texttt{a0}}
+			\nodepart{two}{\shortstack{used\\\\\texttt{a1}}}
+			\nodepart{three}{\shortstack{unused\\\\\texttt{a2}}}
 			\nodepart{four}{\ldots}
-            \nodepart{five}{\shortstack{unused\\\\\texttt{a7}}}
+			\nodepart{five}{\shortstack{unused\\\\\texttt{a7}}}
 			\nodepart{six}{\ldots}
 		};
 		\node(ff)[below of=stack, yshift=-.5cm] {\scriptsize first free};
@@ -703,10 +700,87 @@ Therefore, if the \qVerb{alloc_ireg} method was called when the state of the reg
 By considering this example, it has become apparent that the method always returns the first free integer register.
 In the compiler, an equivalent pool for float registers also exists.
 
+Before register allocation can be explained using code samples, how registers are passed around in the compiler needs to be explained first.
+Here, we should focus on the compilation of simple expressions.
+For this, the rust code in Listing~\ref{lst:riscv_expression} is to be considered.
+
+\Lirsting[float=h, ranges={604-610,668-671}, path prefix={deps/rush}, caption={Parts of the \qVerb{expression} Method in the RISC-V rush compiler}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+
+The code in Listing~\ref{lst:riscv_expression} shows parts of the \qVerb{expression} method.
+This method is responsible for compiling expressions in the RISC-V rush compiler.
+As the method's signature suggests, it takes a node representing an analyzed expression.
+This method returns an \qVerb{Option<Register>} which is \qVerb{None} if the infix-expression contained a call to the \qVerb{exit} function.
+Otherwise, the method returns the register in which the result of its computation will be contained at runtime.
+The code in the lines 606-610 is executed if a constant integer expression is compiled.
+First, a target integer register is allocated by calling the previously shown \qVerb{alloc_ireg} method.
+Now, the \qVerb{dest_reg} variable contains the register which will contain the result of the expression.
+Next, an \qVerb{li} instruction is inserted.
+At runtime, this instruction would load the constant integer contained in the variable \qVerb{value} into the register specified \qVerb{dest_reg}.
+Finally, the register which now contains the loaded value is returned.
+For more complex expressions, the corresponding methods are called, just like in the other compilers.
+Now it has become apparent how basic expressions work and how registers are used to hold values.
+
 However, we still do not know when the compiler marks certain registers as used.
 In order to understand this problem, the compilation of the rush expression \LirstInline{rush}{n + m} is to be considered.
+The rust code in Listing~\ref{lst:riscv_infix_expr} shows parts of the \qVerb{infix_expr} method of the rush compiler.
 
-\TODO{insert listing of infix compilation}
+\Lirsting[float=h, ranges={769-769,857-876}, path prefix={deps/rush}, caption={Parts of the \qVerb{infix_expr} Method in the RISC-V rush compiler}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+
+Like the signature of the method suggests, it consumes an annotated tree-node representing an analyzed infix-expression.
+Just like \TODO{ref}
+In line 861, the left-hand side expression is compiled, and its result register is saved in the variable \qVerb{lhs_reg}.
+Next, in line 862, the previously discussed \qVerb{use_reg} method is used in order to mark the previously allocated register as used.
+The second argument to the method specifies the size of the data which the register holds, 64 bits for integers or 8 bits for characters for instance.
+This information is also saved in the \qVerb{used_registers} vector and is used in case used registers need to be spilled.
+\TODO{explain this edge case}
+In line 864, the right-hand side is expression is compiled, and its result register is saved in the variable \qVerb{rhs_reg}.
+After this, the register returned by the compilation of the left-hand side is marked as unused again.
+Finally, in line 869, the \qVerb{infix_helper} method is called in order to insert the instruction for the actual calculation.
+
+However, the reason the left-hand side register is being marked as used is not immediately apparent.
+As discussed previously, calling the methods responsible for allocating registers, like \qVerb{alloc_ireg},
+repeatedly without marking registers as used results in the allocator method returning the same register.
+In this scenario, this would create an issue since both the left-hand side and the right-hand side would result in the identical register, \qVerb{a0} for instance.
+Now, the compilation of the right-hand side expression would overwrite the value stored in the register of the left-hand expression, thus creating invalid output code.
+In order to mitigate this issue, the register of the left-hand side is marked as used as seen in Listing~\ref{lst:riscv_infix_expr}.
+Therefore, the allocator call caused by the compilation of the right-hand side will respect that the register returned by the left-hand side is currently in use and will therefore return the next one.
+
+Next, we will consider the implementation of the \qVerb{infix_helper} helper method.
+This method exists since translation of infix operators is required during compilation of both normal infix-expressions and assign-expressions with additional operations, \qVerb{a += 1} for instance.
+The rust code in Listing~\ref{lst:riscv_infix_helper} shows parts of this method.
+
+\Lirsting[float=h, ranges={879-879,882-889,995-998,1008-1009}, path prefix={deps/rush}, caption={Parts of the \qVerb{infix_helper} Method in the RISC-V rush compiler}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+
+As the method's signature suggests, the left-hand and right-hand side's registers and a type are used its parameters.
+Since this register abstraction does not contain type information, as registers are usually untyped, the type information conveys the type of either the left-hand or right-hand side expression.
+In case of infix-expressions, which side the type specifies is irrelevant since the analyzer demands that both are identical.
+Here, the type information is required order to insert the correct instruction.
+
+In line 882 and 883, an integer and a floating-point output register is allocated.
+These registers are saved in a variable for each type, \qVerb{dest_regi} for integers for instance.
+Of course, only one of these registers is later used.
+However, both are allocated in order to avoid code duplication.
+In line 886-889, the code responsible for inserting an integer addition instruction can be seen.
+For this, the \qVerb{self.insert} helper method is used.
+This inserts a new instruction into the current basic block.
+Due to its simplicity its explanation will be omitted.
+Here, the \qVerb{Instruction::Add} enum variant is used.
+Since the first operand specifies the output reqister, the previously \qVerb{dest_regi} variable is specified.
+For the first and second operands, the registers provided as arguments to the \qVerb{infix_helper} method are used.
+The \qVerb{Add} enum can only use integer registers, like \qVerb{a0} as its operands.
+However, the parameters \qVerb{lhs} and \qVerb{rhs} can be registers of any type.
+For this, the conversion method \qVerb{into} is used.
+In line 995-998, the code for inserting the float subtraction instruction can be seen.
+Since floating-point operations usually require different operators from the one used for integer operations,
+it becomes apparent why type information is passed to this method.
+Here, the \qVerb{fsub} instruction enum variant is used to represent the addition of floating-point numbers.
+In this case, the variable \qVerb{dest_regf} is used as the first operand since it can hold floating-point numbers.
+
+\subsubsection{Functions}
+\subsubsection{Let Statements}
+\subsubsection{Function Calls}
+\subsubsection{Loops}
+\subsubsection{Floats}
 
 \begin{itemize}
 	\item If a register cannot be overwritten, mark it as \enquote{used} X
@@ -727,7 +801,7 @@ In order to understand this problem, the compilation of the rush expression \Lir
 \begin{itemize}
 	\item Traverses the tree X
 	\item Show struct fields X
-	\item Explain register allocation and flow of expressions / values
+	\item Explain register allocation and flow of expressions / values X
 	\item Explain functions
 	\item Explain let statements
 	\item Explain calls

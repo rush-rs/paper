@@ -6,6 +6,7 @@
 \usepackage{caption} \captionsetup[table]{skip=10pt}
 \usepackage[table]{xcolor}
 \usepackage{tabularx}
+\usepackage{float}
 \usepackage{multirow}
 \usepackage{makecell}
 \renewcommand{\arraystretch}{1.2}
@@ -21,11 +22,11 @@
 
 \begin{document}
     \section{Authoren}
-    \begin{table}[h]
+    \begin{table}[H]
         \caption{Authoren der einzelnen Abschnitte}
         \begin{tabularx}{\linewidth}{|l|L|}
             \hline
-            \rowcolor{gray!20} Part    &  Author \\ \hline
+            \rowcolor{gray!20} Abschnitt    &  Author \\ \hline
             \chap{1} & \mik \\ \hline
             \sect{2.1} & \silas \\ \hline
             \sect{2.2} & \mik \\ \hline
@@ -43,6 +44,23 @@
             \sect{5.2} & \mik \\ \hline
             \sect{5.3} & \silas \\ \hline
         \end{tabularx}
+    \end{table}
+
+    \begin{table}[H]
+        \caption{Authoren der gezeigten Komponenten von rush}
+        \begin{tabularx}{\linewidth}{|l|L|}
+            \hline
+            \rowcolor{gray!20} Komponente    &  Hauptauthor \\ \hline
+            Lexer & \mik \\ \hline
+            Parser & \silas \\ \hline
+            Semantic Analyzer & \mik \\ \hline
+            tree-walking interpreter & \silas \\ \hline
+            VM interpreter & \mik \\ \hline
+            WASM compiler & \silas \\ \hline
+            LLVM compiler & \mik \\ \hline
+            RISC-V compiler & \mik \\ \hline
+            X86\_64compiler & \silas \\ \hline
+        \end{tabularx}
 
         \vspace{.3cm}
         
@@ -52,6 +70,8 @@
 
         \end{tabular}}
     \end{table}
+
+    \newpage
 
     \section{Selbstständigkeitserklärung}
     Hiermit versicheren wir, dass wir diese Arbeit selbstständig angefertigt, keine anderen als die von uns angegebenen Quellen und Hilfsmittel benutzt und die Stellen der Arbeit, die im Wortlaut oder dem Inhalt nach aus anderen Werken entnommen wurden, in jedem einzelnen Fall mit genauer Quellenangabe kenntlich gemacht habe. Verwendete Informationen aus dem Internet sind der Arbeit als Ausdruck im Anhang beigefügt. Wir sind damit einverstanden, dass die von uns verfasste Arbeit der schulinternen Öffentlichkeit in der Bibliothek der Schule zugänglich gemacht wird.

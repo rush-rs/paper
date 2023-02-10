@@ -1,5 +1,65 @@
-\documentclass{article}
+\documentclass[ngerman]{article}
+
+\usepackage{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amssymb}
+\usepackage{caption} \captionsetup[table]{skip=10pt}
+\usepackage[table]{xcolor}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{makecell}
+\renewcommand{\arraystretch}{1.2}
+\newcolumntype{L}{X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+
+\newcommand\mik{\cellcolor{green!9} Mik Müller}
+\newcommand\silas{\cellcolor{blue!7} Silas Groh}
+\newcommand{\chap}[1]{Kapitel \texttt{#1}}
+\newcommand{\sect}[1]{Abschnitt \texttt{#1}}
+\newcommand{\subsec}[1]{Unterabschnitt \texttt{#1}}
+
 \begin{document}
-    Declaration of who worked on which part comes here.\\
-    Also add declaration of independent work.
+    \section{Authoren}
+    \begin{table}[h]
+        \caption{Authoren der einzelnen Abschnitte}
+        \begin{tabularx}{\linewidth}{|l|L|}
+            \hline
+            \rowcolor{gray!20} Part    &  Author \\ \hline
+            \chap{1} & \mik \\ \hline
+            \sect{2.1} & \silas \\ \hline
+            \sect{2.2} & \mik \\ \hline
+            \sect{3.1} & \silas \\ \hline
+            \sect{3.2} & \mik \\ \hline
+            \sect{4.1} & \mik \\ \hline
+            \sect{4.2} & \silas \\ \hline
+            \sect{4.3} & \mik \\ \hline
+            \subsec{5.1.1} & \mik \\ \hline
+            \subsec{5.1.2} & \mik \\ \hline
+            \subsec{5.1.3} & \mik \\ \hline
+            \subsec{5.1.4} & \silas \\ \hline
+            \subsec{5.1.5} & \mik \\ \hline
+            \subsec{5.1.6} & \mik \\ \hline
+            \sect{5.2} & \mik \\ \hline
+            \sect{5.3} & \silas \\ \hline
+        \end{tabularx}
+
+        \vspace{.3cm}
+        
+        \fbox{\begin{tabular}{ll}
+        \textcolor{green!65}{$\blacksquare$} & Mik Müller \\
+        $\textcolor{blue!50}\blacksquare$ & Silas Groh 
+
+        \end{tabular}}
+    \end{table}
+
+    \section{Selbstständigkeitserklärung}
+    Hiermit versicheren wir, dass wir diese Arbeit selbstständig angefertigt, keine anderen als die von uns angegebenen Quellen und Hilfsmittel benutzt und die Stellen der Arbeit, die im Wortlaut oder dem Inhalt nach aus anderen Werken entnommen wurden, in jedem einzelnen Fall mit genauer Quellenangabe kenntlich gemacht habe. Verwendete Informationen aus dem Internet sind der Arbeit als Ausdruck im Anhang beigefügt. Wir sind damit einverstanden, dass die von uns verfasste Arbeit der schulinternen Öffentlichkeit in der Bibliothek der Schule zugänglich gemacht wird.
+
+    \vspace{2cm}
+    \noindent Wuppertal, 28. Februar 2022
+    \vspace{10pt}
+    \hrule width \textwidth \relax
+    \vspace{.35cm}
+    \noindent Ort, Datum \hspace{4cm} Unterschrift {\small Mik Müller} \hspace{2cm} Unterschrift {\small Silas Groh}
 \end{document}

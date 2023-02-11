@@ -20,6 +20,7 @@ RUN apk add --update \
         make git jq rsync nodejs \
         python3 \
         tokei \
+        exiftool \
         font-jetbrains-mono-nl && \
     rm -rf /var/cache/apk/*
 

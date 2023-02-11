@@ -1,9 +1,19 @@
 build: listings/generated
 	rm -f main.pdf
 	make main.pdf
+	make exif
 
 main.pdf: main.tex listings preamble content lirstings.json
 	latexmk -lualatex -shell-escape -g main.tex
+
+exif:
+	exiftool \
+		-Title="The Conversion of Source Code to Machine Code" \
+		-Author="Silas Groh, Mik Müller" \
+		-Subject="Compiler Construction" \
+		-Keywords="compiler, compiler construction, programming language" \
+		-overwrite_original \
+		main.pdf
 
 init: fetch_deps.sh
 	sh fetch_deps.sh

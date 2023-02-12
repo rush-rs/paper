@@ -885,21 +885,127 @@ In this case, \qVerb{fp} is specified as the register and the value of \qVerb{of
 
 \subsubsection{Function Calls and Returns}
 
+In line 4 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}, the \qVerb{exit} function is called.
+Even though the presented \qVerb{exit} function is special, the rush RISC-V compiler is able to translate all sorts of different call-expressions using one internal method.
+The rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of the \qVerb{call_expr} method in the RISC-V rush compiler.
+This listing only shows the first part of the method since it is too large to be included in a single-page listing.
+
+\Lirsting[float=h, ranges={92-120,127-128,235-235}, path prefix={deps/rush}, caption={The \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+
+Since this method is responsible for translating function calls, its implementation has proven to be very complex and demanding.
+As the method's signature suggests, it consumes an analyzed call-expression in order to return an optional register.
+No register is returned if a function which returns the \qVerb{()} type or the \qVerb{!} type is called.
+In line 4 of the code in Listing~\ref{lst:rush_riscv_simple_sum}, this method would return no register because the \qVerb{exit} function is called.
+
+The parts of code in the shown listing are responsible for preparing the compiler for compilation of the function call.
+In the lines 93--102, all registers which are used at the time of the function call are saved on the stack.
+This is required since the register allocator of this compiler is so simple that it only considers a function at the time.
+In production-ready compiler systems, a register allocation algorithm could also work in an interprocedural manner.
+When considering this practical example, it becomes apparent that saving \textbf{all} used registers does not produce the most efficient output code.
+However, the presented algorithm remains relatively simple.
+Furthermore, throughout the extensive testing conducted on the rush backends, this approach has presented itself as reliable\footnote{For each new commit, \rushCountTests integration tests are conducted on every backend}.
+In line 95, a new vector named \qVerb{regs_on_stack} which will later contain registers is created.
+The for loop in the lines 96--99 is used to spill every used register to the stack.
+For this, the helper method \qVerb{spill_reg} is used.
+\TODO{should I?}
+Due to its similarity to the previously explained \qVerb{save_expr_on_stack} method, this method will not be explained further.
+After a register has been saved on the stack, it is added to the previously declared vector.
+After the loop, in line 102, the \qVerb{used_registers} vector is moved into the local \qVerb{used_regs_prev} variable.
+Therefore, after the assignment, the \qVerb{used_registers} vector will be empty due to its contents being moved into the \qVerb{used_regs_prev} variable.
+Through this, the compilation of the argument expressions can use more registers since the spilled registers can be overwritten.
+
+In the lines 104--128, the code determines how much additional memory is required in order to place arguments on the stack, which could not fit into registers.
+For most calls, this required memory is usually 0.
+However, a call with 9 integer arguments would need 8 additional bytes of memory because the ninth argument would have to be placed on the stack.
+The final amount of additional memory is saved in the \qVerb{spill_param_size} variable.
+Determination of the required size is performed by the for-loop in line 111.
+This loop iterates over each argument expression of the call.
+For each expression, the match-block in line 112 executes different code depending on the rush data type of the expression.
+For instance, expressions which yield in \qVerb{()} or \qVerb{!} do not require registers and can thus be skipped using the \qVerb{continue} keyword in line 113.
+Expressions yielding float variables however are considered in the line 114.
+Here, the \qVerb{nth_param} method on the \qVerb{FloatRegister} enum is called.
+
+The rust code in Listing~\ref{lst:riscv_nth_param} shows parts of this method.
+
+\Lirsting[float=H, ranges={215-217,224-227}, path prefix={deps/rush}, caption={The \qVerb{nth_param} Method in the RISC-V rush compiler}, label={lst:riscv_nth_param}]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
+
+This method associates an index of a parameter to a register which could represent this position.
+For instance, the index 2 represents the third parameter, which is represented by the register \qVerb{fa2}.
+For any other indices, the method return \qVerb{None}.
+Therefore, the if-expression in line 115 of Listing~\ref{lst:riscv_call_expr} checks if there is no longer a register which could represent the current argument position.
+This position is saved in the \qVerb{float_cnt} and \qVerb{int_cnt} variables which are incremented during some iterations of the for-loop.
+Here, two counters are used in order to preserve independence between integer and float arguments.
+If there is no register for representing the current \qVerb{float_cnt}, the variable's value is greater than 7 and thus exceeds the capacity provided by the eight float parameter registers.
+If this is was case, the \qVerb{spill_param_size} variable is incremented by 8 bytes since in rush, a floating-point number requires 64 bits of information.
+At the end of the float-specific block, the \qVerb{float_cnt} is incremented by one.
+This way, the for loop is able to determine if there are any additional memory requirements of the current function.
+In line 4 if the code in Listing~\ref{lst:rush_riscv_simple_sum}, the \qVerb{exit} function is called with one integer argument.
+After the code displayed in Listing~\ref{riscv_call_expr} has executed,
+the runtime value of the \qVerb{int_cnt} variable is 1 whilst the \qVerb{spill_param_size} variable holds 0.
+If the exit function was to be called using two integer registers, the \qVerb{int_cnt} variable would hold the value 2.
+Through this example, it becomes apparent what the task of the code displayed in Listing~\ref{lst:riscv_call_expr} are.
+
+However, only the first part of the \qVerb{call_expr} method is shown in this listing.
+The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the second part of the method.
+
+\Lirsting[float=H, ranges={130-173,198-199,235-235}, path prefix={deps/rush}, caption={The Second Part of the \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr_2}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+
+In the lines 130--131, the \qVerb{int_cnt} and \qVerb{float_cnt} variables are reset to 0.
+In line 134, a new empty vector named \qVerb{params_regs} is created.
+The lines 137--143 are responsible for inserting an \qVerb{addi} instruction in order to allocate stack space.
+However, this instruction is only inserted if the size of the spilled parameters is non-zero,
+meaning that parameters have been spilled.
+If this was the case, inserting an instruction in order to allocate memory is required.
+
+Next, the for-loop in line 148 iterates over the argument expressions.
+Just like in the last listings, the match-block in line 149 executes different code based on the data type of the argument expression.
+In case of unit- or never-types, the expression is compiled and the resulting value is ignored.
+This is reasonable since these types of expressions yield no register.
+For other data types, like floats, other code is executed.
+Expressions which yield floats for instance are handled in line 153.
+In the next line, the expression is compiled and the resulting register is saved in the variable \qVerb{res_reg}.
+In line 155, different code depending on whether the current argument needs to be spilled is executed.
+If the current expression does not need to be spilled, the code after the line 156 is executed.
+Here, \qVerb{res_reg} is only marked as used and pushed in the \qVerb{param_regs} vector.
+Interestingly, there is no code validating that the correct register for the argument position is returned.
+This check is redundant since all registers have been marked as unused prior to this block.
+Therefore, the resulting value of argument expressions will always be in the correct registers.
+However, if there is no register for the current argument, the value has to be spilled onto the stack.
+For this, a \qVerb{fsd} instruction (or \qVerb{sd} instruction for integers) is inserted in order to save the result of the current argument on the stack.
+As described in a previous section about the RISC-V calling convention, spilled arguments are placed on the stack in a way so that the first spilled argument is at the lowest memory position.
+For reference, this process is described in detail in Figure~\ref{fig:riscv_call_spill} in Subsection~\ref{sec:riscv_calling_conv} on page~\pageref{sec:riscv_calling_conv}.
+\TODO{in the original section about calling convention, did I mention that every type uses 8 Bytes, no matter what?}
+In order to calculate this increasing offset easily, the \qVerb{spill_count} variable is declared in line 146.
+Everytime an argument is spilled, this counter increases.
+In line 165, the code calculating the offset relative to \qVerb{sp} can be seen.
+Here, the value of \qVerb{spill_count} is simply multiplied by 8 in order to obtain the correct offset.
+Therefore, the memory offset $o$ is calculated like this: $o = \text{count}_\text{spilled} \times 8$.
+In line 169, the \qVerb{spill_count} variable is incremented like described previously.
+Although just the code for floats is shown here, the algorithm for integer-based types only deviates slightly from the one for floats.
+
+Now it has become clear how the argument expressions are compiled.
+Even until now, not the entire method has been shown.
+The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.
+
+\Lirsting[float=H, ranges={201-235}, path prefix={deps/rush}, caption={The Third Part of the \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr_3}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+
+\TODO{write this paragraph}
+
 \begin{itemize}
-    \item Show call code
-    \item Explain \qVerb{return} jumping epilogue label
+	\item Show call code
+	\item Explain \qVerb{return} jumping epilogue label
 \end{itemize}
 
 \subsubsection{Loops}
 
 \begin{itemize}
-    \item Explain concepts, show code
+	\item Explain concepts, show code
 \end{itemize}
 
 \subsubsection{Floats}
 
 \begin{itemize}
-    \item What is special for floats
+	\item What is special for floats
 \end{itemize}
 
 \begin{itemize}

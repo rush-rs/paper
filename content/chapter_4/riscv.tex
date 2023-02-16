@@ -989,14 +989,59 @@ The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the 
 
 \Lirsting[float=H, ranges={201-235}, path prefix={deps/rush}, caption={The Third Part of the \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr_3}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
-\TODO{write this paragraph}
+The code in the lines 201--209 is responsible for mangling the name of the called function so that it includes the \qVerb{main..} prefix.
+However, if the \qVerb{exit} function is called, the name is not mangled.
+In line 201, the \qVerb{call} instruction responsible for invoking the function call is inserted.
+At this point, the arguments are in their correct places so that the called function will be able to access them.
+Therefore, the instruction can be inserted without additional effort.
 
-\begin{itemize}
-	\item Show call code
-	\item Explain \qVerb{return} jumping epilogue label
-\end{itemize}
+The code in the lines 212--219 is responsible for restoring stack space which was allocated in order to fit spilled arguments.
+Of course, the responsible \qVerb{addi} instruction is only inserted if there are indeed spilled arguments.
+In line 222, the previously emptied \qVerb{used_registers} vector is restored to its state before the call.
+This is done in order to allow the register allocation for the call arguments to happen independently of the rest of the compiled code.
+The code in the lines 224--231 is responsible for selecting an appropriate output register based on the function's return type.
+For instance, functions which return \qVerb{float} values place their return value inside the register \qVerb{fa0}.
+Therefore, the variable \qVerb{res_reg} represents the register containing the called function's return value.
+For functions which return the \qVerb{()} or \qVerb{!} type, no register is selected and \qVerb{None} is returned.
+The invocation of the helper method \qVerb{restore_regs_after_call} is used in order to insert instructions which restore the previously spilled registers after the call.
+The \qVerb{used_registers} vector could only be completely emptied due to the prior save of all used registers, these restored registers need to be restored after the call has completed.
+What strikes the eye here is that the method takes the \qVerb{res_reg} variable as its first argument.
+
+For instance, a function might return a value of type \qVerb{int}, therefore making \qVerb{a0} the content of \qVerb{res_reg}.
+If the register \qVerb{a0} was used before the function call, it would have to be restored by the helper method.
+However, restoring the register would result in the function's return value to be overwritten, therefore creating a bug.
+In order to mitigate this issue, the method will alter the result register by inserting a \qVerb{mv} instruction if necessary.
+Since the method returns the final output register which contains the call's result, it is used as the last expression of the block, thus making it the return value of the \qVerb{call_expr} method.
+
+Now it has become apparent how function calls are implemented in the rush RISC-V compiler.
+However, the question of how a called function returns a value still remains.
+In the previous sections, we have covered that every generated function contains an \qVerb{epilogue_x}.
+Every time the \qVerb{return} keyword is used in rush, the compiler generates an instruction which jumps to the epilogue label of the function being compiled.
+If the function should a value, meaning that the return-statement contains an expression,
+it is first compiled in order to observe its output register.
+If the output register is already the desired register, like \qVerb{a0} for integer values, the compiler can carry on.
+However, if the output register of the compiled expression deviates from the register in which return values shall be passed,
+the compiler inserts a \qVerb{mv} instructions prior to the instruction jumping to the epilogue label.
+This way, values can be returned at any time whilst stopping execution of the function.
+For implicit returns, meaning trailing expressions which are not terminated by a semicolon,
+this procedure is identical.
 
 \subsubsection{Loops}
+
+Since most assembly dialects do not provide high-level control-flow scaffolds like loops,
+a compiler targeting assembly has to generate code which behaves like a loop.
+The code in Listing~\ref{lst:rush_while_loop} shows a rush program containing a while-loop.
+On the right side, Listing~\ref{lst:asm_riscv_while_loop} shows parts of the assembler output generated from the rush program.
+
+\begin{minipage}{.34\textwidth}
+	\center
+	\Lirsting[caption={A rush Program Containing a While-Loop}, label={lst:rush_while_loop}, float=H]{listings/while_loop.rush}
+\end{minipage}%
+\hspace{3cm}
+\begin{minipage}{.45\textwidth}
+	\center
+	\Lirsting[ranges={21-36},caption={Assembly Output of Rush Program in Listing~\ref{lst:rush_while_loop}}, label={lst:asm_riscv_while_loop}, float=H]{listings/generated/rush_while_loop.s}
+\end{minipage}
 
 \begin{itemize}
 	\item Explain concepts, show code

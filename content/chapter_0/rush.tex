@@ -26,6 +26,24 @@ However, this function is not defined anywhere.
 Nevertheless, the code still executes without any errors.
 This is due to the fact that the \texttt{exit} function is a \emph{builtin} function as it is used to exit a program using the specified exit code.
 
+\subsection{Features}
+
+\begin{table}[h]
+	\caption{Features of the rush Programming Language}\label{tbl:ebnf_to_rust}
+	\rowcolors{3}{gray!25}{white}
+	\begin{tabularx}{0.95\textwidth}{lLl}
+        \rowcolor{gray!50} Name & Functionality & rush code                                                                         \\
+		\hline
+        Loop & Here & \LirstInline{rush}{loop { /* Code here */  }} \\
+        While & Here & \LirstInline{rush}{while x < 5 { /* Code here */  }} \\
+        For & Here & \LirstInline{rush}{for i = 0; i < 10; i += 1 { /* Code here */  }} \\
+        If & Here & \LirstInline{rush}{if true { /* Code here */  } else { /* Else code here */ }} \\
+        Fn & Here & \LirstInline{rush}{fn foo(n: int) { /* Code here */  }} \\
+        Infix Expressions & Here & \LirstInline{rush}{loop { /* Code here */  }} \\
+        Prefix Expressions & Here & \LirstInline{rush}{loop { /* Code here */  }} \\
+	\end{tabularx}
+\end{table}
+
 In the git commit \rushCommit, the entire rush project includes
 \input "|tokei ./deps/rush -o json | jq '.Total.code'" lines of source code\footnote{Blank lines and comments are not counted}.
 On the first sight, this might seem like a large number for a simple programming language.

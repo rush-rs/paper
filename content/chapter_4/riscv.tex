@@ -1033,49 +1033,43 @@ a compiler targeting assembly has to generate code which behaves like a loop.
 The code in Listing~\ref{lst:rush_while_loop} shows a rush program containing a while-loop.
 On the right side, Listing~\ref{lst:asm_riscv_while_loop} shows parts of the assembler output generated from the rush program.
 
-\begin{minipage}{.34\textwidth}
+\begin{minipage}{.32\textwidth}
 	\center
 	\Lirsting[caption={A rush Program Containing a While-Loop}, label={lst:rush_while_loop}, float=H]{listings/while_loop.rush}
 \end{minipage}%
-\hspace{3cm}
-\begin{minipage}{.45\textwidth}
+\hspace{2.5cm}
+\begin{minipage}{.47\textwidth}
 	\center
 	\Lirsting[ranges={21-36},caption={Assembly Output of Rush Program in Listing~\ref{lst:rush_while_loop}}, label={lst:asm_riscv_while_loop}, float=H]{listings/generated/rush_while_loop.s}
 \end{minipage}
 
-\begin{itemize}
-	\item Explain concepts, show code
-\end{itemize}
+The rush program in Listing~\ref{lst:rush_while_loop} contains a while loop which will iterate ten times.
+At the beginning of the program, the integer variable \qVerb{count} is declared.
+Before each iteration, the while-loop checks that the condition in its head is true.
+If the condition was true, the code inside the loop is executed.
+Otherwise, the execution of the loop stops and the code after the loop is executed.
+In the assembly output in Listing~\ref{lst:asm_riscv_while_loop}, the contents of the loop is represented by the instructions inside the \qVerb{while_head_0} label.
+The instructions generated from code before the loop are not visible but appear before the code shown in the listing.
+As the comment in line 22 suggests, the first instructions after the label declaration represent the loop control code.
+These instructions are executed every time time loop begins a new iteration, therefore they check if the condition is true before any of the code inside the loop's body is executed.
+If the condition is false, the execution of the loop should stop.
+
+This is accomplished by the \qVerb{beqz} instruction in line 26.
+This instruction is a pseudoinstruction which jumps to the target label if the value inside the first operand is zero~\cite[p.~105]{Waterman2019}.
+Here, this would mean that the instruction would jump to the \qVerb{after_while_0} label if the condition of the loop evaluated to false.
+Just like the name of the \qVerb{after_loop} label suggests, it contains code which follows the while-statement.
+Therefore, in this example, it contains the instructions calling the \qVerb{exit} function with the code saved in the variable \qVerb{count}.
+However, if the condition evaluated to \qVerb{true}, the \qVerb{beqz} instruction would execute without causing a jump.
+In this case, the instructions following the comment in line 27 are executed.
+As the comment suggests, these instructions represent the code inside the loop's body.
+The instructions in the lines 28--31 are responsible for compiling the expression \qVerb{count += 1} in line 4 of the rush code.
+In line 32, an unconditional \qVerb{j} instruction jumps back to the beginning of the \qVerb{while_head_0} label.
+Since this jump happens unconditionally, this instructions introduces the iteration for which the loop is desired.
+Therefore, at the end of a loop, an instruction jumps back to the start, where the condition is then evaluated again.
+This way, the compiler is able to generate instructions for the \qVerb{loop}, \qVerb{while}, and \qVerb{for} statements.
+However, \qVerb{loop} statements lack the control code which checks a condition as there is no condition in these loops.
+Furthermore, \qVerb{for} loops contain code representing its update expression at the end of their body.
+By using this approach, the compiler is also able to generate nested loops reliably.
+Due to the simplicity of the presented approach, rust code from the compiler is omitted.
 
 \subsubsection{Floats}
-
-\begin{itemize}
-	\item What is special for floats
-\end{itemize}
-
-\begin{itemize}
-	\item If a register cannot be overwritten, mark it as \enquote{used} X
-	\item Each function decides which target register will hold its result X
-	\item Registers are acquired from a pool of registers X
-	\item the first free register from this pool is taken when a new register is requested X
-	\item For instance, a new integer register can be acquired by calling the \qVerb{self.alloc_ireg} method. X
-	\item If this function is called repeatedly, it would always return the same register, \qVerb{a0} for instance. X
-	\item Therefore, registers can be marked as \qVerb{used}. X
-	\item In this case, the method would return the next free register after the last used one X
-	\item \TODO{include graphic here}
-	\item Such a pool exists for both integer and floating-point registers X
-	\item Include rust code which calls the \qVerb{alloc_ireg} and \qVerb{use_reg} methods (in the \qVerb{infix_expr} method) X
-	\item The latter inserts a register into the \qVerb{used_registers} vector in order to block it temporarely
-	\item Show code of the \qVerb{alloc_ireg} method and explain how it works and why it works like this
-\end{itemize}
-
-\begin{itemize}
-	\item Traverses the tree X
-	\item Show struct fields X
-	\item Explain register allocation and flow of expressions / values X
-	\item Explain functions
-	\item Explain let statements
-	\item Explain calls
-	\item Explain loops
-	\item Explain floats
-\end{itemize}

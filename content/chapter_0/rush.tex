@@ -28,21 +28,38 @@ This is due to the fact that the \texttt{exit} function is a \emph{builtin} func
 
 \subsection{Features}
 
+As hinted previously, rush implements various feature which are also found in most other relevant programming languages today.
+Generally, rush is a \emph{procedural} programming language, meaning that code is partitioned into functions.
+This paradigm has been selected as it is also common across most of today's popular programming languages.
+In order to provide abstractions, rush provides many components or features which allow code to be developed more rapidly.
+For instance, a rush program might use a \qVerb{loop} in order to implement repeated code easily.
+For reference, Table~\ref{tbl:rush_features} shows some features of the rush programming language.
+
 \begin{table}[h]
-	\caption{Features of the rush Programming Language}\label{tbl:ebnf_to_rust}
+	\caption{Features of the rush Programming Language}\label{tbl:rush_features}
 	\rowcolors{3}{gray!25}{white}
 	\begin{tabularx}{0.95\textwidth}{lLl}
         \rowcolor{gray!50} Name & Functionality & rush code                                                                         \\
 		\hline
-        Loop & Here & \LirstInline{rush}{loop { /* Code here */  }} \\
-        While & Here & \LirstInline{rush}{while x < 5 { /* Code here */  }} \\
-        For & Here & \LirstInline{rush}{for i = 0; i < 10; i += 1 { /* Code here */  }} \\
-        If & Here & \LirstInline{rush}{if true { /* Code here */  } else { /* Else code here */ }} \\
-        Fn & Here & \LirstInline{rush}{fn foo(n: int) { /* Code here */  }} \\
-        Infix Expressions & Here & \LirstInline{rush}{loop { /* Code here */  }} \\
-        Prefix Expressions & Here & \LirstInline{rush}{loop { /* Code here */  }} \\
+        Loop & Executes code repeatedly & \LirstInline{rush}{loop { /* */  }} \\
+        While & Like \qVerb{loop}, checks a condition before each iteration & \LirstInline{rush}{while x < 5 { /* */  }} \\
+        For & Like \qVerb{while}, also includes an update-expression which is executed after each iteration & \LirstInline{rush}{for i = 0; i < 10; i += 1 { /* */  }} \\
+        If & Executes different code based on a condition & \LirstInline{rush}{if true { /* */ } else { /* */ }} \\
+        Fn & Defines a function which can be called later  & \LirstInline{rush}{fn foo(n: int) { /* */  }} \\
+        Infix Expr & For performing mathematical and logical operations & \LirstInline{rush}{1 + n; 5 ** 2} \\
+        Prefix Expr & Can also be used for mathematical and logical operations & \LirstInline{rush}{!false; -n} \\
+        Variables & Associate a name with a value which can change during runtime & \LirstInline{rush}{let mut answer = 42} \\
+        Cast Expr & Convert a value into another one with a different type & \LirstInline{rush}{42 as char} \\
 	\end{tabularx}
 \end{table}
+
+Just like most other compiled languages, rush also includes a \emph{static type system},
+meaning that every value has a type which cannot change during runtime.
+For instance, after a new variable which can hold integers may be defined,
+only integer values may be assigned to it. This way, the compiler can validate the semantic
+correctness of the program, showing error messages if a malformed program is provided.
+Apart from mandating a program's correctness, a static type system also makes the program easier to read later.
+Therefore, the rush programming language is designed in a way that promotes correctness and programmer efficiency.
 
 In the git commit \rushCommit, the entire rush project includes
 \input "|tokei ./deps/rush -o json | jq '.Total.code'" lines of source code\footnote{Blank lines and comments are not counted}.

@@ -71,8 +71,9 @@ The next row contains the \emph{saved} registers \qVerb{s1} — \qVerb{s11}.
 These registers are typically preserved across function calls, meaning a called function must not overwrite them.
 However, this concept will also be explained in more detail later. \TODO{Will it?}
 What the previously explained registers have in common is that they all hold integer values.
-Depending on the exact RISC-V architecture, all registers either hold 32 or 64 bits of information.
+Depending on the exact RISC-V architecture, all registers, including floating-point registers, either hold 32 or 64 bits of information.
 For floating-point number values, RISC-V provides other registers.
+These registers are able to hold floating-point numbers according to the \emph{IEEE 754--2008} standard~\cite[Chapter~11]{Waterman2019}.
 Just like their integer counterparts, the floating-point registers \qVerb{fa0} and \qVerb{fa1} are used as function call arguments and as return values.
 However, the other fa-registers \qVerb{fa2} — \qVerb{fa7} can only be used as function arguments holding floating-point numbers.
 Just like the \qVerb{sx} registers, the \qVerb{fs0} — \qVerb{fs11} registers are usually preserved across function calls.

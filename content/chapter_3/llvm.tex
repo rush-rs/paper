@@ -236,7 +236,7 @@ Listing~\ref{lst:llvm_main_fn} displays parts of the method responsible for tran
 
 In the lines 334--336, the `\texttt{main}' function is added to the current LLVM module.
 The definitions of the variables `\texttt{fn\_name}' and `\texttt{fn\_type}' are not visible.
-The first variable specifies the name of the function to be inserted, whilst the latter describes the function's signature.
+The first variable specifies the name of the function to be inserted, while the latter describes the function's signature.
 The return type of the function is specified by the \texttt{fn\_type} variable.
 In most cases, the return-type of the function is an integer since C libraries can then use the function as its `\texttt{main}' function.
 In cases where the generated code should not depend on C libraries, `\Verb|fn_name|' will be `\Verb|_start|' and `\Verb|fn_type|' will state that the function returns \emph{void}.

@@ -1,5 +1,5 @@
 fn main() {
     let two = 2;
     let three = 3;
-    exit(two + three)
+    exit(two + three);
 }

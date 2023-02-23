@@ -94,7 +94,7 @@ As explained later in Section~\ref{sec:constructing_a_tree}, depending on the pa
 
 The parser uses the generated tokens in order to construct a tree representing the program's syntactic structure.
 Depending on how the parser should be used, this can either be a \emph{Concrete Syntax Tree} (CST) or an \emph{Abstract Syntax Tree} (AST).
-The former still contains information about all input tokens with their respective locations, whilst the latter only stores the abstract program structure with just the relevant information for basic analysis and execution.
+The former still contains information about all input tokens with their respective locations, while the latter only stores the abstract program structure with just the relevant information for basic analysis and execution.
 Therefore, a CST is usually used for development tools like formatters and intricate linters and analyzers where it is important to preserve stylistic choices made by the programmer or to know the exact location of every token.
 However, an AST is enough for interpretation and compilation as it preserves the semantic meaning of the program.
 Figure~\ref{fig:parser_simple_ast} shows an AST for the program `\Verb{1+2**3}' in the language notated in Listing~\ref{lst:ebnf_reference_grammar} on page~\pageref{lst:ebnf_reference_grammar}.

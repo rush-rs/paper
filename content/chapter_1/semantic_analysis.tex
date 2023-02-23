@@ -5,55 +5,50 @@ Often, semantic analysis directly follows the syntax analysis since the parser g
 
 \subsection{Defining the Semantics of a Programming Language}
 Often, a programming language is not just defined by its grammar
-because the grammar cannot specify how programs should behave.
-Therefore, a programming language's behavior is often defined by a so-called \emph{semantic specification}.
-This specification often describes how a program should behave during runtime and what semantic rules discriminate a valid program from an invalid one.
+since the grammar cannot specify how programs and the compiler should behave.
+Therefore, this behavior can be defined through a so-called \emph{semantic specification}.
+Apart from describing behavior, the specification regularly states which semantic rules discriminate a valid program from an invalid one.
 Common rules include \emph{type checking}, \emph{context of statements}, or \emph{integer overflow behavior}.
 Another example of a semantic rule is that a variable has to be declared before it is used.
 Defining the semantic rules of a programming language is often a demanding task
 since not all requirements are clear from the beginning.
-Because the semantic rules of a programming language can not be defined formally,
-a language designer often writes their specification in a natural language, meaning Chomsky type 0.
+However, the semantic rules of a programming language can usually not be defined in a formal manner easily~\cite[pp.~5f]{Holm2012}.
+a language designer often chooses to write their specification in a natural language, meaning Chomsky type 0~\cite[p.~23]{Watson2017}.
 However, due to the specification being written in a natural language, the specification can sometimes be ambiguous.
 Therefore, a well-written semantic specification should avoid ambiguity as much as possible.
-Furthermore, this specification is often written in English
-due to it being a well-adopted language across several academic fields like computer science.
-Since those rules define when a program is valid, they have to be checked and enforced before program compilation can start~\cite[p.~21]{Watson2017}.
+Since those rules define when a program is valid, they be checked and enforced before program compilation can start~\cite[p.~21]{Watson2017}.
 
 \subsection{The Semantic Analyzer}
 Because rush shares its semantic rules across all backends,
 it would be cumbersome to implement semantic validation in each
 backend individually. Therefore, it is rational to implement a separate
 compilation step which is responsible for validating the source program's semantics.
-Among other checks, the so-called \emph{semantic analyzer}\footnote{Later referred to as \enquote{analyzer}} validates types
-and variable references whilst performing type annotations. The last aspect is
+Among other checks, the so-called \emph{semantic analyzer}\footnote{Later referred to as `analyzer'} validates types
+and variable references while adding type annotations to the AST. The last aspect is
 of particular importance since all compiler backends rely on type information at
-compile time. In order to obtain type information, the abstract syntax
-tree of the source program must be traversed, performing numerous other checks
-during the process. The analyzer behaves exactly like this. In order to
-preserve a clear boundary between the individual compilation steps, the parser
+compile time. For obtaining type information, the abstract syntax
+tree of the source program has to be traversed, performing numerous other checks
+during the process. In order to preserve a clear boundary between the individual compilation steps, the parser
 only validates the program's syntax without performing further validation.
-Therefore, the analyzer traverses the abstract syntax tree previously generated
-by the parser.
 
-In order to highlight why type information is often required at compile time, we will consider Listing~\ref{lst:rush_semantic_simple}.
+Now, Listing~\ref{lst:rush_semantic_simple} should be considered in order to understand why type information is required at compile time.
 The code in this listing displays a basic rush program calculating the sum of two integers and uses the result as its exit code.
-In this example, the exit code of the program will be 5.
+In this example, the exit code of the program is 5.
 
-\Lirsting[caption={A rush Program Which Adds Two Integers}, label={lst:rush_semantic_simple}, float=H]{listings/semantic_analysis_simple.rush}
+\Lirsting[wrap=L, wrap width=0.32\textwidth, caption={A rush Program Which Adds Two Integers}, label={lst:rush_semantic_simple}]{listings/semantic_analysis_simple.rush}
 
 In this example, the analyzer will first check if the program contains a \texttt{main} function.
 If this is not the case, the analyzer rejects the program because it violates rush's semantic specification.
 Furthermore, the analyzer checks that the \texttt{main} function takes no parameters and returns no value. In this
-example, there is a valid \texttt{main} function which complies with the previously listed constraints. Now, the analyzer traverses the
+example, there is a valid \texttt{main} function which complies with the previously explained constraints. Now, the analyzer traverses the
 function body of the \texttt{main} function. First, the analyzer examines the statements in the lines two and three.
 Since \texttt{let} statements are used to declare
 new variables, the analyzer will add the variables \texttt{two} and \texttt{three} to its
 current scope. However, unlike an interpreter, the analyzer does not insert the
-variable's value into its scope. Instead of the concrete values, the analyzer
-only considers the types of expressions. Therefore, in this example, the
+variable's value into its scope. Instead of concrete values, the analyzer
+only considers types. Therefore, in this example, the
 analyzer remembers that the variables \texttt{two} and \texttt{three} store integer values.
-This information will become much more useful when we consider line 4. Here, the
+This information will become useful when we consider line 4. Here, the
 analyzer checks that the identifiers \texttt{two} and \texttt{three} refer to valid variables.
 Just like most other programming languages, rush does not allow the addition
 of two boolean values for example. Therefore, the analyzer checks that the operands
@@ -61,16 +56,16 @@ of the \texttt{+} operator have the same type and that this type is valid in add
 Because this validation requires information about types, the analyzer accesses
 its scope when looking up the identifiers \texttt{two} and \texttt{three}. Since those names
 were previously associated with the \texttt{int} type, the analyzer is now aware of the
-operand types and can check their validity. In this case, calculating the
-sum of two integers is legal and results in another integer value. Since rush's
+operand types and can check their validity. Calculating the
+sum of two integers is a legal infix-expression and results in another integer value. Since rush's
 semantic specification states that the \texttt{exit} function requires exactly one
 integer parameter, the analyzer has to check that it is called correctly.
-Furthermore, the analyzer validates all function calls and declarations, not
+Apart from this call to the \qVerb{exit} function, the analyzer validates all function calls and declarations, not
 just the ones of builtin functions. Since the result of the addition is also an
 integer, the analyzer accepts this program since both its syntax and semantics
 are valid.
 
-As indicated previously, most compilers require type information whilst
+As indicated previously, most compilers require type information while
 generating target code. For simplicity, we will consider a fictional compiler
 which can compile both integer and float additions. However, the fictional
 target machine requires different instructions for addition depending on the
@@ -291,6 +286,8 @@ In the case of the example program, the analyzer did not generate any error mess
 Therefore, the analyzer accepts this program and returns its syntax-tree with type annotations.
 
 \subsection{Early Optimizations}
+
+\TODO{cite the book about semantics}
 
 Another task of the analyzer can be to perform early optimizations.
 In compiler design, most of the optimizations are often performed with the target machine in mind.

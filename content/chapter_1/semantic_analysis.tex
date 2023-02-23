@@ -37,28 +37,28 @@ In this example, the exit code of the program is 5.
 
 \Lirsting[wrap=L, wrap width=0.32\textwidth, caption={A rush Program Which Adds Two Integers}, label={lst:rush_semantic_simple}]{listings/semantic_analysis_simple.rush}
 
-In this example, the analyzer will first check if the program contains a \texttt{main} function.
+In this example, the analyzer will first check if the program contains a \qVerb{main} function.
 If this is not the case, the analyzer rejects the program because it violates rush's semantic specification.
-Furthermore, the analyzer checks that the \texttt{main} function takes no parameters and returns no value. In this
-example, there is a valid \texttt{main} function which complies with the previously explained constraints. Now, the analyzer traverses the
-function body of the \texttt{main} function. First, the analyzer examines the statements in the lines two and three.
-Since \texttt{let} statements are used to declare
-new variables, the analyzer will add the variables \texttt{two} and \texttt{three} to its
+Furthermore, the analyzer checks that the \qVerb{main} function takes no parameters and returns no value. In this
+example, there is a valid \qVerb{main} function which complies with the previously explained constraints. Now, the analyzer traverses the
+function body of the \qVerb{main} function. First, the analyzer examines the statements in the lines two and three.
+Since \qVerb{let} statements are used to declare
+new variables, the analyzer will add the variables \qVerb{two} and \qVerb{three} to its
 current scope. However, unlike an interpreter, the analyzer does not insert the
 variable's value into its scope. Instead of concrete values, the analyzer
 only considers types. Therefore, in this example, the
-analyzer remembers that the variables \texttt{two} and \texttt{three} store integer values.
+analyzer remembers that the variables \qVerb{two} and \qVerb{three} store integer values.
 This information will become useful when we consider line 4. Here, the
-analyzer checks that the identifiers \texttt{two} and \texttt{three} refer to valid variables.
+analyzer checks that the identifiers \qVerb{two} and \qVerb{three} refer to valid variables.
 Just like most other programming languages, rush does not allow the addition
 of two boolean values for example. Therefore, the analyzer checks that the operands
-of the \texttt{+} operator have the same type and that this type is valid in additions. % TODO: revise this paragraph?
+of the \qVerb{+} operator have the same type and that this type is valid in additions. % TODO: revise this paragraph?
 Because this validation requires information about types, the analyzer accesses
-its scope when looking up the identifiers \texttt{two} and \texttt{three}. Since those names
-were previously associated with the \texttt{int} type, the analyzer is now aware of the
+its scope when looking up the identifiers \qVerb{two} and \qVerb{three}. Since those names
+were previously associated with the \qVerb{int} type, the analyzer is now aware of the
 operand types and can check their validity. Calculating the
 sum of two integers is a legal infix-expression and results in another integer value. Since rush's
-semantic specification states that the \texttt{exit} function requires exactly one
+semantic specification states that the \qVerb{exit} function requires exactly one
 integer parameter, the analyzer has to check that it is called correctly.
 Apart from this call to the \qVerb{exit} function, the analyzer validates all function calls and declarations, not
 just the ones of builtin functions. Since the result of the addition is also an
@@ -69,212 +69,197 @@ As indicated previously, most compilers require type information while
 generating target code. For simplicity, we will consider a fictional compiler
 which can compile both integer and float additions. However, the fictional
 target machine requires different instructions for addition depending on the
-type of the operands. For instance, integer addition uses the \texttt{intadd} instruction
-while float addition uses the \texttt{floatadd} instruction. Here, type ambiguity would
+type of the operands. For instance, integer addition uses the \qVerb{intadd} instruction
+while float addition uses the \qVerb{floatadd} instruction. Here, type ambiguity would
 cause difficulties. If there was no semantic analysis step, the compilation step would
 have to implement its own way of determining the types of the operands at
 compile time. However, determining these types requires a complete
 tree-traversal of the operand expressions. Due to the recursive design of the
-abstract syntax tree, implementing this tree-traversal would require a
-significant amount of source code in the compiler. However, the implementation
-of this algorithm would be nearly identical across all of rush's compiler
+abstract syntax tree, implementing this tree-traversal would require a large amount of source code in the compiler.
+However, the implementation of this algorithm would be nearly identical across all of rush's compiler
 backends. Therefore, implementing type determination in each backend
 individually would enlarge the compiler source code, thus making it harder to
-understand. Since code duplication is considered inelegant, outsourcing this
-algorithm into a separate component is likely the best option. As a result of
-this, the analyzer implements such a tree-traversal algorithm for
-determining the types of subtrees. Because of the previously mentioned reasons,
-rush's semantic analyzer also annotates the abstract syntax tree with type
+understand. As a result of this, rush's semantic analyzer also annotates the abstract syntax tree with type
 information so that it can be utilized by later steps of compilation.
 
-In order to obtain a deeper understanding of how the analyzer works, we will now
-consider parts of its implementation and how they behave when analyzing the
-example from above. However, before we can examine how the analyzer's implementation behaves,
-we should first highlight which attributes play a vital role in the analyzer.
+\subsubsection{implementation}
+
+In order to obtain a deeper understanding of how the analyzer works, parts of its implementation and how they behave when analyzing the
+example from above will now be considered. However, before we can examine how some methods of the analyzer work,
+its most important struct fields should be discussed first.
 
 \Lirsting[ranges={12-18,26-26}, caption={Fields of the \qVerb{Analyzer} Struct}, label={lst:analyzer_attr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 Listing~\ref{lst:analyzer_attr} displays the struct fields of the semantic analyzer.
-The field \texttt{functions} in line 13 associates a function name to the function's signature.
-Therefore, if a function is called at a later point in time, the analyzer checks if the function exists and can compare if the arguments match the declared parameters.
-The next field, \texttt{diagnostics} contains a list of diagnostics.
-A diagnostic is a struct which represents a message, is intended to be displayed to the user of the compiler.
-Each diagnostics has a severity, such as \emph{warning} or \emph{error} for instance.
+The field \qVerb{functions} in line 13 associates a function name to the function's signature.
+Therefore, if a function is called at a later point in time, the analyzer checks whether the function exists and can validate the arguments.
+The next field, \qVerb{diagnostics} contains a list of diagnostics.
+A \qVerb{Diagnostic} is a struct which represents a message, it is intended to be displayed to the user of the compiler.
+Each diagnostics has a severity, such as \emph{warning} or \emph{error}, for instance.
 After the analyzer has finished the tree-traversal, all diagnostics are displayed in a user-friendly manner.
-The \texttt{scopes} field in line 15 is responsible for managing variables.
-In rush, blocks using braces (\texttt{\{\}}) create new scopes.
-If the analyzer enters such a block, a new scope is pushed onto the \texttt{scopes} stack.
+The \qVerb{scopes} field in line 15 is responsible for managing variables.
+In rush, blocks created with braces (\qVerb{\{\}}) also introduce new scopes.
+If the analyzer enters such a block, a new scope is pushed onto the \qVerb{scopes} stack.
 Each scope maps a variable identifier to some variable-specific data.
-For instance, the analyzer keeps track of variable types, whether variables have been used later, if they are mutated, and the location of where they were declared.
+For instance, the analyzer keeps track of variable types, whether variables have been used or mutated later, and the location their definition.
 By saving this much information about each declared variable, the analyzer can produce very helpful and accurate error messages or warnings.
-Such a message containing various diagnostics is displayed in Listing~\ref{lst:analyzer_imutable_err}, it occurs when another value is assigned to an immutable variable.
+For reference, compiler output which incorporates diagnostics is displayed in Listing~\ref{lst:analyzer_imutable_err},
+it would occur when another value is assigned to an immutable variable.
 
 \Lirsting[ansi=true, caption={Output When Compiling an Invalid rush Program}, float=H, label={lst:analyzer_imutable_err}]{listings/non_mut_variable_error.txt}
 
-Moreover, the field \texttt{curr\_func\_name} saves the name of the current function.
-Furthermore, the \texttt{loop\_count} field is used to validate the uses of the \texttt{break} and \texttt{continue} statements.
-Because these statements are only valid inside loop bodies, the value of \texttt{loop\_count} must be $> 0$ when the analyzer encounters such a statement.
+Moreover, the field \qVerb{curr\_func\_name} saves the name of the current function.
+This field is used in order to highlight unused functions correctly.
+If a function is called from another function, it is marked as used.
+However, if the call originates from the same function, it only implements recursion without being used from the outside.
+Furthermore, the \qVerb{loop\_count} field is used to validate the uses of the \qVerb{break} and \qVerb{continue} statements.
+Because these statements are only valid inside loop bodies, the value of \qVerb{loop\_count} must be $> 0$ when the analyzer encounters such a statement.
 This counter is incremented as soon as the analyzer begins traversal of a loop body.
 After the analyzer has traversed the loop's body, the counter is decremented again.
-Due to this design, nested loops do not cause issues while the validity of the above statements can be guaranteed.
+This field is implemented as a counter rather than a boolean in order to support nested loops.
 
-Now that important attributes have been highlighted, we can now consider the example from Listing\ref{lst:rush_semantic_simple}.
+Now that important attributes have been highlighted, we can now consider the example from Listing~\ref{lst:rush_semantic_simple}.
 First, the analyzer traverses and analyzes all functions and their bodies.
 For every rush function, the analyzer invokes an internal method responsible for validating functions.
-Among other tasks, this method sets the \texttt{curr\_func\_name} field to the name of the current function and
-inserts a new entry into the \texttt{functions} hashmap, associating the function's name with its signature.
-Because a \texttt{main} function is mandatory in every rush program,
-the analyzer simply checks that the \texttt{functions} hashmap contains an entry for the \texttt{main} function.
-Naturally, this lookup is performed after all functions have been analyzed since the \texttt{main} function can then exist in the hashmap.
-The code in listing \ref{lst:analyzer_sig_main} shows how validating the \texttt{main} function's signature works.
+Among other tasks, this method inserts a new entry into the \qVerb{functions} hashmap,
+associating the function's name with its signature so that it can be used for validating arguments later.
+Because a \qVerb{main} function is mandatory in every rush program,
+the analyzer simply checks that the \qVerb{functions} hashmap contains an entry for the \qVerb{main} function after every function has been traversed.
+The code in Listing~\ref{lst:analyzer_sig_main} shows how validating the \qVerb{main} function's signature works.
 
-\Lirsting[ranges={396-406,418-424,432-435,490-490,535-542}, caption={Analyzer Validating the Signature of the `\texttt{main}' Function}, label={lst:analyzer_sig_main}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={396-406,_418-424,_432-435,490-490,535-542}, caption={Analyzer: Validation of the \qVerb{main} Function's Signature}, label={lst:analyzer_sig_main}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-This code displays the `\texttt{function\_definition}' method of the analyzer.
-In this listing, only the code relevant for analyzing the `\texttt{main}' function is shown.
-However, this method is used to analyze any function, not just `\texttt{main}'.
-The method  takes a `\texttt{FunctionDefinition}' as its input and returns an `\texttt{AnalyzedFunctionDefinition}'.
+This code displays the \qVerb{function_definition} method of the analyzer.
+In this listing, only the code relevant for analyzing the \qVerb{main} function is shown.
+However, this method is used to analyze any function, not just \qVerb{main}.
+The method  takes a \qVerb{FunctionDefinition}' as its input and returns an \qVerb{AnalyzedFunctionDefinition}.
 Therefore, it is responsible for analyzing and annotating the definition of a function.
 Since a rush file might contain multiple functions, this method is invoked for each function declared.
 
 In line 401, the method updates the current function name.
-The if-clause in line 403 checks if the method is currently analyzing the main-function.
-In this case, the code inside the if-clause is executed in order to perform special checks on the main-function.
-The next if-clause in line 405 checks if the node's \texttt{params} vector contains any items.
+The if-clause in line 403 checks whether the method is currently analyzing the main-function.
+If this is the case, additional checks are performed for the \qVerb{main} function.
+The next if-clause in line 405 checks if the node's \qVerb{params} vector contains any items.
 If the vector contained any items, the main-function's declaration would include parameters.
 If this was the case, the analyzer would generate an error message stating that the main-function must not take any parameters.
-However, we have not yet explained how error handling in the analyzer works.
-When examining the signature of this method, it becomes obvious that it cannot return errors.
-Instead, the \texttt{self.error} method is invoked in line 406.
-This method uses information about the error to be generated in order to push a new `\texttt{Diagnostic}' struct into the \texttt{diagnostics} vector.
-Therefore, the `\texttt{diagnostics}' vector will contain any generated errors after analysis has been completed.
+However, error handling in the analyzer has not been discussed so far.
+According to the method's signature, it cannot return any errors.
+Instead, the \qVerb{self.error} method is invoked in line 406.
+This method uses information about the error to be generated in order to push a new \qVerb{Diagnostic} into the \qVerb{diagnostics} vector.
+Therefore, the vector will contain any generated errors or warnings after analysis has been completed.
 
-In rush, the main-function cannot return a value at runtime.
-Therefore, the return-type of the function always has to be the unit-type.
-Thus, the analyzer validates this constraint in the lines 422 and 423.
-The first if-clause checks if the function contains a manually defined result-type.
+Secondly, in rush, the main-function's return-type always has to be the unit-type.
+The analyzer validates this constraint in the lines 422 and 423.
+The first if-clause checks whether the function contains a manually defined result-type.
 In rush, every function definition without an explicitly defined result type defaults to the unit type.
 Therefore, the inner if-clause is only executed if the user has manually specified a result type of their main-function.
-In this case, the analyzer checks if the manually specified type differs from the required unit-type.
-If this is the case, the analyzer generates another error in line 424 which describes the issue.
+The analyzer then checks whether the manually specified type differs from the required unit-type.
+In case it does, the analyzer generates another error in line 424 which describes the issue.
 
 After the signature of the main-function has been validated, the method begins traversal of the function's body.
-In line 490, the `\texttt{self.block}' method of the analyzer is invoked using the body (\texttt{node.block}) of the method as its first argument.
-The second boolean argument specifies that the method should not push another scope onto the stack since this is handled by the current method.
-The return-value of this method-call is bound to a variable called `\texttt{block}'.
+In line 490, the \qVerb{self.block} method of the analyzer is invoked using the function body as its first argument.
+The second argument specifies that the method should not push another scope onto the stack since this is already handled by the current method.
+The return-value of this method-call is bound to a variable called \qVerb{block}.
 This variable represents the completely analyzed and annotated function body.
-Lastly, in the lines 535-541, an `\texttt{AnalyzedFunctionDefinition}' is returned.
-Here, metadata like the function's analyzed parameters, its return-type, its name, or its body are specified.
-Unknown variables like `\texttt{params}' have been defined in the parts of the code which are currently hidden.
+Lastly, in the lines 535--541, an \qVerb{AnalyzedFunctionDefinition} is returned.
+Here, the function's attributes, like its analyzed parameters, return-type, name, and body are specified.
+The other variables, like \qVerb{params}, have been defined in the parts of the code which have been commented for better overview.
 
-During the traversal of the main function's body, the analyzer encounters two \texttt{let} statements in line 2 and 3.
-For analyzing this type of statement, the \texttt{let\_stmt} method of the analyzer is invoked.
-The code in Listing~\ref{lst:analyzer_let_stmt} shows the `\texttt{let\_stmt}' method of the analyzer.
+During the traversal of the main function's body, the analyzer encounters two \qVerb{let} statements in line 2 and 3.
+For analyzing this type of statement, the \qVerb{let\_stmt} method of the analyzer is invoked.
+The code in Listing~\ref{lst:analyzer_let_stmt} shows the \qVerb{let_stmt} method of the analyzer.
 
-\Lirsting[ranges={612-612,617-617,644-646,656-657,680-680,682-688}, caption={Beginning of the `\texttt{let\_stmt}' Method}, label={lst:analyzer_let_stmt}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={612-612,617-617,644-646,_656-657,_680-680,682-688}, caption={Beginning of the \qVerb{let_stmt} Method}, label={lst:analyzer_let_stmt}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 In line 617, the initializing expression of the let-statement is analyzed first in order to obtain information about its result data type.
-After the subtree of the expression has been traversed and analyzed, its data type is now known.
-The analyzer now inserts a new entry for the variable's name (e.g. `\texttt{two}') into its current scope.
-This insertion is performed in line 644.
-The contents of the pushed variable struct are hidden but include its type or its span for instance.
-Since the span includes the location of where the variable was defined, it can later be used in error messages like the one displayed in Listing~\ref{lst:analyzer_imutable_err}.
+The analyzer now inserts a new entry for the variable's name (e.g. \qVerb{two}) into its current scope (line 644).
+Even though the content of the pushed variable are hidden, among other information it includes the variable's type and span.
+Since the span includes the location of where the variable was defined, it can later be used in error messages like the one previously displayed in Listing~\ref{lst:analyzer_imutable_err}.
 Furthermore, the inserted information inside the struct includes whether the variable was declared as mutable.
-If a variable is mutable, it can be reassigned to.
-Because the variable in our example program was not declared as mutable,
-the error seen in Listing~\ref{lst:analyzer_imutable_err} was generated as a result.
-However, what strikes the eye is that the insertion happens as a condition inside an if-clause.
-If the insertion returns \texttt{true}, the variable's name was already present in the current scope and its previous associated data has now been overwritten.
-The process of overwriting variables by redefining them is called \emph{variable shadowing}.
+If a variable is mutable, reassignments are allowed, meaning that it can be updated to hold another value at a later point.
+In case a variable was not declared as mutable and reassigning to it is attempted,
+output comparable to the one in Listing~\ref{lst:analyzer_imutable_err} would be generated as a result.
+It is unusual that the insertion happens as a condition inside an if-clause.
+If the insertion returns \qVerb{true}, the variable's name was already present in the current scope and its previous associated data has now been overwritten.
+The process of overwriting variables by redefining them is sometimes called \emph{variable shadowing}~\cite[p.~34]{Klabnik2019}.
 Here, the analyzer should display some additional hints or warnings, depending on whether the shadowed variable has been referenced before it was shadowed.
-If this was not the case, the analyzer will generate a warning message informing the user about an unused and therefore redundant variable.
-Among the previously mentioned data, the insertion includes the variable's data type which was obtained by prior analysis of the expression.
 
-It is now apparent that the analyzer uses type information of expressions on many occasions just like this one.
-However, we have not yet explained how type determination and annotation works in the analyzer.
-In order to get an understanding of how the analyzer determines types of variables, we must consider how expressions are traversed.
+It is now apparent that the analyzer uses type information of expressions on many occasions.
+However, how type determination and annotation works in the analyzer has not been discussed yet.
+In order to get an understanding of these processes work, the traversal of expressions is to be considered.
 The code in Listing~\ref{lst:analyzer_expr} is part of the method responsible for analyzing expressions.
 
 \Lirsting[ranges={1007-1011,1032-1035,1040-1040,1048-1049}, caption={Analysis of Expressions During Semantic Analysis}, label={lst:analyzer_expr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-The `\texttt{node}' parameter specifies the expression node generated by the parser,
-it does not contain any type information since it is yet to be analyzed.
-It is also apparent that the method returns a value of the type `\texttt{AnalyzedExpression}', which represents an analyzed and annotated expression.
-Therefore, this method consumes a non-analyzed expression and transforms it into an analyzed version of itself.
+This method consumes a non-analyzed expression and transforms it into an analyzed version of itself.
 For simple types of expressions like integers, floats, or booleans, further analysis is omitted.
 Since these types of expressions are constant, the method can directly return an analyzed version of the expression.
-For more complex types of expressions, like if-expressions for instance, this method calls the appropriate method responsible for analyzing this type of expression.
-This way, implementation of this method stays relatively simple and the maintainability of the codebase increases.
+For more complex types of expressions, like if-expressions, this method calls the appropriate method responsible for analyzing this type of expression.
 
 In this function, the recursive tree-traversal algorithm used in the analyzer is clearly visible.
-For instance, if the current expression is a grouped expression like `\texttt{(1 + 2)}`, the code in the lines 1034-1040 is called.
-In line 1035, the `\texttt{expression}' method calls itself recursively using the inner expression of the grouped expression as the call argument.
-Since grouped expressions contain another inner expression, a grouped expression inside another grouped expression is a legal construct in rush.
-Therefore, it is possible that the \texttt{expression} method calls itself multiple times recursively.
+For instance, if the current expression is a grouped expression like \qVerb{(1 + 2)}, the code in the lines 1034-1040 is called.
+In line 1035, the \qVerb{expression} method calls itself recursively using the inner expression of the grouped expression as the call argument.
+For instance, since grouped expressions contain another inner expression, another grouped expression inside a grouped expression is a legal construct in rush.
+Therefore, it is possible that the \qVerb{expression} method calls itself multiple times recursively.
 Most of the other tree-traversing methods implement a similar recursive behavior as most types of AST nodes may contain themselves at some point.
 
 \Lirsting[ranges={130-134,142-146}, caption={Obtaining the Type of Expressions}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
 
-Since we have now explained how tree traversal and analysis works in general, the question of how types are accessed and saved in the annotated syntax tree remains.
+Since tree traversal and analysis has now been discussed in general, the question of how types are accessed and saved in the annotated syntax tree remains.
 The code in Listing~\ref{lst:expr_type_impl} shows how the type of any analyzed expression can be obtained.
-For constant expressions like \verb|Int(_)|, the determination of its type is straight-forward.
-This case is displayed in line 132.
-Here, the \texttt{result\_type} method returns \verb|Type::Int(0)|.
-In this implementation, the \texttt{Type} enum saves a count which specifies the amount of pointer indirection.
-For instance, the rush type \texttt{**int} is represented as \verb|Type::Int(2)| because there are two levels of pointer indirection.
+For constant expressions like \verb|Int(_)|, the determination of its type is straight-forward, as seen in line 132.
+Here, the \qVerb{result_type} method returns \verb|Type::Int(0)|.
+In this implementation, the \qVerb{Type} enum saves a count which specifies the amount of pointer indirection.
+For instance, the rush type \qVerb{**int} is represented as \verb|Type::Int(2)| because there are two levels of pointer indirection.
 However, if the method is called on a constant integer expression, the resulting level of pointer indirection is zero.
 Therefore, this method is able to return the types of simple constant expressions with no additional effort.
-For more complex constructs like if-expressions, the corresponding analyzed AST node saves its result type directly.
-For instance, during analysis of block expressions, the responsible function checks if the block contains a trailing expression.
-If this is the case, the result type of the block expression is identical to the one of its trailing expression.
-For instance, the result-type saved in a field on an individual AST node is accessed in line 142.
-In line 144, the result type of a grouped expression is obtained by calling the `\texttt{result\_type}' method recursively.
+For more complex constructs like if-expressions, the corresponding analyzed AST node saves its result type on its own.
+In this case, the type can then be accessed as seen in lines 142 and 143.
+During analysis of block expressions, the responsible function checks if the block contains a trailing expression,
+and if it does, the result type of the block expression is identical to the one of its trailing expression.
+In line 144, the result type of a grouped expression is obtained by calling the \qVerb{result\_type} method recursively.
 By using the previously described method, the analyzer is able to get type information about each node of the tree, assuming that it has been analyzed previously.
 
 In the case of a semantically malformed program, the analyzer must somehow continue the tree traversal.
-Otherwise, only one error could be reported at a time since every traversing method could return a potential error which would terminate the tree traversal.
-To mitigate this issue, the \texttt{Unknown} type was implemented.
+Otherwise, only one error could be reported at a time since every traversing method could potentially return an error which would terminate the tree traversal.
+To mitigate this issue, the \qVerb{Unknown} type was implemented.
+For instance, the rush expression \qVerb{m + 42} would cause the \qVerb{m} variable to have the \qVerb{Unknown} type if it was undefined, meaning that it does not exist.
 If the analyzer encounters a type conflict where one of the conflicting types is \emph{unknown},
-it does not report another error since the unknown type could have only been caused by a previous error.
+it does not report another error since the unknown type has to originate from a previous error.
 Therefore, errors do not cascade, meaning that an undeclared variable will not cause another type error.
 
+Below the let-statements in the source program, the \qVerb{exit} function is called.
+Here, the analyzer uses the \qVerb{call_expr} method in order to analyze the validity of this function call.
+For this, the analyzer iterates over the provided arguments, validating several constraints on each iteration.
+Among others, these include that there is an argument with the matching type for each declared parameter.
 
-\Lirsting[ranges={1768-1775}, caption={Validation of Call-Arguments in the Analyzer}, label={lst:analyzer_call}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
-
-Below the let-statements in the source program, the \texttt{exit} function is called.
-Here, the analyzer uses the \texttt{call\_expr} method in order to analyze the validity of this function call.
-The code in Listing~\ref{lst:analyzer_call} contains the part of this method which is responsible for validating that the arguments are compatible with the function's parameters.
-For this, the code in the snipped iterates over the provided arguments.
-In each iteration, the `\texttt{self.arg}' method of the analyzer is invoked.
-This method validates that the provided argument matches the provided parameter.
-
-In this example, the argument expression \texttt{two + three} is traversed during this analysis.
+In this example, the argument expression \qVerb{two + three} is traversed during this analysis.
 Since the identifiers on the left- and right hand side have been declared by the two let-statements previously,
 obtaining their data types merely involves a lookup of the identifier names inside the current scope's hashmap.
 If an unknown variable was provided, the lookup in the hashmap would yield no value, thus causing an error message to be generated at this point.
-Because the type of the invalid variable is unknown, the placeholder \texttt{Unknown} type would be used in order to prevent cascading errors.
+Because the type of the invalid variable is unknown, the placeholder \qVerb{Unknown} type would be used in order to prevent cascading errors.
 
-Because the two variables should be added, the method \texttt{infix\_expr} of the analyzer is called.
-This method is responsible for analyzing any kind of infix expression like `\texttt{n || m'}'.
+Because the two variables should be added, the method \qVerb{infix_expr} of the analyzer is called.
+This method is responsible for analyzing any kind of infix expression like \qVerb{n || m'}.
 This method validates several constraints.
 For instance, the operands must both be of the same type.
 In this example, both operands of the addition are integers.
 Therefore, the analyzer accepts this infix-expression and is now aware that it yields another integer.
-After the infix-expression's result type has been determined, it is saved in its own \texttt{result\_type} struct field.
+After the infix-expression's result type has been determined, it is saved in its own \qVerb{result_type} struct field.
 Infix-expressions are an example for tree nodes which save their result type as a struct field on their own.
 Now that the analysis of the argument expression has completed, its compatibility with the declared parameter must be validated.
 
 \Lirsting[ranges={1814-1822,1827-1829}, caption={Validation of Argument Type Compatibility in the Analyzer}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-Listing~\ref{lst:analyzer_call_exit} shows a part of the \texttt{arg} function which is responsible for validating that a function call argument is compatible with the declared parameter.
-In the above example, this means that the \texttt{exit} function is to be called with exactly one integer argument.
+Listing~\ref{lst:analyzer_call_exit} shows a part of the \qVerb{arg} function which is responsible for validating that a function call argument is compatible with the declared parameter.
+In the above example, this means that the \qVerb{exit} function is to be called with exactly one integer argument.
 This code will produce an error message if the type of the call argument deviates from the one of the declared parameter.
 In order to validate the compatibility between the provided argument and the declared parameter, the method differentiates between several possible scenarios.
-In line 1817, the method detects the scenario in which the type of either the argument or the parameter is `\texttt{Unknown}'.
+In line 1817, the method detects the scenario in which the type of either the argument or the parameter is \qVerb{Unknown}.
 Here, the method should ignore this argument without producing another error.
 
 % TODO: explain the ! type in the rush characteristics chapter
-The next match-arm in line 1818 presents the scenario in which the provided argument has the `\texttt{Never}' type.
+The next match-arm in line 1818 presents the scenario in which the provided argument has the \qVerb{Never} type.
 In this case, the analyzer should only add a warning that the call-expression is unreachable.
 Furthermore, the result type of the entire call-expression will also be updated to reflect the never-type.
 However, this scenario does not cause an error to be generated.
@@ -297,36 +282,36 @@ For instance, the rush expression $2 + 3$ evaluates to $5$ during compile time i
 This evaluation of expressions during compile time is referred to as \emph{constant folding}.
 Constant folding is often used in order to avoid the emission of otherwise redundant arithmetic instructions.
 As a result of this, the compiled program will run faster since less computation is being performed when the program is executed.
-In order to make such optimization possible, each expression node in the analyzed AST has a method named \texttt{constant}~\cite[p.~54]{wirth_compiler_construction_2005}.
+In order to make such optimization possible, each expression node in the analyzed AST has a method named \qVerb{constant}~\cite[p.~54]{wirth_compiler_construction_2005}.
 
 \Lirsting[ranges={148-153}, caption={Method for Determining if an Expression is Constant}, label={lst:expr_constant_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
 
 This method is responsible for determining whether an expression is constant.
-The method returns \texttt{true} if its expression is a constant integer, float, boolean or char.
+The method returns \qVerb{true} if its expression is a constant integer, float, boolean or char.
 Other types of expression, such as a call-expression cannot be constant since such a function call may cause side effects which cannot be determined during compile time.
 This method is vital for constant folding since both the left- and right-hand side of infix-expressions need to be constant in order to allow compile-time evaluation.
 
 Among other optimizations implemented in the analyzer, loop transformation can also have a positive effect on the program's performance during runtime.
-The top listing displays part of a rush program which uses a \texttt{while} loop even though a \texttt{loop} would be faster.
-The other listing displays the same algorithm implemented using the faster \texttt{loop}.
+The top listing displays part of a rush program which uses a \qVerb{while} loop even though a \qVerb{loop} would be faster.
+The other listing displays the same algorithm implemented using the faster \qVerb{loop}.
 
-\Lirsting[ranges={3-5}, caption={Redundant \texttt{while} Loop Inside a rush Program}]{listings/constant_true_while.rush}
+\Lirsting[ranges={3-5}, caption={Redundant \qVerb{while} Loop Inside a rush Program}]{listings/constant_true_while.rush}
 \Lirsting[ranges={3-5}, caption={Faster Loop Algorithm Implemented in rush}]{listings/faster_loop.rush}
 
-The \texttt{loop} implementation is more efficient since the condition check is omitted before each iteration.
-Because the \texttt{while} loop checks that its head condition is true before it starts the next iteration,
-the \texttt{while} loop will run slower than the \texttt{loop} in this example.
-However, this is only the case because the condition of the loop is a constant \texttt{true}.
+The \qVerb{loop} implementation is more efficient since the condition check is omitted before each iteration.
+Because the \qVerb{while} loop checks that its head condition is true before it starts the next iteration,
+the \qVerb{while} loop will run slower than the \qVerb{loop} in this example.
+However, this is only the case because the condition of the loop is a constant \qVerb{true}.
 Therefore, using a condition which is always true is redundant and should therefore be omitted.
 If the analyzer detects such a scenario after a while-loop was analyzed, the output node will be converted into a conventional loop.
 Detection of this scenario is implemented in line 855 of Listing~\ref{lst:analyzer_loops}.
 
 \Lirsting[ranges={851-865}, caption={Loop Transformation in the Analyzer}, label={lst:analyzer_loops}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
-Another scenario in which a \texttt{while} loop can be restructured occurs if the condition always evaluates to \texttt{false}.
+Another scenario in which a \qVerb{while} loop can be restructured occurs if the condition always evaluates to \qVerb{false}.
 This example is displayed in the listing below.
 
-\Lirsting[ranges={2-4}, caption={\texttt{while} Loop Inside a rush Program Which Never Iterates}]{listings/constant_false_while.rush}
+\Lirsting[ranges={2-4}, caption={\qVerb{while} Loop Inside a rush Program Which Never Iterates}]{listings/constant_false_while.rush}
 
 Since the loop in the above listing never iterates, it is completely redundant and can therefore be omitted entirely.
 This scenario is detected in line 853 of Listing~\ref{lst:analyzer_loops}.

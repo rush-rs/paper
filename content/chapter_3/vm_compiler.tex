@@ -27,7 +27,7 @@ However, the method does not return anything which represents the runtime value 
 This is possible because the results of the expressions displayed in the snipped are pushed onto the stack directly.
 In line 447, the code for translating a constant integer expression can be seen.
 Here, a push instruction using the constant int value as its operand is used.
-By pushing the values of expressions onto the stack directly, most tree-traversing methods do not need to return values.
+By pushing the values of expressions onto the stack directly, most tree traversing methods do not need to return values.
 Due to this, short and elegant code like the one in Listing~\ref{lst:vm_compile_infix_expr} can be implemented.
 In other compilers, the method responsible for compiling expressions would usually return the register which contains the value of the compiled expression at runtime.
 Due to the values being saved on the VM's stack, other parts of the compiled program can still use the runtime values of compiled expressions.

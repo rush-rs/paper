@@ -74,8 +74,8 @@ while float addition uses the \qVerb{floatadd} instruction. Here, type ambiguity
 cause difficulties. If there was no semantic analysis step, the compilation step would
 have to implement its own way of determining the types of the operands at
 compile time. However, determining these types requires a complete
-tree-traversal of the operand expressions. Due to the recursive design of the
-abstract syntax tree, implementing this tree-traversal would require a large amount of source code in the compiler.
+tree traversal of the operand expressions. Due to the recursive design of the
+abstract syntax tree, implementing this tree traversal would require a large amount of source code in the compiler.
 However, the implementation of this algorithm would be nearly identical across all of rush's compiler
 backends. Therefore, implementing type determination in each backend
 individually would enlarge the compiler source code, thus making it harder to
@@ -96,7 +96,7 @@ Therefore, if a function is called at a later point in time, the analyzer checks
 The next field, \qVerb{diagnostics} contains a list of diagnostics.
 A \qVerb{Diagnostic} is a struct which represents a message, it is intended to be displayed to the user of the compiler.
 Each diagnostics has a severity, such as \emph{warning} or \emph{error}, for instance.
-After the analyzer has finished the tree-traversal, all diagnostics are displayed in a user-friendly manner.
+After the analyzer has finished the tree traversal, all diagnostics are displayed in a user-friendly manner.
 The \qVerb{scopes} field in line 15 is responsible for managing variables.
 In rush, blocks created with braces (\qVerb{\{\}}) also introduce new scopes.
 If the analyzer enters such a block, a new scope is pushed onto the \qVerb{scopes} stack.
@@ -196,12 +196,12 @@ For simple types of expressions like integers, floats, or booleans, further anal
 Since these types of expressions are constant, the method can directly return an analyzed version of the expression.
 For more complex types of expressions, like if-expressions, this method calls the appropriate method responsible for analyzing this type of expression.
 
-In this function, the recursive tree-traversal algorithm used in the analyzer is clearly visible.
+In this function, the recursive tree traversal algorithm used in the analyzer is clearly visible.
 For instance, if the current expression is a grouped expression like \qVerb{(1 + 2)}, the code in the lines 1034-1040 is called.
 In line 1035, the \qVerb{expression} method calls itself recursively using the inner expression of the grouped expression as the call argument.
 For instance, since grouped expressions contain another inner expression, another grouped expression inside a grouped expression is a legal construct in rush.
 Therefore, it is possible that the \qVerb{expression} method calls itself multiple times recursively.
-Most of the other tree-traversing methods implement a similar recursive behavior as most types of AST nodes may contain themselves at some point.
+Most of the other tree traversing methods implement a similar recursive behavior as most types of AST nodes may contain themselves at some point.
 
 \Lirsting[ranges={130-134,142-146}, caption={Obtaining the Type of Expressions}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
 

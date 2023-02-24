@@ -48,7 +48,7 @@ Here, the node `Expression 2' only consists of the constant integer value 4.
 Now, all child nodes of `Expression 5' have been traversed, thus the compiler now considers this node itself.
 Here, the compiler notices that the expression should check if the left-hand side is less than the right-hand side.
 Therefore, the compiler inserts an instruction performing this comparison using the results of the left and right child as the operands.
-Since the compiler must be aware of the operands of the instruction, each method or function involved in the tree-traversal returns an entity describing the location of the runtime value of its previously compiled node.
+Since the compiler must be aware of the operands of the instruction, each method or function involved in the tree traversal returns an entity describing the location of the runtime value of its previously compiled node.
 For instance, if the target architecture uses registers, every method translating an expression must return the register containing the value of the expression at runtime.
 Therefore, such a describing entity can either be a register or a memory location describing the location a value which a node may yield.
 By returning information like this, a root node will have information about its children after they have been traversed.

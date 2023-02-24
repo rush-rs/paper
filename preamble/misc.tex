@@ -44,11 +44,12 @@
 
 \newcommand{\TODO}[1]{\textcolor{red}{\textbf{TODO: #1}}}
 \newcommand{\rushCommit}{\ignorespaces\texttt{\input "|git -C ./deps/rush rev-parse --short HEAD"}\unskip}
+\newcommand{\paperCommit}{\ignorespaces\texttt{\input "|git rev-parse --short HEAD"}\unskip}
 %\newcommand{\rushCountTests}{\ignorespaces{\input "|python3 ./deps/rush/samples/tests/main.py count-tests"}\unskip}
 \newcommand{\rushCountTests}{\input{|python3 ./deps/rush/samples/tests/main.py count-tests}}
 \newcommand{\qVerb}[1]{`\Verb{#1}'}
 
 % TODO: remove this command
-\newcommand{\timestamp}{\ignorespaces\textcolor{red}{\texttt{\input "|date"}}\unskip}
+\newcommand{\buildDate}{\ignorespaces\textcolor{red}{Timestamp: \texttt{\input "|date"} | Commit: \paperCommit}\unskip}
 
 % \setcounter{tocdepth}{3}% Include \subsubsection in ToC

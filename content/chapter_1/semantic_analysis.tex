@@ -234,10 +234,10 @@ For this, the analyzer iterates over the provided arguments, validating several 
 Among others, these include that there is an argument with the matching type for each declared parameter.
 
 In this example, the argument expression \qVerb{two + three} is traversed during this analysis.
-Since the identifiers on the left- and right hand side have been declared by the two let-statements previously,
+Since the identifiers on the left and right hand side have been declared by the two let-statements previously,
 obtaining their data types merely involves a lookup of the identifier names inside the current scope's hashmap.
 If an unknown variable was provided, the lookup in the hashmap would yield no value, thus causing an error message to be generated at this point.
-Because the type of the invalid variable is unknown, the placeholder \qVerb{Unknown} type would be used in order to prevent cascading errors.
+Because the type of a non-existent variable is unknown, the placeholder \qVerb{Unknown} type would be used to prevent cascading errors.
 
 Because the two variables should be added, the method \qVerb{infix_expr} of the analyzer is called.
 This method is responsible for analyzing any kind of infix expression like \qVerb{n || m'}.
@@ -246,25 +246,22 @@ For instance, the operands must both be of the same type.
 In this example, both operands of the addition are integers.
 Therefore, the analyzer accepts this infix-expression and is now aware that it yields another integer.
 After the infix-expression's result type has been determined, it is saved in its own \qVerb{result_type} struct field.
-Infix-expressions are an example for tree nodes which save their result type as a struct field on their own.
+Infix-expressions are another example for tree nodes that save their result type as a struct field on their own.
 Now that the analysis of the argument expression has completed, its compatibility with the declared parameter must be validated.
 
-\Lirsting[ranges={1814-1822,1827-1829}, caption={Validation of Argument Type Compatibility in the Analyzer}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={1807-1807,_1813-1822,1823-1823,_1828-1833}, caption={Validation of Argument Type Compatibility in the Analyzer}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 Listing~\ref{lst:analyzer_call_exit} shows a part of the \qVerb{arg} function which is responsible for validating that a function call argument is compatible with the declared parameter.
-In the above example, this means that the \qVerb{exit} function is to be called with exactly one integer argument.
 This code will produce an error message if the type of the call argument deviates from the one of the declared parameter.
 In order to validate the compatibility between the provided argument and the declared parameter, the method differentiates between several possible scenarios.
-In line 1817, the method detects the scenario in which the type of either the argument or the parameter is \qVerb{Unknown}.
+In line 1818, the method detects the scenario in which the type of either the argument or the parameter is \qVerb{Unknown}.
 Here, the method should ignore this argument without producing another error.
 
-% TODO: explain the ! type in the rush characteristics chapter
-The next match-arm in line 1818 presents the scenario in which the provided argument has the \qVerb{Never} type.
-In this case, the analyzer should only add a warning that the call-expression is unreachable.
-Furthermore, the result type of the entire call-expression will also be updated to reflect the never-type.
-However, this scenario does not cause an error to be generated.
-Line 1822 displays the final scenario in which the type of the argument differs from the expected type of the parameter.
-In this case, the method will generate an error describing the situation.
+The next match-arm in line 1819 presents the scenario in which the provided argument has the \qVerb{Never} type.
+In that case, the analyzer should only add a warning that the call-expression is unreachable
+and the result type of the entire call-expression is updated to reflect the never type.
+Line 1823 displays a scenario in which the type of the argument differs from the expected type of the parameter.
+In that case, the method will generate an error describing the situation.
 Again, the concrete error message is omitted for better overview.
 
 In the case of the example program, the analyzer did not generate any error messages since the code presents both a syntactically and semantically valid rush program.
@@ -272,52 +269,72 @@ Therefore, the analyzer accepts this program and returns its syntax-tree with ty
 
 \subsection{Early Optimizations}
 
-\TODO{cite the book about semantics}
-
 Another task of the analyzer can be to perform early optimizations.
 In compiler design, most of the optimizations are often performed with the target machine in mind.
 Therefore, the effects of these target-machine dependent optimizations can excel the ones caused by earlier optimizations.
-However, it is still rational to perform trivial optimizations, such as constant folding and loop conversion inside the analyzer.
+However, it is still rational to perform trivial optimizations, such as \emph{constant folding} and \emph{loop conversion} inside the analyzer.
 For instance, the rush expression $2 + 3$ evaluates to $5$ during compile time instead of run time.
 This evaluation of expressions during compile time is referred to as \emph{constant folding}.
-Constant folding is often used in order to avoid the emission of otherwise redundant arithmetic instructions.
-As a result of this, the compiled program will run faster since less computation is being performed when the program is executed.
-In order to make such optimization possible, each expression node in the analyzed AST has a method named \qVerb{constant}~\cite[p.~54]{wirth_compiler_construction_2005}.
+It is often used in order to avoid the emission of otherwise redundant arithmetic instructions.
+As a result of this, the compiled program will run slightly faster since less computation is being performed when the program is executed~\cite[p.~54]{wirth_compiler_construction_2005}.
 
-\Lirsting[ranges={148-153}, caption={Method for Determining if an Expression is Constant}, label={lst:expr_constant_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
+\Lirsting[ranges={148-153}, caption={Method for Determining Whether an Expression is Constant}, label={lst:expr_constant_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
 
-This method is responsible for determining whether an expression is constant.
-The method returns \qVerb{true} if its expression is a constant integer, float, boolean or char.
-Other types of expression, such as a call-expression cannot be constant since such a function call may cause side effects which cannot be determined during compile time.
+In order to make such optimization possible, each expression node in the analyzed AST has a method named \qVerb{constant}.
+The method shown in Listing~\ref{lst:expr_constant_impl} is responsible for determining whether an expression is constant.
+It returns \qVerb{true} if the expression is a constant integer, float, boolean or char.
+Other types of expressions, such as a call-expression cannot be constant since such a function call may cause side effects which cannot be determined during compile time.
 This method is vital for constant folding since both the left- and right-hand side of infix-expressions need to be constant in order to allow compile-time evaluation.
 
 Among other optimizations implemented in the analyzer, loop transformation can also have a positive effect on the program's performance during runtime.
-The top listing displays part of a rush program which uses a \qVerb{while} loop even though a \qVerb{loop} would be faster.
-The other listing displays the same algorithm implemented using the faster \qVerb{loop}.
+The Listing displays part of a rush program which uses a \qVerb{while} loop even though a \qVerb{loop} would suffice.
 
 \Lirsting[ranges={3-5}, caption={Redundant \qVerb{while} Loop Inside a rush Program}]{listings/constant_true_while.rush}
-\Lirsting[ranges={3-5}, caption={Faster Loop Algorithm Implemented in rush}]{listings/faster_loop.rush}
 
-The \qVerb{loop} implementation is more efficient since the condition check is omitted before each iteration.
-Because the \qVerb{while} loop checks that its head condition is true before it starts the next iteration,
-the \qVerb{while} loop will run slower than the \qVerb{loop} in this example.
+A \qVerb{loop} implementation is more efficient since the condition check is omitted before each iteration.
 However, this is only the case because the condition of the loop is a constant \qVerb{true}.
-Therefore, using a condition which is always true is redundant and should therefore be omitted.
 If the analyzer detects such a scenario after a while-loop was analyzed, the output node will be converted into a conventional loop.
 Detection of this scenario is implemented in line 855 of Listing~\ref{lst:analyzer_loops}.
-
-\Lirsting[ranges={851-865}, caption={Loop Transformation in the Analyzer}, label={lst:analyzer_loops}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
-
-Another scenario in which a \qVerb{while} loop can be restructured occurs if the condition always evaluates to \qVerb{false}.
-This example is displayed in the listing below.
-
-\Lirsting[ranges={2-4}, caption={\qVerb{while} Loop Inside a rush Program Which Never Iterates}]{listings/constant_false_while.rush}
-
-Since the loop in the above listing never iterates, it is completely redundant and can therefore be omitted entirely.
-This scenario is detected in line 853 of Listing~\ref{lst:analyzer_loops}.
+In line 853, the match arm is called if the preceding loop will never iterate.
+If this is the case, the entire loop is deleted from the AST.
 This optimization improves runtime efficiency by a small amount since the code performing the very first condition check will not be compiled into the output program.
 Furthermore, the resulting output code will also be of slightly smaller size since the entire loop compilation can be omitted.
-Therefore, implementing such trivial optimizations can significantly contribute to a more efficient output program.
-However, compiler writers often implement significantly more of those early optimizations than the ones presented in the two examples from above.
+The last match arm in line 860 represents the unoptimized fallback case in which the loop is returned without modification.
 
-\TODO{Include tree conversion figure which uses constant folding + has annotated types}
+\Lirsting[ranges={771-771,851-865,866-866}, caption={Loop Transformation in the Analyzer}, label={lst:analyzer_loops}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+
+Implementing such trivial optimizations can significantly contribute to a more efficient output program without relying on the nuances of a target architecture.
+However, compiler writers often implement significantly more of those early optimizations than the ones discussed in the examples from above.
+In order to understand how early optimizations may impact the resulting AST,
+the two trees in Figure~\ref{fig:analysis_tree_conv} should be considered.
+
+\noindent
+\begin{figure}[h]
+        \centering
+		\begin{tikzpicture}[
+				tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
+			]
+            \node(left){\Verb{1 + 42 - n}}
+            child { node { \Verb{1 + 42} }
+                    child { node { \Verb{1} } }
+                    child { node { \Verb{+} } }
+                    child { node { \Verb{42} } }
+                }
+            child { node  { \Verb{-} }       }
+            child { node(leftm)  { \Verb{n} } };
+
+        \node(right)[right of=left, xshift=7cm]{\Verb{43 - n}: \emph{int}}
+        child { node(rightm) { \Verb{43}: \emph{int} } }
+        child { node  { \Verb{-} } }
+        child { node  { \Verb{n}: \emph{int} } };
+
+            \draw[arrow, shorten >= 0.3cm, shorten <= 0.3cm, very thick] (leftm) -- node[above] {semantic} node[below] {analysis} ++ (rightm);
+    \end{tikzpicture}
+	\caption{How Semantic Analysis Affects the Abstract Syntax Tree}\label{fig:analysis_tree_conv}
+\end{figure}
+
+Both trees in Figure~\ref{fig:analysis_tree_conv} represent the rush expression \qVerb{1 + 42 - n}.
+The left tree could have been generated by the parser, closely representing the structure of the code.
+The right tree shows the same tree after it has been transformed by the analyzer.
+Most notably, the sub-expression \qVerb{1 + 42} has been transformed into \qVerb{42} during constant folding.
+Furthermore, all nodes of the right tree now contain type annotations, \emph{int} in this case.

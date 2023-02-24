@@ -32,3 +32,13 @@ check_rush: rush_build.py listings deps
 clean:
 	eztex c
 	rm -f lirstings.cache.json
+
+contributors: CONTRIBUTORS.tex
+	latexmk -lualatex -g CONTRIBUTORS.tex
+	exiftool \
+		-Title="Contributors: The Conversion of Source Code to Machine Code" \
+		-Author="Silas Groh, Mik Müller" \
+		-Subject="Compiler Construction" \
+		-Keywords="compiler, compiler construction, programming language" \
+		-overwrite_original \
+		CONTRIBUTORS.pdf

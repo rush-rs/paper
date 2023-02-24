@@ -5,67 +5,65 @@
 
 Just like a tree-walking interpreter, a virtual machine presents a way of implementing an interpreter for a programming language.
 However, the way a virtual machine operates fundamentally differs from a tree-walking interpreter.
-For rush, we have implemented a virtual machine backend in order to compare it to the previously explained tree-walking interpreter.
+For that reason, we have implemented a virtual machine backend for rush in order to compare it to the previously explained tree-walking interpreter.
 
 \subsection{Defining a Virtual Machine}
 
-Often, one might encounter the term \emph{virtual machine} when talking about emulating an existing type of computer using a software system.
-This emulation often includes simulating additional devices like the computer's display or its disk.
-In this context however, a \emph{virtual machine}\footnote{May later be shortened to \enquote{VM}} is a software entity which emulates how a computer interprets instructions.
-Just like a real computer, a virtual machine executes low-level instructions directly.
-However, since the VM is unable to traverse the AST, it depends on a compiler generating its input instructions.
+Often, one might encounter the term \emph{virtual machine} (VM) when talking about emulating an existing type of computer using a software system.
+This emulation often includes additional devices like the computer's display or its disk,
+whereas in this context, the term describes a software entity which emulates how a processor interprets instructions.
+Since the VM is unable to traverse the AST, it depends on a compiler generating its input instructions.
 
 Since a physical processor and a virtual machine share some fundamental traits,
-the architecture of a virtual machine is often a slight deviation from the \emph{von Neumann architecture}.
-The von Neumann architecture was first introduced by John Neumann in the year 1945.
+the architecture of a virtual machine is often closely resembling the \emph{von Neumann architecture}.
+This architecture was first introduced by John Neumann in the year 1945.
 Von Neumann originally presented a design which allows implementing a computer using relatively few components.
-Following the von Neumann architecture, a processor would usually contain components like an \emph{ALU}\footnote{Short for \enquote{arithmetic logic unit}}, a control unit, multiple registers, memory, and basic IO~\cite[p.~172]{Ledin2020-yp}.
+Following the von Neumann architecture, a processor would usually contain components like an \emph{arithmetic logic unit} (ALU), a control unit, multiple registers, memory, and basic IO~\cite[p.~172]{Ledin2020-yp}.
 The ALU is often designed so that it performs logical and mathematical operations as fast as possible.
 However, to keep its implementation simple, it lacks the ability to fetch and execute instructions from memory directly.
 Therefore, the processor contains a control unit which manages the \emph{fetch-decode-execute} cycle.
-The fetch-decode-execute cycle is a simplification of the steps a processor performs in order to execute an instruction.
+This cycle is a simplification of the steps a processor performs in order to execute an instruction.
 The list below explains the individual steps of the fetch-decode-execute cycle.
 
 \TODO{Figure which shows the cycle}
 
 \begin{itemize}
-	\item \textbf(Fetch): The processor's control unit loads the next instruction from the adequate memory location.
+	\item \textbf{Fetch}: The processor's control unit loads the next instruction from the adequate memory location.
 	      The instruction is then placed into the processor's internal instruction register where it is available for further analysis.
-	\item \textbf(Decode):
+	\item \textbf{Decode}:
 	      The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken before or after instruction execution.
 	      Such steps may involve accessing additional registers or memory locations.
-	\item \textbf(Execute):
+	\item \textbf{Execute}:
 	      The control unit dispatches the instruction to a specialized component of the processor.
-	      The target component is often dependent on the type of instruction since each processor component is optimized with one specific type of instruction in mind.
+	      The target component is often dependent on the type of instruction since each processor component is designed with one specific type of instruction in mind.
 	      For instance, the control unit may invoke the ALU in order to execute a mathematical instruction.
 \end{itemize}
 
-A computer's processor performs this fetch-decode-execute cycle repeatedly from the moment it is powered on until the point in time when it is powered down again.
+A computer's processor performs this fetch-decode-execute cycle repeatedly from the moment it powers on to the point in time when it shuts down again.
 For relatively simple processors, each cycle is executed in an isolated manner because instructions are executed in a sequential order.
 This means that the execution of the instruction $i$ is delayed until execution of $i - 1$ has completed~\cite[pp.~208-209]{Ledin2020-yp}.
+More sophisticated processors often use many performance-enhancing techniques like \emph{SIMD processing} or \emph{simultanious multithreading}~\cite[pp.~217f.]{Ledin2020-yp}.
 
-For virtual machines, executing the input instructions in sequential order is often also the simplest solution.
-Often, a virtual machine executes instructions similarly to the fetch-decode-execute cycle.
+In most cases, a virtual machine executes instructions similarly to the fetch-decode-execute cycle.
 Although the von Neumann architecture is relatively simple, one does not always have to adopt it when implementing a virtual machine.
-Since virtual machines are purely abstract constructs, meaning that they are implemented using software, design constraints are usually kept to a minimum.
+Since virtual machines are purely abstract constructs without physical limitations, design constraints are usually kept to a minimum.
 Therefore, a virtual machine can also be implemented with the high-level constructs of the source language in mind.
-For instance, the VM might feature specialize break, continue, or loop instructions which are not present in modern-day CPUs.
+For instance, the VM might feature specialized break, continue, or loop instructions which are not present in modern-day CPUs.
 Designing the architecture of a virtual machine can sometimes be a challenging task since choosing an adequate set of features may involve a lot of testing iterations.
 Because neither the compiler nor the VM exist in the beginning, one should carefully plan the implementation of their VM's architecture.
-From the point where the architecture is clear, implementing the VM should normally be a straight-forward task.
 
 \subsection{Register-Based and Stack-Based Machines}
 
 One of the main decisions to be made when designing a VM is how it implements temporary storage.
 Physical processors often use \emph{registers} in order to make larger computations feasible.
 Registers are a limited set of very fast, low capacity storage units.
-On modern architectures, like \emph{x86\_64}, each general-purpose register is able to hold as much as 64 bits of information.
-However, there is always only a limited amount of registers available since they are physical components of the computers CPU\@.
+On most relevant architectures today, like \emph{x86\_64}, each general-purpose register is able to hold as much as 64 bits of information.
+However, there is always only a limited amount of registers available since they are physical components of the CPU\@.
 Therefore, programs often only utilize registers for storing temporary values, such as intermediate results of a large computation.
 The main alternative to using registers is a stack-based design.
 A popular example for a stack-based virtual machine is \emph{WebAssembly}~\cite[p.~44]{Sendil2022-fy}.
 For more information on WebAssembly, we will present a compiler targeting WebAssembly in Chapter~\ref{chap:high_level_targets}.
-For compiler writers, register allocation is often a demanding task.
+For compiler writers, implementing \emph{register allocation} is often a demanding task.
 This problem is described in more detail in Chapter~\ref{chap:low_level_targets}.
 Since register allocation is not required in a compiler targeting stack-based machines, its implementation is often significantly easier compared to a compiler targeting a register-based machine.
 Therefore, one might choose to implement a stack-based virtual machine in order to minimize complexity of both the compiler and the interpreter.
@@ -74,8 +72,8 @@ For example, register-based machines might regularly outperform stack-based mach
 A reason for this is that use of the stack usually requires a lot of push or pop operations which could have otherwise been omitted.
 
 \subsection{Comparing the VM to the Tree-Walking Interpreter}
-One significant benefit of virtual machines is that they execute programs much faster compared to most tree-walking interpreters.
-A reason for this speedup is that tree-traversal involves a lot of overhead which is omitted when instructions are interpreted directly.
+One significant benefit of virtual machines is that they execute programs faster compared to tree-walking interpreters.
+A reason for this speedup is that tree traversal involves a lot of overhead which is omitted when instructions are interpreted.
 The code in Listing~\ref{lst:rush_vm_faster} displays a recursive function implemented in rush.
 
 \Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
@@ -105,60 +103,54 @@ The code in Listing~\ref{lst:rush_vm_faster} displays a recursive function imple
 Figure~\ref{fig:tree_vs_vm} displays a heavily simplified syntax tree and rush VM instructions representing the function displayed in Listing~\ref{lst:rush_vm_faster}.
 The root node of the tree represents the \texttt{rec} function.
 Since the function only contains a single expression, the if-expression node is the only child of the root node.
+The only direct child of the root node is the single if-expression present in the function's body.
 The if-expression contains a condition, an if-branch, and an else-branch.
 Since the function should not call itself again if \texttt{n} is equal to 0, the if-branch returns 0.
-In the else-branch however, the \texttt{rec} function calls itself recursively.
+In the else-branch, the \texttt{rec} function calls itself recursively.
 When the above program is executed using the tree-walking interpreter, the algorithm traverses the entire tree of the \texttt{rec} function every time it recurses.
-Since \texttt{rec} is a recursive function, the tree-walking interpreter would have to traverse it $n$ times.
 In this example, the AST of the program is relatively simple.
 However, the complexity of the tree grows as the source program evolves.
-Since loops and recursive functions execute the code in their bodies repeatedly, the tree traversal of the body presents an inefficiency.
-Here, the inefficiency solely lies in the repeated tree-traversal, not in the repetition introduced by an iterative or recursive algorithm.
+Since loops and recursive functions execute the code in their bodies repeatedly, the repeated tree traversal of the body presents an inefficiency.
+Here, the inefficiency solely lies in the repeated tree traversal, not in the repetition introduced by an iterative or recursive algorithm.
 In order to improve efficiency, an algorithm could traverse the AST once, saving its semantic meaning in the process.
 Then, the semantic meaning of the previously traversed tree could be interpreted repeatedly without the additional overhead.
 This behavior is used in the rush VM since it interprets instructions previously generated by a compiler.
-A compiler targeting the virtual machine's architecture first traverses the AST and outputs a sequence of instructions.
+The compiler only traverses the AST once, generating VM instructions during the process.
 The instructions on the right side of Figure~\ref{fig:tree_vs_vm} represent the program in Listing~\ref{lst:rush_vm_faster}.
 Every time the \texttt{call} instruction in line 23 is executed, the VM only needs to jump to the instruction in line 10 in order to execute the \texttt{rec} function recursively.
 Since repeated traversal of the syntax tree is omitted, rush programs will run significantly faster using the VM compared to the tree-walking interpreter.
 Using the VM, executing the \texttt{rec} function using an input of $n = 1000$ took around 160 $\mu$s.
 However, executing the identical code using the tree-walking interpreter took around 427 $\mu$s\footnote{Average from 10000 iterations. OS: Arch Linux, CPU: Ryzen 5 1500, RAM: 16 GB}.
-Therefore, the rush VM executed the identical code roughly 2.6 times faster than the tree-walking interpreter.
+The rush VM executed the identical code roughly 2.6 times faster than the tree-walking interpreter.
 However, the initial delay caused by compilation was not considered in this benchmark.
 
 \subsection{The rush Virtual Machine}
 
-The rush virtual machine is a stack-based interpreter implemented using the Rust programming language.
-The machine's architecture is completely fictional and includes a \emph{stack} for storing short-term data, \emph{linear memory} for storing variables, and a \emph{call stack} for managing function calls.
-Like most virtual machines, the rush VM uses a fetch-decode-execute cycle in order to interpret its programs.
+The rush virtual machine is a stack-based machine implemented using the Rust programming language.
+The machine's architecture was solely developed for this project and includes a \emph{stack} for storing short-term data, \emph{linear memory} for storing variables, and a separate \emph{call stack} for managing function calls.
+Like most virtual machines, the rush VM uses a fetch-decode-execute cycle in order to interpret programs.
 
-\Lirsting[ranges={16-26}, caption={Struct Definition of the Vm}, label={lst:vm_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={16-26}, caption={Struct Definition of the VM}, label={lst:vm_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 % TODO: use these subsubsections?
 %\subsubsection{Struct Fields of the rush VM}
 
 Listing~\ref{lst:vm_struct} displays the struct definition of the rush VM\@.
-In line 18, a field called `\texttt{stack}' is declared.
-Like explained above, the rush VM uses a stack for storing temporary values.
-Even though the stack is implemented using a `\texttt{Vec}', it behaves identical to a LIFO stack data structure.
-In line 20, the `\texttt{mem}' field is declared.
-This field represents the linear memory capable of storing variables.
-However, each memory cell is implemented to hold an option of a value.
-Therefore, each memory cell may also hold a \texttt{None} value representing uninitialized memory.
-In line 23, the `\texttt{mem\_ptr}' field is declared.
-It, too, serves an important role in managing the linear memory.
-The exact responsibilities of the so-called \emph{memory pointer} will be explained shortly.
-Lastly, a field named `\texttt{call\_stack}' is declared.
-This field also behaves like a stack and is responsible for managing function calls and returns.
-More information on this field will be provided in later parts of this section.
+The \qVerb{stack} field in line 18 saves the main stack for temporary values using Rust's \qVerb{Vec} type.
+In line 20, the \qVerb{mem} field is declared.
+This field represents the linear memory used for storing variables.
+Since the \qVerb{Value} is wrapped in an \qVerb{Option}, each cell may also hold a \texttt{None} value representing uninitialized memory.
+In line 23, the \qVerb{mem_ptr} field is declared.
+It holds the \emph{memory pointer} which saves the index of the last free cell in \qVerb{mem}.
+Lastly, a field named \qVerb{call_stack} is declared.
+This field is responsible for managing function calls and returns.
 
 The instructions in Figure~\ref{fig:tree_vs_vm} can be interpreted by the rush VM\@.
-Here, the output program is structured as functions which each contain a list of their instructions.
-Since function and variable names are replaced by indices, strings can be entirely omitted in the output instructions.
-This often leads to a decrease in code size and an increase in runtime speed.
-For better understanding, we have annotated the individual functions with their human-readable names.
+Here, the output program is partitioned in functions which each contain a list of their instructions.
+Since function and variable names are replaced by indices, inefficient names can be entirely omitted in the output instructions.
+For better understanding, the individual functions have been manually annotated with their human-readable names.
 
-The first block of instructions can be called the `\emph{prelude}' since its only task is to call the `\texttt{main}' function and declare global variables.
+The first block of instructions is called `\emph{prelude}' since its only task is to declare global variables and call the `\texttt{main}' function.
 Global variables need to be initialized at the beginning of a program so that they can be accessed later in the program.
 If global variables were present in the example, the prelude would contain the instructions used for initializing them.
 If the prelude was omitted, the main function would instead contain these instructions since it is executed at program start.
@@ -166,26 +158,25 @@ However, recursion of the `\texttt{main}' function is legal in rush.
 Therefore, each time the `\texttt{main}' function recurses, all global variables would be restored to their initial values.
 In order to prevent this bug, the rush VM uses a prelude function which is guaranteed to run only once.
 
-% TODO: use these subsubsections?
-% \subsubsection{Linear Memory and Addressing Modes}
-Linear memory in the VM is represented as an array which saves the runtime value of a variable in each index.
-Since an array is used, the memory of the VM is limited.
-However, a large memory size if often enough to run most of the possible programs.
-In the rush VM, each storage cell can be accessed using two addressing modes.
+Linear memory in the VM is represented as an array of runtime values of variables.
+Each storage cell can be accessed using two addressing modes.
 When using the \emph{absolute addressing} mode, the exact index of the memory cell is specified.
-For instance, if the value of variable `\texttt{d}' of Figure~\ref{fig:rush_vm_linmem} was to be retrieved, the VM would need to access the storage cell with the index 4.
+For instance, if the value of variable `\texttt{d}' in Figure~\ref{fig:rush_vm_linmem} was to be retrieved, the VM would need to access the storage cell with the index 4.
 However, the absolute position of a variable in memory can only be determined at runtime.
-In a recursive function, each recursion adds more variables to the scope, thus allocating more memory.
-Here, the exact number of recursions the function performs would have to be known at compile time.
-Of course, this presents an impossible task, thus making writing a compiler targeting the VM impossible.
+For example, in a recursive function, each recursion adds more variables to the scope, thus allocating more memory.
 However, the rush VM also implements a \emph{relative addressing} mode which can be used without knowledge about the absolute position of the memory cell.
 For instance, the variable `\texttt{d}' can be addressed by index 0 using the relative addressing mode.
+The mode is called \emph{relative} because all addresses are specified relative to \qVerb{mp}.
 In Figure~\ref{fig:rush_vm_linmem}, the memory pointer (shortened to \enquote{mp}) is set to 4.
 Considering the value of the memory pointer, the absolute address of any relative address can be calculated at runtime.
 Here, the absolute address $a$ is the sum of the relative index $i$ and the runtime memory pointer $m$.
-Therefore, the absolute address of any relative address can be calculated at runtime like this: $a = i + m$.
 By also implementing this relative addressing mode,
 compilers targeting the rush VM can generate code without knowing the runtime behavior of a program.
+
+\begin{itemize}
+    \item \TODO{Use e, not d for the examples}
+    \item \TODO{what is MP pointing tom why can we take it as a base?}
+\end{itemize}
 
 \begin{figure}[h]
 	\includegraphics[width=\textwidth]{./vm_linmem_draft.png}
@@ -201,34 +192,29 @@ In line 3, a pointer variable called \texttt{to\_num} is created by \emph{refere
 
 In the rush VM, absolute addressing is only used for global variables and pointers.
 Since a pointer specifies the address of another variable, its runtime value will be the absolute address of its target variable.
-In the VM, the absolute address of a variable is calculated as soon as it is referenced using the \texttt{\&} operator.
-For this purpose, the \texttt{reltoaddr} instruction exists.
+In the VM, the absolute address of a variable is calculated as soon as it is referenced using the \qVerb{&} operator.
+For this purpose, the \qVerb{reltoaddr} (\emph{relative to address}) instruction exists.
 This instruction calculates the absolute address of its operand and pushes the result onto the stack.
 Here, the operand is the relative address of the variable to be referenced.
 Listing~\ref{lst:rush_pointer_simple_vm_instructions} shows the VM instructions generated from the rush program in Listing~\ref{lst:rush_pointer_simple}.
 
 \Lirsting[raw=true, caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, float=H]{listings/vm_instructions_simple_pointer.txt}
 
-The first instruction \texttt{setmp} (\emph{set memory pointer}) increases the memory pointer by two.
-This is because the \texttt{main} function contains two local variables whose space is to be allocated at the start of the function.
-For instance, one might encounter \texttt{mp} being incremented by 0 since the corresponding function contains no local variables.
-The next instruction \texttt{push} pushes the value 42 onto the stack.
-In line 4, the \texttt{svari} (\emph{set variable immediate}) assigns the top value on stack to the specified relative address.
-Here, 42 is popped off the stack since it is used by the \texttt{svari} instruction.
-Next, the instruction stores the previously popped value at the relative address at the relative address 0 specified in the operand.
-Now, the variable \texttt{num} with an initial value of 42 has been created.
-Next, the \texttt{to\_num} variable is created by referencing the \texttt{num} variable.
-In line 5, the \texttt{reltoaddr} (\emph{relative to address}) instruction is used to calculate the absolute memory address of the \texttt{num} variable.
-This instruction calculates the absolute address of its operand at runtime using the algorithm described above.
-Then, the instruction pushes the calculated address onto the stack so that it can be used by following instructions.
-Here, the relative address 0 is used since the \texttt{svari} instruction has previously saved 42 at this location.
-Therefore, the value of the variable \texttt{num} is saved at the relative address 0.
-In line 6, the \texttt{svari} instruction is used again.
-This time, it is used to save the value of the \texttt{to\_num} variable.
-Since the absolute address of the referenced variable was previously calculated, it now exists on top of the stack.
-Now, the instruction saves the absolute address of \texttt{num} at the relative address -1.
+The first instruction \qVerb{setmp} (\emph{set memory pointer}) increases the memory pointer by two since the operand is a positive number.
+This is because the \qVerb{main} function contains two local variables whose space is to be allocated at the start of the function.
+The next instruction \qVerb{push} pushes the value 42 onto the stack.
+In line 4, the \qVerb{svari} (\emph{set variable immediate}) pops the top-most value from the stack, here 42, and assigns it to the specified relative address.
+Now, the variable \qVerb{num} with an initial value of 42 has been created.
+Next, the \qVerb{to_num} variable is created by referencing the \qVerb{num} variable.
+In line 5, the \qVerb{reltoaddr} instruction is used to calculate the absolute memory address of the \qVerb{num} variable.
+Then, the calculated address is then pushed onto the stack where it can be accessed by the following instructions.
+Here, the relative address 0 is used since the \qVerb{svari} instruction has previously saved \qVerb{num} at this location.
+In line 6, the \qVerb{svari} instruction is used to save the value of the \qVerb{to_num} variable,
+that being the absolute address of \qVerb{num} which is now on top of the stack.
+Now, the absolute address of \qVerb{num} is saved at the relative address -1.
 This is because the compiler targeting the VM assigns variables to higher relative addresses first.
 The compiler then progresses into lower relative memory as more variables of the function are declared.
+
 To summarize the above paragraph, this example uses relative addressing in order to declare local variables of a function.
 However, absolute addressing is also used when variables are referenced in order to create pointers.
 Therefore, each addressing mode serves a separate and important purpose.

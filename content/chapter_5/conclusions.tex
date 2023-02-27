@@ -1,0 +1,33 @@
+In Chapter 2, we have learned how the syntactical and semantic analysis play a vital role before program execution can start.
+The \emph{parser} is used for analyzing the program's syntax in order to construct an AST,
+while the \emph{analyzer} validates the program's semantics.
+
+Next, in Chapter 3, we have explained how a tree walking interpreter and a virtual machine can be leveraged to execute programs using an interpreter.
+Here, the tree walking interpreter has presented itself as the easier solution, both in planning and implementation.
+The virtual machine however has proven itself to be slightly more demanding as it requires a custom-made compiler to execute programs.
+However, we have concluded that a VM often executes a program faster.
+
+In Chapter 4, compilation to high-level targets has been explained.
+As examples for high-level compiler targets, \emph{WASM} and \emph{LLVM} were used.
+The former has proven itself to be \TODO{What about WASM}.
+Leveraging LLVM has proven to make implementation of a high-performance, multi-target compiler both feasible and easy.
+Therefore, writing a compiler targeting these high-level targets presented a demanding but accomplishable task.
+
+In Chapter 4, compilation to low-level targets has been covered.
+During the research and implementation phase of this paper,
+this chapter has proven itself to be the most demanding by far.
+Reasons for this are that writing a compiler targeting a low-level architecture
+requires detailed knowledge about the target machine, thus making the implementation process much more demanding.
+Furthermore, programming on the assembly level often creates bugs which are hard to eliminate for a programmer who is used to writing software in high-level languages.
+Moreover, creating a low-level compiler which emits efficient code has proven to be very difficult.
+Like initially expected, implementation of the x86 compiler has proven to be more demanding than the implementation of the RISC-V compiler.
+Among other factors, this is because RISC-V is a modern architecture which was designed with the compilers targeting them in mind.
+On the contrary, x86 is a very old architecture which has evolved over time.
+Furthermore, it was initially created when assembly programs were still written by hand.
+
+To summarize, this paper has presented two vastly different means of program execution,
+the former being an interpreter and the latter being a compiler.
+In order to demonstrate the differences using practical examples,
+we have implemented our own programming language called \emph{rush}.
+In summary, we have implemented two rush compilers, two interpreters, four compilers, and one transpiler.
+Additionally, we have implemented additional tooling like a language server, web playground, and command line interface combining all components.

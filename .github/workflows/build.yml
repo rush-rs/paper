@@ -30,8 +30,11 @@ jobs:
             cargo-${{ hashFiles('**/Cargo.lock') }}
             cargo-
 
+      - name: Add Safe Directory
+        run: git config --global --add safe.directory /__w/paper/paper
+
       - name: Prepare
-        run: git config --global --add safe.directory /__w/paper/paper && make init
+        run: make init
 
       - name: Build
         run: make build

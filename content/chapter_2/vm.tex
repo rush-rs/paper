@@ -153,10 +153,44 @@ However, recursion of the `\texttt{main}' function is legal in rush.
 Therefore, each time the `\texttt{main}' function recurses, all global variables would be restored to their initial values.
 In order to prevent this bug, the rush VM uses a prelude function which is guaranteed to run only once.
 
+\begin{wrapfigure}{L}{0.58\textwidth}
+	\begin{NiceTabular}{>{\scriptsize}rc}[name=Left]
+		\\
+		\\
+		\\
+		\\
+		num & \Block[draw]{} 9 \\
+	\end{NiceTabular}\hspace{1cm}
+	\begin{NiceTabular}
+		[
+			first-col,
+			%code-for-first-col=\ValueMinusOne{iRow},
+			first-row,
+			hvlines,
+			colortbl-like,
+			name = Right
+		]
+		{cc>{\scriptsize}c}
+		 & cell                  & rel    & abs             \\
+		 & a                     & $-3$   & $mp + rel = 0$  \\
+		 & b                     & $-2$   & $mp + (-2) = 1$ \\
+		 & c                     & $-1$   & $mp - 1 = 2$    \\
+		 & d                     & $0$    & $3$             \\
+		 & \cellcolor{gray!30} e & $1$    & $mp + 1 = 4$    \\
+		 & \ldots                & \ldots & \ldots          \\
+	\end{NiceTabular}
+
+	\begin{tikzpicture}[overlay,remember picture]
+		\draw [->] (Left-5.5-|Left-last) to [bend left] (Right-5.5-|Right-1);
+		\draw [thick, dashed] (Right-3.5-|Right-4) --  node[anchor=west, xshift=0cm, align=center] {\scriptsize memory\\ \scriptsize pointer $= 3$} ([xshift=4cm]Right-3.5-|Right-3);
+	\end{tikzpicture}
+	\caption{Linear Memory of the rush VM}\label{fig:rush_vm_linmem}
+\end{wrapfigure}
+
 Linear memory in the VM is represented as an array of runtime values of variables.
 Each storage cell can be accessed using two addressing modes.
 When using the \emph{absolute addressing} mode, the exact index of the memory cell is specified.
-For instance, if the value of variable `\texttt{d}' in Figure~\ref{fig:rush_vm_linmem} was to be retrieved, the VM would need to access the storage cell with the index 4.
+For instance, if the value of variable \qVerb{num} in Figure~\ref{fig:rush_vm_linmem} was to be retrieved, the VM would need to access the storage cell with the index 4.
 However, the absolute position of a variable in memory can only be determined at runtime.
 For example, in a recursive function, each recursion adds more variables to the scope, thus allocating more memory.
 However, the rush VM also implements a \emph{relative addressing} mode which can be used without knowledge about the absolute position of the memory cell.
@@ -169,19 +203,19 @@ By also implementing this relative addressing mode,
 compilers targeting the rush VM can generate code without knowing the runtime behavior of a program.
 
 \begin{itemize}
-    \item \TODO{Use e, not d for the examples}
-    \item \TODO{what is MP pointing tom why can we take it as a base?}
+	\item \TODO{Use e, not d for the examples}
+	\item \TODO{what is MP pointing tom why can we take it as a base?}
 \end{itemize}
 
-\begin{figure}[h]
-	\includegraphics[width=\textwidth]{./vm_linmem_draft.png}
-	\caption{\textcolor{red}{DRAFT:} Linear Memory of the rush VM}\label{fig:rush_vm_linmem}
-\end{figure}
+% \begin{figure}[h]
+% 	\includegraphics[width=\textwidth]{./vm_linmem_draft.png}
+% 	\caption{\textcolor{red}{DRAFT:} Linear Memory of the rush VM}\label{fig:rush_vm_linmem}
+% \end{figure}
 
 In order to get a deeper understanding of the addressing modes, a practical example can be considered.
 The code in Listing~\ref{lst:rush_pointer_simple} displays a rush program in which a pointer to a variable is created.
-First, the integer variable \texttt{num} is created.
-In line 3, a pointer variable called \texttt{to\_num} is created by \emph{referencing} the \texttt{num} variable.
+First, the integer variable \qVerb{num} is created.
+In line 3, a pointer variable called \texttt{to\_num} is created by \emph{referencing} the \qVerb{num} variable.
 
 \Lirsting[caption={Minimal Pointer Example in rush}, label={lst:rush_pointer_simple}, float=H]{listings/simple_pointer.rush}
 

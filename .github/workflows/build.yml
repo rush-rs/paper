@@ -31,7 +31,7 @@ jobs:
             cargo-
 
       - name: Prepare
-        run: make init
+        run: git config --global --add safe.directory /__w/paper/paper && make init
 
       - name: Build
         run: make build

@@ -41,13 +41,13 @@ Therefore, the compiler can avoid slow disk operations by keeping intermediate s
 	      Due to likely constraints considering the target instruction set,
 	      the code generation is often considered to be the most involved step of compilation.
 \end{enumerate}
+
 \cite[pp.~6--7]{wirth_compiler_construction_2005}
 
 Many modern compilers tend to combine steps 1 and 2 into a single step.
 In this approach, the parser holds a lexer and instructs it to return the next token as the parser demands it.
-Using this approach, memory usage is minimized since the parser only considers a few tokens instead of a complete sequence.
+Using this approach, memory usage is minimized since the parser only considers a few tokens instead of a complete sequence~\cite[Chapter~1]{Mogensen2017}.
 Figure \ref{fig:compilation_steps_altered} shows an altered chart considering that change.
-\TODO{citation?}
 
 \begin{figure}[h]
 	\centering

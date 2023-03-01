@@ -108,12 +108,12 @@ it would occur when another value is assigned to an immutable variable.
 
 \Lirsting[ansi=true, caption={Output When Compiling an Invalid rush Program}, float=H, label={lst:analyzer_imutable_err}]{listings/non_mut_variable_error.txt}
 
-Moreover, the field \qVerb{curr\_func\_name} saves the name of the current function.
+Moreover, the field \qVerb{curr_func_name} saves the name of the current function.
 This field is used in order to highlight unused functions correctly.
 If a function is called from another function, it is marked as used.
 However, if the call originates from the same function, it only implements recursion without being used from the outside.
 Furthermore, the \qVerb{loop\_count} field is used to validate the uses of the \qVerb{break} and \qVerb{continue} statements.
-Because these statements are only valid inside loop bodies, the value of \qVerb{loop\_count} must be $> 0$ when the analyzer encounters such a statement.
+Because these statements are only valid inside loop bodies, the value of \qVerb{loop_count} must be $> 0$ when the analyzer encounters such a statement.
 This counter is incremented as soon as the analyzer begins traversal of a loop body.
 After the analyzer has traversed the loop's body, the counter is decremented again.
 This field is implemented as a counter rather than a boolean in order to support nested loops.
@@ -207,17 +207,17 @@ Most of the other tree traversing methods implement a similar recursive behavior
 
 Since tree traversal and analysis has now been discussed in general, the question of how types are accessed and saved in the annotated syntax tree remains.
 The code in Listing~\ref{lst:expr_type_impl} shows how the type of any analyzed expression can be obtained.
-For constant expressions like \verb|Int(_)|, the determination of its type is straight-forward, as seen in line 132.
-Here, the \qVerb{result_type} method returns \verb|Type::Int(0)|.
+For constant expressions like `\verb|Int(_)|', the determination of its type is straight-forward, as seen in line 132.
+Here, the \qVerb{result_type} method returns `\verb|Type::Int(0)|'.
 In this implementation, the \qVerb{Type} enum saves a count which specifies the amount of pointer indirection.
-For instance, the rush type \qVerb{**int} is represented as \verb|Type::Int(2)| because there are two levels of pointer indirection.
+For instance, the rush type \qVerb{**int} is represented as `\verb|Type::Int(2)|' because there are two levels of pointer indirection.
 However, if the method is called on a constant integer expression, the resulting level of pointer indirection is zero.
 Therefore, this method is able to return the types of simple constant expressions with no additional effort.
 For more complex constructs like if-expressions, the corresponding analyzed AST node saves its result type on its own.
 In this case, the type can then be accessed as seen in lines 142 and 143.
 During analysis of block expressions, the responsible function checks if the block contains a trailing expression,
 and if it does, the result type of the block expression is identical to the one of its trailing expression.
-In line 144, the result type of a grouped expression is obtained by calling the \qVerb{result\_type} method recursively.
+In line 144, the result type of a grouped expression is obtained by calling the \qVerb{result_type} method recursively.
 By using the previously described method, the analyzer is able to get type information about each node of the tree, assuming that it has been analyzed previously.
 
 In the case of a semantically malformed program, the analyzer must somehow continue the tree traversal.

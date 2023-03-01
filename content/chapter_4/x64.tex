@@ -1,20 +1,18 @@
-\newpage
-\section{x86\_64: A Compiler for a CISC Architecture}
-
+\section{x86\_64: Compiling to a CISC Architecture}
 
 \begin{itemize}
 	\item Present Some example instructions
 	\item Register layout \& count
 	\item Calling convention
 	\item INFORMATION: x86: An intel blog stated ca. 3600 Instructions in 2015 \cite{Rodgers2017}
-    \item RISC-V Reader: \emph{ASCII adjust after addition} $\rightarrow$ \emph{aaa} $\rightarrow$ obsolete, collectively occupy 1.6\% of opcode space\cite[p.~4]{Patterson2017}
+	\item \riscv{} Reader: \emph{ASCII adjust after addition} $\rightarrow$ \emph{aaa} $\rightarrow$ obsolete, collectively occupy 1.6\% of opcode space\cite[p.~4]{Patterson2017}
 	\item
 	      \enquote{Modular vs. Incremental ISAs Intel was betting its future on a high-end microprocessor, but that was still years away.
 		      To counter Zilog, Intel developed a stop-gap processor and called it the 8086. It was intended to be short-lived and not have any successors,
 		      but that’s not how things turned out. The high-end processor ended up being late to market, and when it did come out, it was too slow.
 		      So the 8086 architecture lived on—it evolved into a 32-bit processor and eventually into a 64-bit one.
 		      The names kept changing (80186, 80286, i386, i486, Pentium), but the underlying instruction set remained intact. —Stephen P. Morse, architect of the 8086}\cite{Morse2017}.
-              $\Rightarrow$ only meant as a temporary architecture
+	      $\Rightarrow$ only meant as a temporary architecture
 \end{itemize}
 
 \subsection{Register Layout}
@@ -25,4 +23,51 @@ For registers: \cite[p.~7]{Kusswurm2018-nd}
 
 \subsection{Calling Convention}
 
-\subsection{X86\_64 Assembly}
+\subsection{x86\_64 Assembly}
+
+\subsection{Differences to RISC}
+
+In addition to \emph{reduced instruction set computers (RISC)} there are also \emph{complex instruction set computers}, short \emph{CISC}.
+The main differences lie in the instruction count and complexity.
+For the purposes of this paper, the still widely used CISC architecture \emph{x86\_64}\footnote{later shortened to \emph{x64}} is used as an example, just like \riscv{} was used to represent RISC architectures in the previous section.
+While \riscv{} with all extensions used by rush has 100 different instructions~\cite[Chapter~24]{Waterman2019}, x64 is estimated to have about 3600 instructions~\cite{Rodgers2017}.
+This has the simple reason that at the time most CISC architectures were developed, many developers still programmed in Assembly languages by hand, without the use of compilers.
+Additional instructions for higher level concepts were therefore very helpful.
+
+One example for such an instruction is the \qVerb{leave} instruction from x64.
+It is used to release the current stack frame at the end of a procedure.
+The \riscv{} compiler previously showed how this is done manually in Listing~\ref{lst:riscv_epilogue} on page~\pageref{lst:riscv_epilogue}.
+First, the frame pointer register is copied into the stack pointer register, freeing the stack space allocated at the start of the procedure.
+Then, the old frame pointer that was saved on the stack is popped off the stack back into the frame pointer register.
+Restoring the return address and returning to the caller is both done by the \qVerb{ret} instruction in x64.
+
+Another similar example is the \qVerb{call} instruction.
+Although it is also usable in \riscv{} Assembly, it is only provided by the Assembler and resolves to multiple other \riscv{} instructions during Assembly.
+In x64 however, \qVerb{call} is a normal instruction just like every other one.
+
+\begin{itemize}
+    \item useless ones?
+    \item pseudo as normal: \qVerb{call}
+    \item \qVerb{imul}
+\end{itemize}
+
+\begin{itemize}
+    \item alignment?
+    \item available registers
+    \item basic assembly
+    \begin{itemize}
+        \item pointer syntax
+    \end{itemize}
+    \item words and difference to \riscv{} words
+	\item differences in calling convention
+    \begin{itemize}
+        \item no extra return address register
+    \end{itemize}
+\end{itemize}
+
+\subsection{Implementation}
+
+\begin{itemize}
+	\item every Assembly line is one ``Instruction''
+    \item other but similar register allocation
+\end{itemize}

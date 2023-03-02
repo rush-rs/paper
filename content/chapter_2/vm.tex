@@ -133,7 +133,7 @@ In line 20, the \qVerb{mem} field is declared.
 This field represents the linear memory used for storing variables.
 Since the \qVerb{Value} is wrapped in an \qVerb{Option}, each cell may also hold a \texttt{None} value representing uninitialized memory.
 In line 23, the \qVerb{mem_ptr} field is declared.
-It holds the \emph{memory pointer} which saves the index of the last free cell in \qVerb{mem}.
+It holds the \emph{memory pointer}, which saves the index of the last free cell in \qVerb{mem}.
 Lastly, a field named \qVerb{call_stack} is declared.
 This field is responsible for managing function calls and returns.
 
@@ -203,11 +203,6 @@ For better understanding, Figure~\ref{fig:rush_vm_linmem} can be considered more
 Here, the first column contains a character which represents the cell.
 The second column specified the relative address of the cell, assuming that \qVerb{mp} is set to 3.
 Lastly, the third column contains the absolute address of the cell, calculated through \qVerb{mp} and the relative address.
-
-\begin{itemize}
-	\item \TODO{Use e, not d for the examples}
-	\item \TODO{what is MP pointing tom why can we take it as a base?}
-\end{itemize}
 
 In order to get a deeper understanding of the addressing modes, a practical example can be considered.
 The code in Listing~\ref{lst:rush_pointer_simple} displays a rush program in which a pointer to a variable is created.

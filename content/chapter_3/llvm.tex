@@ -116,15 +116,15 @@ Therefore, the \qVerb{i64} LLVM type represents the rush \qVerb{int} type.
 Furthermore, we can observe that the function takes a parameter named \qVerb{\%0} of the type \qVerb{i64}.
 It represents the `\texttt{n}' parameter in the rush source program.
 
-In line 6, the start of the `\enquote{entry}' block of the \qVerb{fib} function is declared using the block's name followed by a colon.
+In line 6, the start of the \qVerb{entry} block of the \qVerb{fib} function is declared using the block's name followed by a colon.
 Since LLVM can perform more optimizations on variables if they are declared in the \qVerb{entry} block of a function,
 the rush compiler uses the \qVerb{entry} block solely for variable declarations.
-In line 7, the \qVerb{icmp slt}\footnote{Short for \enquote{integer compare (signed less than)}} is used in order to compare the runtime value of the parameter \qVerb{\%0} to a constant 2.
-The boolean result is then saved in a virtual register named \qVerb{\%i\_lt}.
+In line 7, the \qVerb{icmp slt}\footnote{Short for \enquote{integer compare (signed less than)}} is used in order to compare the runtime value of the parameter `\texttt{\%0}' to a constant 2.
+The boolean result is then saved in a virtual register named `\texttt{\%i\_lt}'.
 Since LLVM's virtual registers may have arbitrary names,
 the rush compiler uses names which will make reading of the generated IR easier.
 In line 8, the block is terminated using the \qVerb{br}\footnote{Short for \enquote{branch}} instruction.
-The instruction will only jump under the condition that the value of \qVerb{\%i_lt} is true.
+The instruction will only jump under the condition that the value of `\texttt{\%i\_lt}' is true.
 %Here, we can see that LLVM instructions are able to operand on different type of operands depending on what the instruction should do.
 Here, the \qVerb{merge} and the \qVerb{else} labels are used as operands of the branch-instruction.
 Conditional jumps in LLVM always require an alternative jump to perform if the condition is false at runtime.
@@ -139,36 +139,36 @@ However, since that block only jumped to the \qVerb{merge} block, LLVM's optimiz
 In line 11, of the \qVerb{merge} block, the \qVerb{phi} instruction is used.
 These so called $\phi$-nodes are necessary due to the SSA form used in the IR\@.
 In short, a \emph{phi-node} produces a different value depending on the basic block where control came from.
-Since the if-construct is an expression in rush, LLVM must know if the result of the `\texttt{entry}' or the `\texttt{else}' branch is to be used as the result of the entire if-expression.
+Since the if-construct is an expression in rush, LLVM must know if the result of the \qVerb{entry} or the \qVerb{else} branch is to be used as the result of the entire if-expression.
 As a solution to this problem, these phi-nodes associate a value to an origin branch.
-In this example, the phi-node yields the value of the parameter `\texttt{\%0}' (\texttt{n}) if control came from the `\texttt{entry}' block.
-In the source program, `\texttt{n}' should be returned without modification if it is less than 2.
+In this example, the phi-node yields the value of the parameter `\texttt{\%0}' (\qVerb{n}) if control came from the \qVerb{entry} block.
+In the source program, \qVerb{n} should be returned without modification if it is less than 2.
 Therefore, the runtime result of the phi-node is `\texttt{\%0}' if it is less than 2 at runtime.
-Otherwise, if control came from the `\texttt{else}' block, the phi-node's result is taken from the virtual register `\Verb|\%i_sum3|'.
+Otherwise, if control came from the \qVerb{else} block, the phi-node's result is taken from the virtual register `\texttt{\%i\_sum3}'.
 However, we have not covered where this virtual register is declared.
-For this, we consider the instructions in the `\texttt{else}' block, starting in line 15 with the `\texttt{add}' instruction.
-In this case, the instruction subtracts 2 from the parameter `\texttt{\%0}' and saves the result in `\Verb|\%i_sum|'.
+For this, we consider the instructions in the \qVerb{else} block, starting in line 15 with the `\texttt{add}' instruction.
+In this case, the instruction subtracts 2 from the parameter `\texttt{\%0}' and saves the result in `\texttt{\%i\_sum}'.
 However, an addition instruction using a negative operand is used since LLVM's optimization decided that this instruction is likely beneficial.
-This is done in order to create the argument value for the first recursive call to `\texttt{fib}'.
-Next, the `\texttt{call}' instruction is used in order to perform the recursive call.
-Here, the `\Verb|\%i_sum|' register is used as an argument to the call-instruction.
-The return value of the function call is saved in the `\Verb|\%ret_fib|' register.
-The same behavior is used in order to call `\texttt{fib(n - 1)}'.
-However, in that case, 1 is subtracted from the parameter and saved in `\Verb|\%i_sum1|'.
+This is done in order to create the argument value for the first recursive call to \qVerb{fib}.
+Next, the \qVerb{call} instruction is used in order to perform the recursive call.
+Here, the `\texttt{\%i\_sum}' register is used as an argument to the call-instruction.
+The return value of the function call is saved in the `\texttt{\%ret\_fib}' register.
+The same behavior is used in order to call \qVerb{fib(n - 1)}.
+However, in that case, 1 is subtracted from the parameter and saved in `\texttt{\%i\_sum1}'.
 
-Next, the `\texttt{add}' instruction in line 19 is used in order to calculate the sum of the return values of the recursive calls
-This sum is then saved in the virtual register `\Verb|\%i_sum3|'.
+Next, the \qVerb{add} instruction in line 19 is used in order to calculate the sum of the return values of the recursive calls
+This sum is then saved in the virtual register `\texttt{\%i\_sum3}'.
 Therefore, this register is used in the phi-node in line 11 so that the result of the recursive calls is used as the result of the if-expression.
-Next, the `\texttt{br}' instruction jumps to the `\texttt{merge}' block.
+Next, the \qVerb{br} instruction jumps to the `\texttt{merge}' block.
 However, this jump happens unconditionally since the instruction does not consider a condition and only has one target label.
-After the jump to the `\texttt{merge}' block, the previously explained $\phi$-node is encountered.
-Finally, the `\texttt{ret}' instruction in line 12 is used in order to use the result of the if-expression as the return-value of the function.
-Since the `\texttt{main}' function does not introduce any new concepts, we will omit detailed explanation of its contents.
-However, in line 27, the `\texttt{unreachable}' instruction is used in order to state that it is never executed.
+After the jump to the \qVerb{merge} block, the previously explained $\phi$-node is encountered.
+Finally, the \qVerb{ret} instruction in line 12 is used in order to use the result of the if-expression as the return-value of the function.
+Since the \qVerb{main} function does not introduce any new concepts, we will omit detailed explanation of its contents.
+However, in line 27, the \qVerb{unreachable} instruction is used in order to state that it is never executed.
 This is necessary because LLVM requires that every basic block is terminated at its end.
 The `\texttt{exit}' function terminates the program using a system call and therefore terminates the basic block.
-However, LLVM does not regard call-instructions as diverging and therefore disallows the call to `\texttt{exit}' as a way to terminate the basic block.
-Since LLVM does not know that the `\texttt{exit}' function terminates program execution, an `\texttt{unreachable}'  instruction is inserted to communicate a block termination to LLVM\@.
+However, LLVM does not regard call-instructions as diverging and therefore disallows the call to \qVerb{exit} as a way to terminate the basic block.
+Since LLVM does not know that the \qVerb{exit} function terminates program execution, an \qVerb{unreachable} instruction is inserted to communicate a block termination to LLVM\@.
 
 It is to be mentioned that the original IR generated by the rush compiler looks slightly different because LLVM has already performed all of its aggressive optimizations on this code.
 By considering the example from above, it became apparent that the IR represents many source language constructs in a high-level way.
@@ -177,7 +177,6 @@ Here, calling and returning from a function can be implemented using very little
 Furthermore, virtual registers allow the compiler frontend to omit register allocation entirely.
 Lastly, the LLVM IR can subjectively be seen as very readable since registers, basic blocks, and functions may contain custom, human-readable labels.
 Moreover, most instructions have a relatively reasonable name which allows readers to guess what the instruction is doing without them reading any LLVM documentation.
-
 
 \subsection{The rush Compiler Using LLVM}
 
@@ -235,7 +234,7 @@ Listing~\ref{lst:llvm_main_fn} displays parts of the method responsible for tran
 In the lines 334--336, the `\texttt{main}' function is added to the current LLVM module.
 The definitions of the variables `\texttt{fn\_name}' and `\texttt{fn\_type}' are not visible.
 The first variable specifies the name of the function to be inserted, while the latter describes the function's signature.
-The return type of the function is specified by the \texttt{fn\_type} variable.
+The return type of the function is specified by the `\texttt{fn\_type}' variable.
 In most cases, the return-type of the function is an integer since C libraries can then use the function as its `\texttt{main}' function.
 In cases where the generated code should not depend on C libraries, `\Verb|fn_name|' will be `\Verb|_start|' and `\Verb|fn_type|' will state that the function returns \emph{void}.
 In the lines 339 and 340, this method adds the `\texttt{entry}' and `\texttt{body}' basic block.
@@ -266,7 +265,7 @@ This snipped shows the statement inserting the LLVM `\texttt{call}' instruction.
 For this, the `\Verb|build_call|' method of the builder is called using the target function, call arguments, and the name of the result register.
 Since the variable `\texttt{func}' represents the called function, it was previously declared by looking up the function name in the module.
 The `\texttt{args}' variable is of type `\Verb|Vec<BasicMetadataValueEnum>|' and therefore represents a list of Inkwell values representing the arguments used for the call.
-This variable was also defined previously by iterating over the \texttt{node.args} vector containing expressions.
+This variable was also defined previously by iterating over the \qVerb{node.args} vector containing expressions.
 This vector is contained in the provided AST node representing the call-expression.
 Each argument expression is then compiled, and its result is placed into the `\texttt{args}' output vector.
 However, we cannot understand how results of expressions are handled in this compiler without considering Listing~\ref{lst:llvm_exprs}.
@@ -280,7 +279,7 @@ Using Inkwell, most inserted instructions yield a symbolical value at compile ti
 This value represents a virtual register which will contain a real \emph{value} at runtime of the program.
 Therefore, the `\texttt{BasicValueEnum}' returned by the function represents the virtual register which will hold the result of the expression at runtime.
 This way, symbolical values can be used at compile time, thus presenting a high-level abstraction for generating the IR\@.
-The lines 875-879, show how a constant integer expression is compiled.
+The lines 875--879, show how a constant integer expression is compiled.
 Here, a constant int value of the `\texttt{i64}' type is created and transformed into a `\texttt{BasicValueEnum}' which is then used as the method's return value.
 For more complex expressions, the `\texttt{expression}' method invokes other methods which are specialized on this type of expression.
 For instance, if an infix-expression like `\texttt{3 * n}' is compiled, this method calls the `\Verb{infix_expr}' method in line 910.
@@ -341,16 +340,7 @@ Finally, the pointer is returned so that it is usable for other parts of the com
 
 \subsection{Final Code Generation: The Linker}\label{sec:linker}
 
-% - Explain linking X
-% - Difference `.o` vs binary X
-% - LLVM's link-time optimizations  X
-% - https://en.wikipedia.org/wiki/Linker_(computing)
-% - Linker & loader book: P. 5 - 7 X
-% - Insert figure from p. 7 X
-
-\TODO{MORE ON LINKERS: \cite[p.~40]{Patterson2017}}
-
-After LLVM has compiler a program, it outputs an \emph{object file} representing the compiled source program.
+After LLVM has compiled a program, it outputs an \emph{object file} representing the compiled source program.
 Object files contain the binary machine code output of a compiler or an assembler.
 In the case of LLVM, they contain the target-specific machine code generated from the intermediate representation.
 There are many different formats for representing object files, such as \emph{ELF} on Unix-like systems.
@@ -363,10 +353,9 @@ For instance, a linker might take an object file generated by a compiler in orde
 During \emph{linking}, a linker often perform numerous tasks, such as \emph{relocation} or \emph{symbol resolution}.
 For instance, a linker might also include \emph{library code} in the executable if the object file depends on external functionality provided by that library.
 A common example for this library code is the functionality provided by a C standard library.
-In order to combine these modules, an essential part of the liker's actions is presented by relocation and code modification.
-
+In order to combine these modules, an essential part of the liker's actions is presented by relocation and code modification~\cite[pp.~1-15]{Levine2000}.
 During relocation, the linker assigns definitive addresses to numerous parts of the program.
-Relocation is required, for instance, when the program to be translated consists of multiple modules referencing each other. 
+Relocation is required, for instance, when the program to be translated consists of multiple modules referencing each other.
 Here, the order in which the individual parts of the program will be placed in memory is not known.
 Therefore, any absolute addresses in the program are not determined~\cite[p.~74]{Zhirkov2017-wk}.
 However, we will not explain these concepts further since they are not of particular relevance for understanding the purpose of a linker.
@@ -387,8 +376,8 @@ However, we will not explain these concepts further since they are not of partic
 		\node(exe)[entity, below of=linker] {Executable \\ file};
 		\draw [relation] (linker) -- node[anchor=west] {} (exe);
 	\end{tikzpicture}
-	\caption{How a Linker Works}\label{fig:linker}
-\end{wrapfigure}~\cite[pp.~1-15]{Levine2000}
+    \caption{How a Linker Works}{\cite[p.~7]{Levine2000}}\label{fig:linker}
+\end{wrapfigure}
 
 The shell command in Listing~\ref{lst:ld_llvm} presents an example liker invocation.
 In this example, the LLVM compiler has generated an object file named \texttt{input.o}.

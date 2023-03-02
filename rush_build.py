@@ -40,6 +40,24 @@ def riscv_asm(source: str, output: str, line_width: int):
     print(f'generated {output_path}')
 
 
+def transpile(source: str, output: str):
+    input_path = os.path.realpath(source)
+    output_path = os.path.realpath(output)
+
+    start_dir = os.path.realpath(os.curdir)
+    os.chdir('./deps/rush/crates/rush-transpiler-c/')
+
+    subprocess.run(
+        f'cargo r {input_path}',
+        shell=True,
+    ).check_returncode()
+
+    os.rename('output.c', output_path)
+    os.chdir(start_dir)
+
+    print(f'generated {output_path}')
+
+
 def lint_all():
     rush_files = list(Path('.').rglob('*.rush'))
     for rush_path in rush_files:
@@ -58,7 +76,7 @@ def lint_all():
         )
 
         if res.returncode:
-            print("\x1b[1;31m=== CHECK FAILURE ===\x1b[1;m")
+            print('\x1b[1;31m=== CHECK FAILURE ===\x1b[1;m')
             sys.stdout.buffer.write(res.stderr)
             sys.stdout.buffer.write(res.stdout)
 
@@ -66,7 +84,7 @@ def lint_all():
 
         os.chdir(start_dir)
         print(f'ok: {input_path}')
-    print("\x1b[1;32m=== CHECK SUCCESS ===\x1b[1;m")
+    print('\x1b[1;32m=== CHECK SUCCESS ===\x1b[1;m')
 
 
 if __name__ == '__main__':
@@ -79,6 +97,10 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'build':
         llvm_gen_ir('./listings/fib.rush', './listings/generated/fib.ll')
         llvm_gen_ir('./listings/simple.rush', './listings/generated/simple.ll')
+        transpile(
+            './listings/simple_scope.rush',
+            './listings/generated/rush_simple_scope.c',
+        )
         riscv_asm(
             './listings/riscv_simple.rush',
             './listings/generated/riscv_simple.s',

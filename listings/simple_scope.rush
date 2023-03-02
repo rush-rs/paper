@@ -1,0 +1,7 @@
+fn main() {
+    let num = {
+        let b = 40;
+        b + 2
+    };
+    exit(num)
+}

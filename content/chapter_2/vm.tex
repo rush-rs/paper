@@ -127,9 +127,6 @@ Like most virtual machines, the rush VM uses a fetch-decode-execute cycle in ord
 
 \Lirsting[ranges={16-26}, caption={Struct Definition of the VM}, label={lst:vm_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
-% TODO: use these subsubsections?
-%\subsubsection{Struct Fields of the rush VM}
-
 Listing~\ref{lst:vm_struct} displays the struct definition of the rush VM\@.
 The \qVerb{stack} field in line 18 saves the main stack for temporary values using Rust's \qVerb{Vec} type.
 In line 20, the \qVerb{mem} field is declared.
@@ -190,17 +187,22 @@ In order to prevent this bug, the rush VM uses a prelude function which is guara
 Linear memory in the VM is represented as an array of runtime values of variables.
 Each storage cell can be accessed using two addressing modes.
 When using the \emph{absolute addressing} mode, the exact index of the memory cell is specified.
-For instance, if the value of variable \qVerb{num} in Figure~\ref{fig:rush_vm_linmem} was to be retrieved, the VM would need to access the storage cell with the index 4.
+For instance, if the value of variable \qVerb{num} in Figure~\ref{fig:rush_vm_linmem} was to be retrieved,
+the VM would need to access the storage cell with the absolute index 4.
 However, the absolute position of a variable in memory can only be determined at runtime.
 For example, in a recursive function, each recursion adds more variables to the scope, thus allocating more memory.
 However, the rush VM also implements a \emph{relative addressing} mode which can be used without knowledge about the absolute position of the memory cell.
-For instance, the variable `\texttt{d}' can be addressed by index 0 using the relative addressing mode.
-The mode is called \emph{relative} because all addresses are specified relative to \qVerb{mp}.
-In Figure~\ref{fig:rush_vm_linmem}, the memory pointer (shortened to \enquote{mp}) is set to 4.
+For instance, the same variable can be addressed through index 1 using the relative addressing mode.
+The mode is called \emph{relative} because all addresses are specified relative to the memory pointer.
+In Figure~\ref{fig:rush_vm_linmem}, the memory pointer (shortened to \enquote{mp}) is set to 3.
 Considering the value of the memory pointer, the absolute address of any relative address can be calculated at runtime.
-Here, the absolute address $a$ is the sum of the relative index $i$ and the runtime memory pointer $m$.
+Here, the absolute address is the sum of the relative index $rel$ and the runtime memory pointer $mp$.
 By also implementing this relative addressing mode,
 compilers targeting the rush VM can generate code without knowing the runtime behavior of a program.
+For better understanding, Figure~\ref{fig:rush_vm_linmem} can be considered more closely.
+Here, the first column contains a character which represents the cell.
+The second column specified the relative address of the cell, assuming that \qVerb{mp} is set to 3.
+Lastly, the third column contains the absolute address of the cell, calculated through \qVerb{mp} and the relative address.
 
 \begin{itemize}
 	\item \TODO{Use e, not d for the examples}

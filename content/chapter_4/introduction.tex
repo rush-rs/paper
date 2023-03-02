@@ -29,6 +29,7 @@ Even though a processor only has access to one physical memory unit for both ins
 most assembly programs like to separate these types of memory into their separate components.
 Therefore, an object file and assembly program is divided into so-called \emph{sections}~\cite[p.~19]{Zhirkov2017-wk}.
 Some of the important ELF sections are displayed below.
+
 \begin{itemize}
 	\item \texttt{.text} stores the logic of the program represented using CPU instructions
 	\item \texttt{.rodata} stores read-only global data, it is often used for global constants.
@@ -201,6 +202,18 @@ Since register allocation represents a complex topic, it will not be explained a
 	\item Insert very figure of the stack.
 	\item Only mention that there are stack pointers and why they are needed; do not explain how they point / behave exactly
 	\item Stack can be indexed
+\end{itemize}
+
+\begin{itemize}
+    \item linear memory
+    \item separate from CPU
+    \item stack pointer register
+    \begin{itemize}
+        \item subtracted from for allocation
+    \end{itemize}
+    \item stack frames
+    \item differently sized types and alignment
+    \item example for array?
 \end{itemize}
 
 \subsection{Calling Conventions}

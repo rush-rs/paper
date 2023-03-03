@@ -1,37 +1,16 @@
+% chktex-file -2
+\newpage
 \section{x86\_64: Compiling to a CISC Architecture}
 
-\begin{itemize}
-	\item Present Some example instructions
-	\item Register layout \& count
-	\item Calling convention
-	\item INFORMATION: x86: An intel blog stated ca. 3600 Instructions in 2015 \cite{Rodgers2017}
-	\item \riscv{} Reader: \emph{ASCII adjust after addition} $\rightarrow$ \emph{aaa} $\rightarrow$ obsolete, collectively occupy 1.6\% of opcode space\cite[p.~4]{Patterson2017}
-	\item
-	      \enquote{Modular vs. Incremental ISAs Intel was betting its future on a high-end microprocessor, but that was still years away.
-		      To counter Zilog, Intel developed a stop-gap processor and called it the 8086. It was intended to be short-lived and not have any successors,
-		      but that’s not how things turned out. The high-end processor ended up being late to market, and when it did come out, it was too slow.
-		      So the 8086 architecture lived on—it evolved into a 32-bit processor and eventually into a 64-bit one.
-		      The names kept changing (80186, 80286, i386, i486, Pentium), but the underlying instruction set remained intact. —Stephen P. Morse, architect of the 8086}\cite{Morse2017}.
-	      $\Rightarrow$ only meant as a temporary architecture
-\end{itemize}
-
-\subsection{Register Layout}
-
-For registers: \cite[p.~7]{Kusswurm2018-nd}
-
-\subsection{Memory Access Through the Stack}
-
-\subsection{Calling Convention}
-
-\subsection{x86\_64 Assembly}
+\TODO{intro}
 
 \subsection{Differences to RISC}
 
 In addition to \emph{reduced instruction set computers (RISC)} there are also \emph{complex instruction set computers}, short \emph{CISC}.
 The main differences lie in the instruction count and complexity.
 For the purposes of this paper, the still widely used CISC architecture \emph{x86\_64}\footnote{later shortened to \emph{x64}} is used as an example, just like \riscv{} was used to represent RISC architectures in the previous section.
-While \riscv{} with all extensions used by rush has 100 different instructions~\cite[Chapter~24]{Waterman2019}, x64 is estimated to have about 3600 instructions~\cite{Rodgers2017}.
-This has the simple reason that at the time most CISC architectures were developed, many developers still programmed in Assembly languages by hand, without the use of compilers.
+While \riscv{} with all extensions used by rush\footnote{The used extensions are RV32I, RV64I, RV32M, RV64M, RV32D, and RV64D.} has about 100 different instructions~\cite[Chapter~24]{Waterman2019}, x64 is estimated to have about 3600 instructions~\cite{Rodgers2017}.
+This has the simple reason that at the time most CISC architectures were developed, many developers still programmed in assembly languages by hand, without the use of compilers.
 Additional instructions for higher level concepts were therefore very helpful.
 
 One example for such an instruction is the \qVerb{leave} instruction from x64.
@@ -42,32 +21,121 @@ Then, the old frame pointer that was saved on the stack is popped off the stack 
 Restoring the return address and returning to the caller is both done by the \qVerb{ret} instruction in x64.
 
 Another similar example is the \qVerb{call} instruction.
-Although it is also usable in \riscv{} Assembly, it is only provided by the Assembler and resolves to multiple other \riscv{} instructions during Assembly.
+Although it is also usable in \riscv{} assembly, it is only provided by the assembler and resolves to multiple other \riscv{} instructions during assembly.
 In x64 however, \qVerb{call} is a normal instruction just like every other one.
 
-\begin{itemize}
-    \item useless ones?
-    \item pseudo as normal: \qVerb{call}
-    \item \qVerb{imul}
-\end{itemize}
+For x64 specifically, there are also some instructions that only operate on certain specific registers.
+For instance, the \qVerb{idiv} instruction divides a signed 128-bit integer stored in the two 64-bit registers \qreg{rdx} and \qreg{rax} by the given operand, and stores the result in the \qreg{rax} register and the remainder in the \qreg{rdx} register. This makes any usage of such instructions significantly more involved, as values in these registers that should be preserved must temporarily be spilled to the stack.
+
+\subsection{x64 Assembly}
+
+\Lirsting[wrap=L, wrap width=0.4\textwidth, label={lst:x64_example}, caption={Example rush Program}]{listings/x64_simple.rush}
+
+There are multiple different dialects of x64 assembly and multiple assemblers each supporting a different set of dialects.
+The rush x64 compiler emits assembly code using Intel syntax that can be assembled by the \emph{GNU Assembler} (GAS).
+
+Listing~\ref{lst:x64_example} contains another simple example program.
+It defines a global variable called \qVerb{a} and assigns it the integer 2, increments it by one, defines a local boolean called \qVerb{b} to \qVerb{true}, and exits with the sum of \qVerb{a} plus \qVerb{b}.
+The corresponding assembly code generated by the x64 rush compiler is shown in Listing~\ref{lst:x64_asm_example}.
+It begins with the \qVerb{.intel_syntax} directive, indicating that the following assembly code uses the Intel syntax.
+Then, similar to the \riscv{} assembly code shown in the previous section, the \qVerb{_start} symbol is marked as global, as this is again the entry point.
+The sections are also the same, as these are defined by the ELF file format which is independent of ISAs.
+
+\Lirsting[wrap=R, wrap width=0.6\textwidth, fancyvrb={numbers=right}, label={lst:x64_asm_example}, caption={Compiler Output for the rush Program in Listing~\ref{lst:x64_example}}]{listings/x64_simple.s}
+
+The main differences between this and the shown \riscv{} assembly, and also the other x64 assembly dialects, are the instruction mnemonics and the register names.
+When using the Intel syntax for x64, register names are always prepended by a percentage sign.
+Another difference is the syntax used for pointers.
+While \riscv{} uses \qVerb{-1(fp)} to take the value in the \qVerb{fp} register as a memory address, offset by $-1$, Intel x64 uses \qVerbCmd{byte ptr [\%rbp-1]} as seen in line 16.
+It is obvious that the latter provides an additional constraint, the size of the value pointed to, here \qVerb{byte}.
+\riscv{} assembly instead encodes this information in the instruction mnemonic.
+To store a byte, one would use \qVerb{sb} (\textbf{s}tore \textbf{b}yte), whereas for storing a 64-bit integer, \qVerb{sd} (\textbf{s}tore \textbf{d}word) is used instead.
+
+The naming of sizes other than `byte' was not explained yet, and this, too, differs between \riscv{} and x64.
+Architectures usually define the size of one so-called \emph{word}.
+In \riscv{} a word is defined as 32 bits, so 4 bytes, in x64 it is 16 bits, so 2 bytes.
+All other sizes except for the byte are then named based on the word size.
+Therefore, \riscv{} assigns 16-bit, 32-bit, and 64-bit the names \emph{half word}, \emph{word}, and \emph{double word} respectively.
+For x64 they are instead called \emph{word}, \emph{double word}, and \emph{quadruple word}.
+These names are usually shortened to only include the first letter of the factor, for instance a double word is called \emph{dword}.
+
+\begin{table}[h]
+	\centering
+    \caption[x64 Integer Registers]{x64 Integer Registers~\cite[pp.~20,26]{Lu2022}}\label{tbl:x64_registers}
+	\rowcolors{2}{gray!15}{}
+	\begin{tabular}{c|ccc|c|l}
+		\rowcolor{gray!25} 64-Bit & 32-Bit     & 16-Bit     & 8-Bit      & Caller-Saved & Purpose                                    \\
+		\hline
+		\reg{rax}                 & \reg{eax}  & \reg{ax}   & \reg{al}   & \checkmark{} & \nth{1} return register                    \\
+		\reg{rbx}                 & \reg{ebx}  & \reg{bx}   & \reg{bl}   &              &                                            \\
+		\reg{rcx}                 & \reg{ecx}  & \reg{cx}   & \reg{cl}   & \checkmark{} & \nth{4} argument register                  \\
+		\reg{rdx}                 & \reg{edx}  & \reg{dx}   & \reg{dl}   & \checkmark{} & \gape{\makecell[l]{\nth{2} return register \\\nth{3} argument register}} \\
+		\reg{rsi}                 & \reg{esi}  & \reg{si}   & \reg{sil}  & \checkmark{} & \nth{2} argument register                  \\
+		\reg{rdi}                 & \reg{edi}  & \reg{di}   & \reg{dil}  & \checkmark{} & \nth{1} argument register                  \\
+		\reg{rbp}                 & \reg{ebp}  & \reg{bp}   & \reg{bpl}  &              & base pointer / frame pointer               \\
+		\reg{rsp}                 & \reg{esp}  & \reg{sp}   & \reg{spl}  & \checkmark{} & stack pointer                              \\
+		\reg{r8}                  & \reg{r8d}  & \reg{r8w}  & \reg{r8b}  & \checkmark{} & \nth{5} argument register                  \\
+		\reg{r9}                  & \reg{r9d}  & \reg{r9w}  & \reg{r9b}  & \checkmark{} & \nth{6} argument register                  \\
+		\reg{r10}                 & \reg{r10d} & \reg{r10w} & \reg{r10b} & \checkmark{} &                                            \\
+		\reg{r11}                 & \reg{r11d} & \reg{r11w} & \reg{r11b} & \checkmark{} &                                            \\
+		\reg{r12}                 & \reg{r12d} & \reg{r12w} & \reg{r12b} &              &                                            \\
+		\reg{r13}                 & \reg{r13d} & \reg{r13w} & \reg{r13b} &              &                                            \\
+		\reg{r14}                 & \reg{r14d} & \reg{r14w} & \reg{r14b} &              &                                            \\
+		\reg{r15}                 & \reg{r15d} & \reg{r15w} & \reg{r15b} &              &                                            \\
+	\end{tabular}
+\end{table}
+
+\subsubsection{Registers}
+
+The base x64 ISA provides 16 general purpose registers for 64-bit integers.
+These are shown in Table~\ref{tbl:x64_registers}.
+Additionally, three more sets of 16 registers are defined, each half the size as the previous one.
+However, instead of these being additional storage, they simply alias to the lower half of the respective larger register.
+For instance, when writing the byte $(2a)_{16}$ into \qreg{al}, the least significant byte of \qreg{ax}, \qreg{eax}, and \qreg{rax} changes to $(2a)_{16}$, too.
+The upper bytes are untouched, however.
+That means, if for example \qreg{ax} contains the value $(a455)_{16}$ before writing, it will contain $(a42a)_{16}$ afterwards, not $(002a)_{16}$.
+\TODO{operand size always has to be correct}
+\TODO{\qreg{rip} and maybe RFLAGS}
+
+In addition to these integer registers, x64 also defines 16 registers for floating point number calculations, each 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}
 
 \begin{itemize}
-    \item alignment?
-    \item available registers
-    \item basic assembly
-    \begin{itemize}
-        \item pointer syntax
-    \end{itemize}
-    \item words and difference to \riscv{} words
+	\item mention useless instructions?
+	\item alignment?
+	\item available registers
+	\item basic assembly
+	      \begin{itemize}
+		      \item pointer syntax
+	      \end{itemize}
+	\item words and difference to \riscv{} words
 	\item differences in calling convention
-    \begin{itemize}
-        \item no extra return address register
-    \end{itemize}
+	      \begin{itemize}
+		      \item no extra return address register
+	      \end{itemize}
 \end{itemize}
 
 \subsection{Implementation}
 
 \begin{itemize}
-	\item every Assembly line is one ``Instruction''
-    \item other but similar register allocation
+	\item every assembly line is one ``Instruction''
+	\item other but similar register allocation
 \end{itemize}
+
+
+\begin{itemize}
+	\item Calling convention
+	\item \riscv{} Reader: \emph{ASCII adjust after addition} $\rightarrow$ \emph{aaa} $\rightarrow$ obsolete, collectively occupy 1.6\% of opcode space\cite[p.~4]{Patterson2017}
+	\item
+	      \enquote{Modular vs. Incremental ISAs Intel was betting its future on a high-end microprocessor, but that was still years away.
+		      To counter Zilog, Intel developed a stop-gap processor and called it the 8086. It was intended to be short-lived and not have any successors,
+		      but that’s not how things turned out. The high-end processor ended up being late to market, and when it did come out, it was too slow.
+		      So the 8086 architecture lived on—it evolved into a 32-bit processor and eventually into a 64-bit one.
+		      The names kept changing (80186, 80286, i386, i486, Pentium), but the underlying instruction set remained intact. —Stephen P. Morse, architect of the 8086}\cite{Morse2017}.
+	      $\Rightarrow$ only meant as a temporary architecture
+\end{itemize}
+
+\subsection{Memory Access Through the Stack}
+
+\subsection{Calling Convention}
+
+\subsection{x86\_64 Assembly}

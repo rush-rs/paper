@@ -1,0 +1,39 @@
+\section{Transpilers}
+
+Another, more esoteric target of a compiler is presented by another high-level programming language.
+A compiler translating one language to another language is usually called a \emph{transpiler}.
+Historically, the very first version of the C++ compiler was a transpiler which translated C++ into C.
+The main advantage of a transpiler is that its implementation is usually very simple as low-level compilation steps can be omitted.
+A significant downside of a transpiler is often that it generates very inefficient code.
+Furthermore, the entire project would also dependent on the target programming language~\cite[p.~5]{Jeffery2021}.
+
+For this paper, we have implemented a transpiler which generates \emph{ANSI C} from rush source programs.
+Listing~\ref{lst:rush_transpiler_block} shows a rush program which terminates using 42 as its exit code.
+For this, the value of the block-expression in the lines 2--5 is saved in the variable \qVerb{num}.
+In the block, a temporary variable with a value of 40 is created.
+The block results in a value of 42 since 2 is added to the value of the temporary variable.
+In line 6, the \qVerb{exit} function is called, using \qVerb{num} as its argument.
+On the right side, Listing~\ref{lst:c_transpiler_block} shows the identical program represented using ANSI C.
+The code was generated from the rush program in Listing~\ref{lst:rush_transpiler_block} using the rush C compiler\footnote{Generated in Git commit \rushCommit, automatically built with this document}.
+
+\begin{minipage}{.34\textwidth}
+	\center
+	\Lirsting[caption={Rush Program Containing a Block-Expression}, label={lst:rush_transpiler_block}, float=H]{listings/simple_scope.rush}
+\end{minipage}%
+\hspace{3cm}%
+\begin{minipage}{.45\textwidth}
+	\center
+	\Lirsting[caption={C Output of Rush Program in Listing~\ref{lst:rush_transpiler_block}}, label={lst:c_transpiler_block}, float=H]{listings/generated/rush_simple_scope.c}
+\end{minipage}
+
+When examining the C output, it becomes apparent that the structure of the code has changed slightly.
+In line 1 and 2, the file contains `\texttt{\#include}' directives in order to import files from the C standard library.
+In line 4, the \qVerb{main} function is declared, but not defined.
+Although this might not seem very rational in this example,
+declaring functions before their declaration allows rush functions to be called before their definition.
+Furthermore, the C program also does not include the previously mentioned block.
+The lines 2--5 in the rush code are represented by the lines 7 and 8 in the C code because C does not have a structure comparable to rush's block-expressions.
+This examples demonstrates how a transpiler often alters the program's structure in order to represent the source program in another language.
+Due to the practical irrelevance of transpilers, the internals of this transpiler will not be discussed further.
+As a conclusion, transpilers can present an easy but limited way of implementing a compiler.
+Due to its disadvantages, a transpiler is often only considered during the prototype phase of compiler implementation.

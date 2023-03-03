@@ -163,9 +163,9 @@ In Rust the mapping from EBNF grammar notation to type definitions is very simpl
 
 \begin{table}[h]
 	\caption{Mapping From EBNF Grammar to Rust Type Definitions}\label{tbl:ebnf_to_rust}
-	\rowcolors{2}{gray!25}{white}
+	\rowcolors{2}{gray!15}{}
 	\begin{tabularx}{0.95\textwidth}{Ll}
-		\rowcolor{gray!50} EBNF                         & Rust                                                                         \\
+		\rowcolor{gray!25} EBNF                         & Rust                                                                         \\
 		\hline
 		\LirstInline{ebnf}{A = B , C ;}                 & \LirstInline{rs}{struct A { b: B, c: C }}                                    \\
 		\LirstInline{ebnf}{A = B , [ C ] ;}             & \LirstInline{rs}{struct A { b: B, c: Option<C> }}                            \\

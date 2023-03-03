@@ -47,13 +47,13 @@ this list only includes entries which are of importance later in later sections 
 \begin{wrapfigure}{R}{.27\textwidth}
 	\centering
 	\begin{tikzpicture}[node distance=1cm, inner sep=3mm]
-		\node (lexical_analysis) [entity, fill=none] {High-level languages\\(\emph{C}, \emph{Rust}, \emph{rush})};
-		\node (syntactic_analysis) [entity, below=of lexical_analysis, align=center] {Assembly language\\level};
-		\draw [arrow] (lexical_analysis) -- (syntactic_analysis);
-		\node (semantic_analysis) [entity, fill=none, below=of syntactic_analysis, align=center] {Machine language\\level};
-		\draw [arrow] (syntactic_analysis) -- (semantic_analysis);
-		\node (codegen) [entity, fill=none, below=of semantic_analysis] {Operating system \\ and Hardware level};
-		\draw [arrow] (semantic_analysis) -- (codegen);
+		\node (highlevel) [entity, fill=none] {High-level languages\\(\emph{C}, \emph{Rust}, \emph{rush})};
+		\node (asm) [entity, below=of highlevel, align=center] {Assembly language\\level};
+		\draw [arrow] (highlevel) -- (asm);
+		\node (machine) [entity, fill=none, below=of asm, align=center] {Machine language\\level};
+		\draw [arrow] (asm) -- (machine);
+		\node (codegen) [entity, fill=none, below=of machine] {Operating system \\ and Hardware level};
+		\draw [arrow] (machine) -- (codegen);
 	\end{tikzpicture}
 	\caption{Level of Abstraction provided by Assembly}\label{fig:abstractions}
 \end{wrapfigure}

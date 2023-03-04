@@ -7,10 +7,10 @@ mkdir -p deps
 
 fetch_repo() {
     if ! [ -d "deps/$2" ]; then
-        git clone "https://github.com/$1/$2.git" "deps/$2"
+        git clone "https://github.com/$1/$2.git" "deps/$2" &
     else
         cd "deps/$2"
-        git pull
+        git pull &
         cd ../..
     fi
 }
@@ -30,3 +30,5 @@ fetch_repo wasm-lsp tree-sitter-wasm
 fetch_repo rush-rs tree-sitter-wasm-queries
 
 fetch_repo rush-rs rush
+
+wait

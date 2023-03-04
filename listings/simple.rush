@@ -1,8 +1,8 @@
 fn main() {
-    foo(2)
+    foo(2);
 }
 
 fn foo(n: int) {
     let mut m = 3;
-    exit(n + m)
+    exit(n + m);
 }

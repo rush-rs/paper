@@ -26,7 +26,7 @@ It is clearly visible that the interpreter simply makes use of Rust's types and 
 \qVerb{InterruptKind} describes the different ways the interpreter can be interrupted.
 The first three variants, `return', `break', and `continue', are only partial interrupts, i.e., they do not necessarily stop execution of the whole program.
 For example, when the interpreter encounters a \qVerb{break} statement, it creates a \qVerb{InterruptKind::Break} and tracks back until it reached the innermost loop, where the interrupt is then caught and execution is continued after the loop.
-The remaining two variants are for one runtime errors, produced by things like division by zero, and \qVerb{Exit(i64)}, created by rush's builtin \qVerb{exit(int)} function.
+The remaining two variants are for one runtime errors, produced by things like division by zero, and \qVerb{Exit(i64)}, created by rush's built-in \qVerb{exit(int)} function.
 They cause the interpreter to backtrack all the way back to the AST's root and with that cancel execution, as this is the desired behavior for errors and exit calls.
 
 The way \qVerb{Value} is implemented also makes it very easy to support dynamic typing\footnote{In contrast to static typing, with dynamic typing the types of variables and results of expressions are only known at runtime rather than during compile time.}, since it can already be a value of any type.

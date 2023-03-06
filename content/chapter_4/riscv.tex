@@ -19,7 +19,7 @@ Therefore, it seems like RISC-V could be a significant architecture to be used i
 
 \begin{wraptable}{r}{.4\textwidth}
 	\centering
-    \caption{Common Registers in RISC-V}{\cite[p.~155]{Waterman2019}}\label{tbl:riscv_regs}
+	\caption{Common Registers in RISC-V}{\cite[p.~155]{Waterman2019}}\label{tbl:riscv_regs}
 	\begin{tabularx}{\linewidth}{l|L}
 		\rowcolor{gray!10} Register   & Purpose                         \\ \hline
 		\texttt{zero}                 & Hardwired zero                  \\ \hline
@@ -93,16 +93,16 @@ These special registers, like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra}, are thorou
 	\begin{tikzpicture}[scale=.9]
 		\small
 		% TODO: also use longer arrow in top `fp_main`?
-		\stackTopFixed{...} \cellcom{\scriptsize 32(sp)} \cellptr{\scriptsize \tt fp\,$_\text{main}$}
+		\stackTopFixed{...} \cellcom{\scriptsize 24(sp\textsubscript{main})} \cellptr{\scriptsize \tt fp\,$_\text{main}$}
 		\startframe
-		\cell{fp} \cellcom{\scriptsize 24(sp)}
-		\cell{ra} \cellcom{\scriptsize 16(sp)}
-		\cell{a: int} \cellcom{\scriptsize -24(fp)} \cellptrA{\scriptsize \texttt{sp\,$_\text{main}$}}
-		\cell{b: char} \cellcom{\scriptsize -25(fp)} \cellptrA{\scriptsize \texttt{fp\,$_\text{foo}$}}
+		\cell{fp} \cellcom{\scriptsize 16(sp\textsubscript{main})}
+		\cell{ra} \cellcom{\scriptsize 8(sp\textsubscript{main})}
+		\cell{a: int} \cellcom{\scriptsize -24(fp\textsubscript{main})} \cellptrA{\scriptsize \texttt{sp\,$_\text{main}$}}
+		\cell{b: char} \cellcom{\scriptsize -25(fp\textsubscript{main})} \cellptrA{\scriptsize \texttt{fp\,$_\text{foo}$}}
 		\finishframe{\tt main}
 		\startframe
-		\cell{fp} \cellcom{\scriptsize 8(sp)}
-		\cell{ra} \cellcom{\scriptsize 0(sp)} \cellptrA{\scriptsize \texttt{sp\,$_\text{foo}$}}
+		\cell{fp} \cellcom{\scriptsize 8(sp\textsubscript{foo})}
+		\cell{ra} \cellcom{\scriptsize 0(sp\textsubscript{foo})} \cellptrA{\scriptsize \texttt{sp\,$_\text{foo}$}}
 		\finishframe{\tt foo}
 		% TODO: uncomment the line below?
 		%\stackbottom
@@ -185,12 +185,12 @@ If the variable is referenced at a later point, the compiler performs a simple l
 			rectangle split part fill={none, none, gray!20, gray!20, none, none},
 			rectangle split part align=left,
 		]{
-			\nodepart{one}{{\texttt{\tiny 24(sp)}} fp$_0$}
-			\nodepart{two}{{\texttt{\tiny 16(sp)}} ra$_0$}
-			\nodepart{three}{{\texttt{\tiny 08(sp)}} argument 2}
-			\nodepart{four}{{\texttt{\tiny 00(sp)}} argument 1}
-			\nodepart{five}{{\texttt{\tiny 8(sp)}} fp$_1$}
-			\nodepart{six}{{\texttt{\tiny 0(sp)}} ra$_1$}
+			\nodepart{one}{{\texttt{\tiny 24(sp\textsubscript{0})}} fp$_0$}
+			\nodepart{two}{{\texttt{\tiny 16(sp\textsubscript{0})}} ra$_0$}
+			\nodepart{three}{{\texttt{\tiny 08(sp\textsubscript{0})}} argument 2}
+			\nodepart{four}{{\texttt{\tiny 0(sp\textsubscript{0})}} argument 1}
+			\nodepart{five}{{\texttt{\tiny 8(sp\textsubscript{1})}} fp$_1$}
+			\nodepart{six}{{\texttt{\tiny 0(sp\textsubscript{1})}} ra$_1$}
 		};
 		\draw [thick, dashed] ([xshift=-.5cm, yshift=-.33cm]stack.four west) --  node[anchor=west, xshift=2cm, align=center] {\scriptsize function\\ \scriptsize boundary} ([xshift=.5cm, yshift=-.33cm]stack.four east);
 
@@ -871,7 +871,7 @@ If this was the case, inserting an instruction in order to allocate memory is re
 
 Next, the for-loop in line 148 iterates over the argument expressions.
 Just like in the last listings, the match-block in line 149 executes different code based on the data type of the argument expression.
-In case of unit- or never-types, the expression is compiled and the resulting value is ignored.
+In case of unit or never types, the expression is compiled and the resulting value is ignored.
 This is reasonable since these types of expressions yield no register.
 For other data types, like floats, other code is executed.
 Expressions which yield floats for instance are handled in line 153.

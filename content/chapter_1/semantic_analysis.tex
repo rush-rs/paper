@@ -61,7 +61,7 @@ sum of two integers is a legal infix-expression and results in another integer v
 semantic specification states that the \qVerb{exit} function requires exactly one
 integer parameter, the analyzer has to check that it is called correctly.
 Apart from this call to the \qVerb{exit} function, the analyzer validates all function calls and declarations, not
-just the ones of builtin functions. Since the result of the addition is also an
+just the ones of built-in functions. Since the result of the addition is also an
 integer, the analyzer accepts this program since both its syntax and semantics
 are valid.
 
@@ -148,12 +148,12 @@ Instead, the \qVerb{self.error} method is invoked in line 406.
 This method uses information about the error to be generated in order to push a new \qVerb{Diagnostic} into the \qVerb{diagnostics} vector.
 Therefore, the vector will contain any generated errors or warnings after analysis has been completed.
 
-Secondly, in rush, the main-function's return-type always has to be the unit-type.
+Secondly, in rush, the main-function's return-type always has to be the unit type.
 The analyzer validates this constraint in the lines 422 and 423.
 The first if-clause checks whether the function contains a manually defined result-type.
 In rush, every function definition without an explicitly defined result type defaults to the unit type.
 Therefore, the inner if-clause is only executed if the user has manually specified a result type of their main-function.
-The analyzer then checks whether the manually specified type differs from the required unit-type.
+The analyzer then checks whether the manually specified type differs from the required unit type.
 In case it does, the analyzer generates another error in line 424 which describes the issue.
 
 After the signature of the main-function has been validated, the method begins traversal of the function's body.

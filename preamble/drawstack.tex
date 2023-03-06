@@ -5,8 +5,8 @@
 % FEAT: Slight variation of the `\cellptr` command.
 % The output of this command has a longer arrow with a steeper angle
 \newcommand{\cellptrA}[1]{
-	\draw[<-,line width=0.7pt] (0.1,\value{cellnb}) +(2,\value{ptrnb}*0.1) -- +(3.4,\value{ptrnb}*0.75);
-	\draw (3.5,\value{ptrnb}*0.8+\value{cellnb}) node[anchor=west] {#1};
+	\draw[<-,line width=0.7pt] (0.1,\value{cellnb}) +(2,\value{ptrnb}*0.1) -- +(3.4,\value{ptrnb}*0.55);
+	\draw (3.5,\value{ptrnb}*0.5+\value{cellnb}) node[anchor=west] {#1};
 	\addtocounter{ptrnb}{1}
 }
 

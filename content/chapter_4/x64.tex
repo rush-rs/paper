@@ -2,10 +2,6 @@
 \newpage
 \section{x86\_64: Compiling to a CISC Architecture}
 
-\TODO{intro}
-
-\subsection{Differences to RISC}
-
 In addition to \emph{reduced instruction set computers (RISC)} there are also \emph{complex instruction set computers}, short \emph{CISC}.
 The main differences lie in the instruction count and complexity.
 For the purposes of this paper, the still widely used CISC architecture \emph{x86\_64}\footnote{later shortened to \emph{x64}} is used as an example, just like \riscv{} was used to represent RISC architectures in the previous section.
@@ -46,7 +42,7 @@ The sections are also the same, as these are defined by the ELF file format whic
 The main differences between this and the shown \riscv{} assembly, and also the other x64 assembly dialects, are the instruction mnemonics and the register names.
 When using the Intel syntax for x64, register names are always prepended by a percentage sign.
 Another difference is the syntax used for pointers.
-While \riscv{} uses \qVerb{-1(fp)} to take the value in the \qVerb{fp} register as a memory address, offset by $-1$, Intel x64 uses \qVerbCmd{byte ptr [\%rbp-1]} as seen in line 16.
+While \riscv{} uses \qVerb{-1(fp)} to take the value in the \qVerb{fp} register as a memory address, offset by $-1$, Intel x64 uses \qVerbCmd{byte ptr [\%rbp-1]} as seen in line~16.
 It is obvious that the latter provides an additional constraint, the size of the value pointed to, here \qVerb{byte}.
 \riscv{} assembly instead encodes this information in the instruction mnemonic.
 To store a byte, one would use \qVerb{sb} (\textbf{s}tore \textbf{b}yte), whereas for storing a 64-bit integer, \qVerb{sd} (\textbf{s}tore \textbf{d}word) is used instead.
@@ -58,10 +54,13 @@ All other sizes except for the byte are then named based on the word size.
 Therefore, \riscv{} assigns 16-bit, 32-bit, and 64-bit the names \emph{half word}, \emph{word}, and \emph{double word} respectively.
 For x64 they are instead called \emph{word}, \emph{double word}, and \emph{quadruple word}.
 These names are usually shortened to only include the first letter of the factor, for instance a double word is called \emph{dword}.
+In some instances, see line 28, alternative short forms are used.
+Here the directive \qVerb{.quad} inserts a quadruple word.
+\TODO{in x64 instructions the first source operand usually is also the destination}
 
 \begin{table}[h]
 	\centering
-    \caption[x64 Integer Registers]{x64 Integer Registers~\cite[pp.~20,26]{Lu2022}}\label{tbl:x64_registers}
+	\caption[x64 Integer Registers]{x64 Integer Registers~\cite[pp.~20,26]{Lu2022}}\label{tbl:x64_registers}
 	\rowcolors{2}{gray!15}{}
 	\begin{tabular}{c|ccc|c|l}
 		\rowcolor{gray!25} 64-Bit & 32-Bit     & 16-Bit     & 8-Bit      & Caller-Saved & Purpose                                    \\
@@ -85,7 +84,7 @@ These names are usually shortened to only include the first letter of the factor
 	\end{tabular}
 \end{table}
 
-\subsubsection{Registers}
+\subsection{Registers}
 
 The base x64 ISA provides 16 general purpose registers for 64-bit integers.
 These are shown in Table~\ref{tbl:x64_registers}.
@@ -94,25 +93,78 @@ However, instead of these being additional storage, they simply alias to the low
 For instance, when writing the byte $(2a)_{16}$ into \qreg{al}, the least significant byte of \qreg{ax}, \qreg{eax}, and \qreg{rax} changes to $(2a)_{16}$, too.
 The upper bytes are untouched, however.
 That means, if for example \qreg{ax} contains the value $(a455)_{16}$ before writing, it will contain $(a42a)_{16}$ afterwards, not $(002a)_{16}$.
-\TODO{operand size always has to be correct}
-\TODO{\qreg{rip} and maybe RFLAGS}
+\TODO{include parens?}
 
-In addition to these integer registers, x64 also defines 16 registers for floating point number calculations, each 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}
+These registers for smaller sizes are not present for legacy reasons though.
+Considering line~18 from Listing~\ref{lst:x64_asm_example}, the move of the value behind the \qVerb{byte ptr} requires the destination register to be of size \qVerb{byte}, too.
+For this reason, the compiler uses the \qreg{sil} register here, instead of its 64-bit equivalent \qreg{rsi}.
+Line 19 then performs the cast from the boolean, saved as a byte, to a 64-bit integer.
+It does this by taking the 64-bit variant of the register, in this case \qreg{rsi}, and assuring all bits, except for the least significant eight, are zeros.
+The latter is done using the \emph{bitwise AND} operation with the number $2^8-1=255$, which in binary is represented by eight ones.
+
+Another special register is \qreg{rip}.
+It stores the instruction pointer, that is, the address to the current instruction being executed.
+The register is usually not modified directly, as branching can be achieved with instructions like \qVerb{call}, \qVerb{ret}, or \qVerb{jmp}.
+Nevertheless, it is sometimes accessed manually, as seen in lines 15 and 17.
+These read and write to the global \qVerb{a} variable, defined at the \qVerb{main..a} symbol.
+Accesses like this simply require the offset by the instruction pointer in x64 Assembly.
+
+In addition to these general purpose registers, x64 also defines 16 registers for floating point number calculations, each 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}.
+For the purposes of rush, only the lower 64 bits are ever used, since this is enough for double precision floating point numbers.
+The additional 64 bits are provided for \emph{single instruction multiple data} (\emph{SIMD}) instructions.
+They can be used by more optimized compilers to operate on multiple values at a time.
+Any single one of these registers would then for instance hold two 64-bit values or four 32-bit values.
 
 \begin{itemize}
 	\item mention useless instructions?
 	\item alignment?
-	\item available registers
-	\item basic assembly
-	      \begin{itemize}
-		      \item pointer syntax
-	      \end{itemize}
-	\item words and difference to \riscv{} words
-	\item differences in calling convention
-	      \begin{itemize}
-		      \item no extra return address register
-	      \end{itemize}
 \end{itemize}
+
+\subsection{Stack Layout and Calling Convention}
+
+\begin{wrapfigure}{O}{0.55\textwidth}
+	\hspace{-1.75cm}
+	\begin{tikzpicture}[xscale=0.9, yscale=0.7]
+		\footnotesize
+
+		% manually set counter to allow stack frame including the start dots
+		\setcounter{cellnb}{0}
+		\startframe
+		\addtocounter{cellnb}{-1}
+
+		% copied code from `\stacktop{}` to not reset counter to in turn allow `\startframe` above this
+		\draw[freecell] (0,\value{cellnb})
+		+(-2,.5) -- +(-2,-.5) -- +(2,-.5) -- +(2,.5);
+		\draw (0,\value{cellnb}) node{...};
+
+		\cell{n\textsuperscript{th} stack argument} \cellcom{\VerbCmd{\%rbp+}$16+8n$}
+		\cell{...}
+		\cell{\nth{1} stack argument} \cellcom{\VerbCmd{\%rbp+16}}
+		\finishframe{previous}
+		\startframe
+		\cell{return address} \cellcom{\VerbCmd{\%rbp+8}}
+		\cell{previous \qreg{rbp} value} \cellcom{\VerbCmd{\%rbp}}
+		\bcell{unspecified} \cellcom{\VerbCmd{\%rbp-8}}
+		\bcell{...}
+		\bcell{variable size} \cellcom{\VerbCmd{\%rsp}}
+        % \padding{3}{\makecell{unspecified\\variable size}} \cellcom{\VerbCmd{\%rbp-8}} \cellcom{\VerbCmd{\%rsp}}
+		\stackbottom
+		\finishframe{current}
+	\end{tikzpicture}
+    \caption[Stack Layout of x64]{Stack Layout of x64~\cite[p.~21]{Lu2022}}\label{fig:x64_stack}
+\end{wrapfigure}
+
+Alongside the instructions and registers defined by x64 itself, the \emph{System~V} ABI defines how programs should structure the stack during execution.
+Figure~\ref{fig:x64_stack} shows this layout.
+The overall outline is similar to that of \riscv{}, but some details differ.
+For one, the order of the saved return address and the saved \qreg{rbp} register is inverted.
+Secondly, the address \qreg{rbp} points to is different by 16 bytes.
+Therefore, in x64 the first stack argument is accessed by offsetting \qreg{rbp} by 16, whereas in \riscv{} the \qVerb{fp} register already points to the first stack argument without any offset.
+In both calling conventions every stack argument uses eight bytes of space.
+In addition, x64 has no special return address register, but only stores the return address on the stack and retrieves it from there when needed.
+
+The unspecified space between \qVerbCmd{\%rbp-8} and \qreg{rsp} can be freely used by the current function to save local variables.
+Its internal layout may differ between programming languages.
 
 \subsection{Implementation}
 
@@ -133,9 +185,3 @@ In addition to these integer registers, x64 also defines 16 registers for floati
 		      The names kept changing (80186, 80286, i386, i486, Pentium), but the underlying instruction set remained intact. —Stephen P. Morse, architect of the 8086}\cite{Morse2017}.
 	      $\Rightarrow$ only meant as a temporary architecture
 \end{itemize}
-
-\subsection{Memory Access Through the Stack}
-
-\subsection{Calling Convention}
-
-\subsection{x86\_64 Assembly}

@@ -5,18 +5,18 @@ Often, semantic analysis directly follows the syntax analysis since the parser g
 
 \subsection{Defining the Semantics of a Programming Language}
 Often, a programming language is not just defined by its grammar
-since the grammar cannot specify how programs and the compiler should behave.
+since the grammar cannot specify how the programming language should behave.
 Therefore, this behavior can be defined through a so-called \emph{semantic specification}.
 Apart from describing behavior, the specification regularly states which semantic rules discriminate a valid program from an invalid one.
 Common rules include \emph{type checking}, \emph{context of statements}, or \emph{integer overflow behavior}.
-Another example of a semantic rule is that a variable has to be declared before it is used.
+Another example of a semantic rule is that a variable had to be declared before it could be used.
 Defining the semantic rules of a programming language is often a demanding task
 since not all requirements are clear from the beginning.
-However, the semantic rules of a programming language can usually not be defined in a formal manner easily~\cite[pp.~5f]{Holm2012}.
+Furthermore, the semantic rules of a programming language can usually not be defined formally without significant effort~\cite[pp.~5f]{Holm2012}.
 a language designer often chooses to write their specification in a natural language, meaning Chomsky type 0~\cite[p.~23]{Watson2017}.
-However, due to the specification being written in a natural language, the specification can sometimes be ambiguous.
+However, due to the specification being written in such a language, it can sometimes be ambiguous.
 Therefore, a well-written semantic specification should avoid ambiguity as much as possible.
-Since those rules define when a program is valid, they be checked and enforced before program compilation can start~\cite[p.~21]{Watson2017}.
+Since those rules define when a program is valid, they have to be checked and enforced before program compilation can start~\cite[p.~21]{Watson2017}.
 
 \subsection{The Semantic Analyzer}
 Because rush shares its semantic rules across all backends,
@@ -27,32 +27,33 @@ Among other checks, the so-called \emph{semantic analyzer}\footnote{Later referr
 and variable references while adding type annotations to the AST. The last aspect is
 of particular importance since all compiler backends rely on type information at
 compile time. For obtaining type information, the abstract syntax
-tree of the source program has to be traversed, performing numerous other checks
-during the process. In order to preserve a clear boundary between the individual compilation steps, the parser
+tree of the source program has to be traversed so that the analyzer can examine and validate the program thoroughly.
+In order to preserve a clear boundary between the individual compilation steps, the parser
 only validates the program's syntax without performing further validation.
 
-Now, Listing~\ref{lst:rush_semantic_simple} should be considered in order to understand why type information is required at compile time.
-The code in this listing displays a basic rush program calculating the sum of two integers and uses the result as its exit code.
-In this example, the exit code of the program is 5.
+In order to understand why type information is required at compile time,
+Listing~\ref{lst:rush_semantic_simple} should be considered.
+The code in this Listing displays a basic rush program calculating the sum of two integers, using the result as its exit code.
+In this example, the exit code of the program is 5, as 2 and 3 are added together.
 
 \Lirsting[wrap=L, wrap width=0.32\textwidth, caption={A rush Program Which Adds Two Integers}, label={lst:rush_semantic_simple}]{listings/semantic_analysis_simple.rush}
 
-In this example, the analyzer will first check if the program contains a \qVerb{main} function.
+The analyzer will first check if the program contains a \qVerb{main} function.
 If this is not the case, the analyzer rejects the program because it violates rush's semantic specification.
 Furthermore, the analyzer checks that the \qVerb{main} function takes no parameters and returns no value. In this
 example, there is a valid \qVerb{main} function which complies with the previously explained constraints. Now, the analyzer traverses the
-function body of the \qVerb{main} function. First, the analyzer examines the statements in the lines two and three.
+function body of the \qVerb{main} function. First, the analyzer examines the statements in the lines 2 and 3.
 Since \qVerb{let} statements are used to declare
 new variables, the analyzer will add the variables \qVerb{two} and \qVerb{three} to its
 current scope. However, unlike an interpreter, the analyzer does not insert the
 variable's value into its scope. Instead of concrete values, the analyzer
 only considers types. Therefore, in this example, the
 analyzer remembers that the variables \qVerb{two} and \qVerb{three} store integer values.
-This information will become useful when we consider line 4. Here, the
-analyzer checks that the identifiers \qVerb{two} and \qVerb{three} refer to valid variables.
+This information will become useful when line 4 is considered.
+Here, the analyzer checks that the identifiers \qVerb{two} and \qVerb{three} refer to valid variables.
 Just like most other programming languages, rush does not allow the addition
 of two boolean values for example. Therefore, the analyzer checks that the operands
-of the \qVerb{+} operator have the same type and that this type is valid in additions. % TODO: revise this paragraph?
+of the \qVerb{+} operator have the same type, and that this type is valid in additions.
 Because this validation requires information about types, the analyzer accesses
 its scope when looking up the identifiers \qVerb{two} and \qVerb{three}. Since those names
 were previously associated with the \qVerb{int} type, the analyzer is now aware of the
@@ -79,10 +80,10 @@ abstract syntax tree, implementing this tree traversal would require a large amo
 However, the implementation of this algorithm would be nearly identical across all of rush's compiler
 backends. Therefore, implementing type determination in each backend
 individually would enlarge the compiler source code, thus making it harder to
-understand. As a result of this, rush's semantic analyzer also annotates the abstract syntax tree with type
-information so that it can be utilized by later steps of compilation.
+understand. In order to prevent this duplication, rush's semantic analyzer also annotates the abstract syntax tree with type
+information which is utilized by later steps of compilation.
 
-\subsubsection{implementation}
+\subsubsection{Implementation}
 
 In order to obtain a deeper understanding of how the analyzer works, parts of its implementation and how they behave when analyzing the
 example from above will now be considered. However, before we can examine how some methods of the analyzer work,
@@ -94,14 +95,14 @@ Listing~\ref{lst:analyzer_attr} displays the struct fields of the semantic analy
 The field \qVerb{functions} in line 13 associates a function name to the function's signature.
 Therefore, if a function is called at a later point in time, the analyzer checks whether the function exists and can validate the arguments.
 The next field, \qVerb{diagnostics} contains a list of diagnostics.
-A \qVerb{Diagnostic} is a struct which represents a message, it is intended to be displayed to the user of the compiler.
+A \qVerb{Diagnostic} is a struct which represents a message, it is intended to be displayed to a programmer using the language.
 Each diagnostics has a severity, such as \emph{warning} or \emph{error}, for instance.
 After the analyzer has finished the tree traversal, all diagnostics are displayed in a user-friendly manner.
 The \qVerb{scopes} field in line 15 is responsible for managing variables.
-In rush, blocks created with braces (\qVerb{\{\}}) also introduce new scopes.
+In rush, blocks created with braces (\qVerb{{}}) also introduce new scopes.
 If the analyzer enters such a block, a new scope is pushed onto the \qVerb{scopes} stack.
 Each scope maps a variable identifier to some variable-specific data.
-For instance, the analyzer keeps track of variable types, whether variables have been used or mutated later, and the location their definition.
+For instance, the analyzer keeps track of variable types, whether variables have been used or mutated later, and the location of their definition.
 By saving this much information about each declared variable, the analyzer can produce very helpful and accurate error messages or warnings.
 For reference, compiler output which incorporates diagnostics is displayed in Listing~\ref{lst:analyzer_imutable_err},
 it would occur when another value is assigned to an immutable variable.
@@ -112,14 +113,14 @@ Moreover, the field \qVerb{curr_func_name} saves the name of the current functio
 This field is used in order to highlight unused functions correctly.
 If a function is called from another function, it is marked as used.
 However, if the call originates from the same function, it only implements recursion without being used from the outside.
-Furthermore, the \qVerb{loop\_count} field is used to validate the uses of the \qVerb{break} and \qVerb{continue} statements.
-Because these statements are only valid inside loop bodies, the value of \qVerb{loop_count} must be $> 0$ when the analyzer encounters such a statement.
+Furthermore, the \qVerb{loop_count} field is used to validate the uses of the \qVerb{break} and \qVerb{continue} statements.
+Because these statements are only valid inside loop bodies, the value of \qVerb{loop_count} must be $> 0$ at the point when the analyzer encounters such a statement.
 This counter is incremented as soon as the analyzer begins traversal of a loop body.
 After the analyzer has traversed the loop's body, the counter is decremented again.
 This field is implemented as a counter rather than a boolean in order to support nested loops.
 
 Now that important attributes have been highlighted, we can now consider the example from Listing~\ref{lst:rush_semantic_simple}.
-First, the analyzer traverses and analyzes all functions and their bodies.
+First, the analyzer traverses and examines all functions and their bodies.
 For every rush function, the analyzer invokes an internal method responsible for validating functions.
 Among other tasks, this method inserts a new entry into the \qVerb{functions} hashmap,
 associating the function's name with its signature so that it can be used for validating arguments later.
@@ -132,13 +133,13 @@ The code in Listing~\ref{lst:analyzer_sig_main} shows how validating the \qVerb{
 This code displays the \qVerb{function_definition} method of the analyzer.
 In this listing, only the code relevant for analyzing the \qVerb{main} function is shown.
 However, this method is used to analyze any function, not just \qVerb{main}.
-The method  takes a \qVerb{FunctionDefinition}' as its input and returns an \qVerb{AnalyzedFunctionDefinition}.
+The method  takes a \qVerb{FunctionDefinition} as its input and returns an \qVerb{AnalyzedFunctionDefinition}.
 Therefore, it is responsible for analyzing and annotating the definition of a function.
-Since a rush file might contain multiple functions, this method is invoked for each function declared.
+Since a rush file might contain multiple functions, this method is invoked for each defined function.
 
 In line 401, the method updates the current function name.
 The if-clause in line 403 checks whether the method is currently analyzing the main-function.
-If this is the case, additional checks are performed for the \qVerb{main} function.
+If this is the case, additional checks are performed.
 The next if-clause in line 405 checks if the node's \qVerb{params} vector contains any items.
 If the vector contained any items, the main-function's declaration would include parameters.
 If this was the case, the analyzer would generate an error message stating that the main-function must not take any parameters.
@@ -146,7 +147,6 @@ However, error handling in the analyzer has not been discussed so far.
 According to the method's signature, it cannot return any errors.
 Instead, the \qVerb{self.error} method is invoked in line 406.
 This method uses information about the error to be generated in order to push a new \qVerb{Diagnostic} into the \qVerb{diagnostics} vector.
-Therefore, the vector will contain any generated errors or warnings after analysis has been completed.
 
 Secondly, in rush, the main-function's return-type always has to be the unit type.
 The analyzer validates this constraint in the lines 422 and 423.
@@ -166,20 +166,19 @@ Here, the function's attributes, like its analyzed parameters, return-type, name
 The other variables, like \qVerb{params}, have been defined in the parts of the code which have been commented for better overview.
 
 During the traversal of the main function's body, the analyzer encounters two \qVerb{let} statements in line 2 and 3.
-For analyzing this type of statement, the \qVerb{let\_stmt} method of the analyzer is invoked.
-The code in Listing~\ref{lst:analyzer_let_stmt} shows the \qVerb{let_stmt} method of the analyzer.
+For analyzing this type of statement, the \qVerb{let_stmt} method, which is shown in Listing~\ref{lst:analyzer_let_stmt}, is invoked.
 
 \Lirsting[ranges={612-612,617-617,644-646,_656-657,_680-680,682-688}, caption={Beginning of the \qVerb{let_stmt} Method}, label={lst:analyzer_let_stmt}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 In line 617, the initializing expression of the let-statement is analyzed first in order to obtain information about its result data type.
 The analyzer now inserts a new entry for the variable's name (e.g. \qVerb{two}) into its current scope (line 644).
-Even though the content of the pushed variable are hidden, among other information it includes the variable's type and span.
+Even though the content of the pushed variable are hidden, among other information, it includes the variable's type and span.
 Since the span includes the location of where the variable was defined, it can later be used in error messages like the one previously displayed in Listing~\ref{lst:analyzer_imutable_err}.
 Furthermore, the inserted information inside the struct includes whether the variable was declared as mutable.
 If a variable is mutable, reassignments are allowed, meaning that it can be updated to hold another value at a later point.
 In case a variable was not declared as mutable and reassigning to it is attempted,
 output comparable to the one in Listing~\ref{lst:analyzer_imutable_err} would be generated as a result.
-It is unusual that the insertion happens as a condition inside an if-clause.
+However, it seems very unusual that the insertion happens as a condition inside an if-clause.
 If the insertion returns \qVerb{true}, the variable's name was already present in the current scope and its previous associated data has now been overwritten.
 The process of overwriting variables by redefining them is sometimes called \emph{variable shadowing}~\cite[p.~34]{Klabnik2019}.
 Here, the analyzer should display some additional hints or warnings, depending on whether the shadowed variable has been referenced before it was shadowed.
@@ -192,7 +191,7 @@ The code in Listing~\ref{lst:analyzer_expr} is part of the method responsible fo
 \Lirsting[ranges={1007-1011,1032-1035,1040-1040,1048-1049}, caption={Analysis of Expressions During Semantic Analysis}, label={lst:analyzer_expr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 This method consumes a non-analyzed expression and transforms it into an analyzed version of itself.
-For simple types of expressions like integers, floats, or booleans, further analysis is omitted.
+For simple types of expressions, like integers, floats, or booleans, further analysis is omitted.
 Since these types of expressions are constant, the method can directly return an analyzed version of the expression.
 For more complex types of expressions, like if-expressions, this method calls the appropriate method responsible for analyzing this type of expression.
 
@@ -258,8 +257,8 @@ In line 1818, the method detects the scenario in which the type of either the ar
 Here, the method should ignore this argument without producing another error.
 
 The next match-arm in line 1819 presents the scenario in which the provided argument has the \qVerb{Never} type.
-In that case, the analyzer should only add a warning that the call-expression is unreachable
-and the result type of the entire call-expression is updated to reflect the never type.
+In that case, the analyzer should only add a warning that the call-expression is unreachable.
+Furthermore, the result type of the entire call-expression is updated to reflect the never type.
 Line 1823 displays a scenario in which the type of the argument differs from the expected type of the parameter.
 In that case, the method will generate an error describing the situation.
 Again, the concrete error message is omitted for better overview.
@@ -284,13 +283,12 @@ In order to make such optimization possible, each expression node in the analyze
 The method shown in Listing~\ref{lst:expr_constant_impl} is responsible for determining whether an expression is constant.
 It returns \qVerb{true} if the expression is a constant integer, float, boolean or char.
 Other types of expressions, such as a call-expression cannot be constant since such a function call may cause side effects which cannot be determined during compile time.
-This method is vital for constant folding since both the left- and right-hand side of infix-expressions need to be constant in order to allow compile-time evaluation.
+This method is vital for constant folding since both the left and right hand side of infix-expressions need to be constant in order to allow compile-time evaluation.
+
+\Lirsting[ranges={3-5}, caption={Redundant \qVerb{while} Loop Inside a rush Program}, wrap=L, wrap width=.25\textwidth, label={lst:redundant_while}]{listings/constant_true_while.rush}
 
 Among other optimizations implemented in the analyzer, loop transformation can also have a positive effect on the program's performance during runtime.
-The Listing displays part of a rush program which uses a \qVerb{while} loop even though a \qVerb{loop} would suffice.
-
-\Lirsting[ranges={3-5}, caption={Redundant \qVerb{while} Loop Inside a rush Program}]{listings/constant_true_while.rush}
-
+The Listing~\ref{lst:redundant_while} displays part of a rush program which uses a \qVerb{while} loop even though a \qVerb{loop} would suffice.
 A \qVerb{loop} implementation is more efficient since the condition check is omitted before each iteration.
 However, this is only the case because the condition of the loop is a constant \qVerb{true}.
 If the analyzer detects such a scenario after a while-loop was analyzed, the output node will be converted into a conventional loop.
@@ -310,31 +308,31 @@ the two trees in Figure~\ref{fig:analysis_tree_conv} should be considered.
 
 \noindent
 \begin{figure}[h]
-        \centering
-		\begin{tikzpicture}[
-				tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
-			]
-            \node(left){\Verb{1 + 42 - n}}
-            child { node { \Verb{1 + 42} }
-                    child { node { \Verb{1} } }
-                    child { node { \Verb{+} } }
-                    child { node { \Verb{42} } }
-                }
-            child { node  { \Verb{-} }       }
-            child { node(leftm)  { \Verb{n} } };
+	\centering
+	\begin{tikzpicture}[
+			tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
+		]
+		\node(left){\Verb{1 + 42 - n}}
+		child { node { \Verb{1 + 42} }
+				child { node { \Verb{1} } }
+				child { node { \Verb{+} } }
+				child { node { \Verb{42} } }
+			}
+		child { node  { \Verb{-} }       }
+		child { node(leftm)  { \Verb{n} } };
 
-        \node(right)[right of=left, xshift=7cm]{\Verb{43 - n}: \emph{int}}
-        child { node(rightm) { \Verb{43}: \emph{int} } }
-        child { node  { \Verb{-} } }
-        child { node  { \Verb{n}: \emph{int} } };
+		\node(right)[right of=left, xshift=7cm]{\Verb{43 - n}: \emph{int}}
+		child { node(rightm) { \Verb{43}: \emph{int} } }
+		child { node  { \Verb{-} } }
+		child { node  { \Verb{n}: \emph{int} } };
 
-            \draw[arrow, shorten >= 0.3cm, shorten <= 0.3cm, very thick] (leftm) -- node[above] {semantic} node[below] {analysis} ++ (rightm);
-    \end{tikzpicture}
+		\draw[arrow, shorten >= 0.3cm, shorten <= 0.3cm, very thick] (leftm) -- node[above] {semantic} node[below] {analysis} ++ (rightm);
+	\end{tikzpicture}
 	\caption{How Semantic Analysis Affects the Abstract Syntax Tree}\label{fig:analysis_tree_conv}
 \end{figure}
 
 Both trees in Figure~\ref{fig:analysis_tree_conv} represent the rush expression \qVerb{1 + 42 - n}.
 The left tree could have been generated by the parser, closely representing the structure of the code.
 The right tree shows the same tree after it has been transformed by the analyzer.
-Most notably, the sub-expression \qVerb{1 + 42} has been transformed into \qVerb{42} during constant folding.
+Most notably, the sub-expression \qVerb{1 + 42} has been transformed into \qVerb{43} during constant folding.
 Furthermore, all nodes of the right tree now contain type annotations, \emph{int} in this case.

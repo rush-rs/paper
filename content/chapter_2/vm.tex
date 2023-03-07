@@ -2,7 +2,7 @@
 
 Just like a tree-walking interpreter, a virtual machine presents a way of implementing an interpreter for a programming language.
 However, the way a virtual machine operates fundamentally differs from a tree-walking interpreter.
-For that reason, we have implemented a virtual machine backend for rush in order to compare it to the previously explained tree-walking interpreter.
+We have implemented a virtual machine backend for rush in order to compare it to the previously explained tree-walking interpreter.
 
 \subsection{Defining a Virtual Machine}
 
@@ -26,7 +26,7 @@ The list below explains the individual steps of the fetch-decode-execute cycle.
 	\item \textbf{Fetch}: The processor's control unit loads the next instruction from the adequate memory location.
 	      The instruction is then placed into the processor's internal instruction register where it is available for further analysis.
 	\item \textbf{Decode}:
-	      The processor's control unit examines the fetched instruction in order to determine if additional steps must be taken before or after instruction execution.
+	      The processor's control unit examines the fetched instruction in order to determine whether additional steps must be taken before or after instruction execution.
 	      Such steps may involve accessing additional registers or memory locations.
 	\item \textbf{Execute}:
 	      The control unit dispatches the instruction to a specialized component of the processor.
@@ -57,7 +57,7 @@ However, there is always only a limited amount of registers available since they
 Therefore, programs often only utilize registers for storing temporary values, such as intermediate results of a large computation.
 The main alternative to using registers is a stack-based design.
 A popular example for a stack-based virtual machine is \emph{WebAssembly}~\cite[p.~44]{Sendil2022-fy}.
-For more information on WebAssembly, we will present a compiler targeting WebAssembly in Chapter~\ref{chap:high_level_targets}.
+For more information on WebAssembly, we will present a compiler targeting it in Chapter~\ref{chap:high_level_targets} on page~\pageref{sec:wasm}.
 For compiler writers, implementing \emph{register allocation} is often a demanding task.
 This problem is described in more detail in Chapter~\ref{chap:low_level_targets}.
 Since register allocation is not required in a compiler targeting stack-based machines, its implementation is often significantly easier compared to a compiler targeting a register-based machine.
@@ -67,40 +67,40 @@ For example, register-based machines might regularly outperform stack-based mach
 A reason for this is that use of the stack usually requires a lot of push or pop operations which could have otherwise been omitted.
 
 \subsection{Comparing the VM to the Tree-Walking Interpreter}
+\Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=h]{listings/vm_faster.rush}
+
+\begin{wrapfigure}{R}{.53\textwidth}
+    \center
+	\begin{tikzpicture}[
+			tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
+		]
+		\node{fn rec}
+		child { node {if-expression}
+				child { node {condition} child {node {n == 0}} }
+				child [missing]
+				child { node {if-branch} child {node {int-expression}} }
+				child [missing]
+				child { node {else-branch} child{node{call-expression}} }
+			};
+	\end{tikzpicture}
+	\caption{Abstract Syntax Tree and VM Instructions of a Recursive rush Program}\label{fig:tree_vs_vm_tree}
+\end{wrapfigure}
+
 One significant benefit of virtual machines is that they execute programs faster compared to tree-walking interpreters.
 A reason for this speedup is that tree traversal involves a lot of overhead which is omitted when instructions are interpreted.
 The code in Listing~\ref{lst:rush_vm_faster} displays a recursive function implemented in rush.
-
-\Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
-
-\noindent
-\begin{figure}[h]
-	\begin{minipage}{.7\textwidth}
-		\begin{tikzpicture}[
-				tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
-			]
-			\node{fn rec}
-			child { node {if-expression}
-					child { node {condition} child {node {n == 0}} }
-					child [missing]
-					child { node {if-branch} child {node {int-expression}} }
-					child [missing]
-					child { node {else-branch} child{node{call-expression}} }
-				};
-		\end{tikzpicture}
-	\end{minipage}%
-	\begin{minipage}{.3\textwidth}
-		\Lirsting[raw=true, fancyvrb={frame=none}]{listings/vm_faster_instructions.txt}
-	\end{minipage}
-	\caption{Abstract Syntax Tree and VM Instructions of a Recursive rush Program}\label{fig:tree_vs_vm}
-\end{figure}
-
 Figure~\ref{fig:tree_vs_vm} displays a heavily simplified syntax tree and rush VM instructions representing the function displayed in Listing~\ref{lst:rush_vm_faster}.
+
 The root node of the tree represents the \texttt{rec} function.
 Since the function only contains a single expression, the if-expression node is the only child of the root node.
 The only direct child of the root node is the single if-expression present in the function's body.
 The if-expression contains a condition, an if-branch, and an else-branch.
-Since the function should not call itself again if \texttt{n} is equal to 0, the if-branch returns 0.
+Since the function should not call itself again if \texttt{n} is equal to 0,%
+\setlength\parfillskip{0pt}\setlength\parskip{0pt}\par\setlength\parfillskip{0pt plus 1fil}
+\Lirsting[raw=true, wrap=l, wrap width=.32\textwidth, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}}]{listings/vm_faster_instructions.txt}
+\noindent
+\setlength\parskip{\parskipLen}
+the if-branch returns 0.
 In the else-branch, the \texttt{rec} function calls itself recursively.
 When the above program is executed using the tree-walking interpreter, the algorithm traverses the entire tree of the \texttt{rec} function every time it recurses.
 In this example, the AST of the program is relatively simple.
@@ -118,6 +118,7 @@ Using the VM, executing the \texttt{rec} function using an input of $n = 1000$ t
 However, executing the identical code using the tree-walking interpreter took around 427 $\mu$s\footnote{Average from 10000 iterations. OS: Arch Linux, CPU: Ryzen 5 1500, RAM: 16 GB}.
 The rush VM executed the identical code roughly 2.6 times faster than the tree-walking interpreter.
 However, the initial delay caused by compilation was not considered in this benchmark.
+
 
 \subsection{The rush Virtual Machine}
 

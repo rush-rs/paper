@@ -118,6 +118,8 @@ Any single one of these registers would then for instance hold two 64-bit values
 \begin{itemize}
 	\item mention useless instructions?
 	\item alignment?
+	\item corelib?
+	\item pointers? (should be the same as \riscv{})
 \end{itemize}
 
 \subsection{Stack Layout and Calling Convention}
@@ -147,11 +149,11 @@ Any single one of these registers would then for instance hold two 64-bit values
 		\bcell{unspecified} \cellcom{\VerbCmd{\%rbp-8}}
 		\bcell{...}
 		\bcell{variable size} \cellcom{\VerbCmd{\%rsp}}
-        % \padding{3}{\makecell{unspecified\\variable size}} \cellcom{\VerbCmd{\%rbp-8}} \cellcom{\VerbCmd{\%rsp}}
+		% \padding{3}{\makecell{unspecified\\variable size}} \cellcom{\VerbCmd{\%rbp-8}} \cellcom{\VerbCmd{\%rsp}}
 		\stackbottom
 		\finishframe{current}
 	\end{tikzpicture}
-    \caption[Stack Layout of x64]{Stack Layout of x64~\cite[p.~21]{Lu2022}}\label{fig:x64_stack}
+	\caption[Stack Layout of x64]{Stack Layout of x64~\cite[p.~21]{Lu2022}}\label{fig:x64_stack}
 \end{wrapfigure}
 
 Alongside the instructions and registers defined by x64 itself, the \emph{System~V} ABI defines how programs should structure the stack during execution.
@@ -170,9 +172,38 @@ Its internal layout may differ between programming languages.
 
 \begin{itemize}
 	\item every assembly line is one ``Instruction''
-	\item other but similar register allocation
 \end{itemize}
 
+\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, float=h, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
+
+\Lirsting[ranges={33-37}, float=h, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
+
+\subsubsection{Struct Fields}
+
+\Lirsting[ranges={15-19, 25-31, 41-48, 55-60, 69-71}, float=h, caption={The x64 \qVerb{Compiler} struct definition.}, label={lst:x64_compiler}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+
+\subsubsection{Memory Management}
+
+\Lirsting[ranges={184-188}, float=h, caption={Alignment of values on the stack.}, label={lst:x64_align}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+
+\subsubsection{Register Allocation}
+
+\Lirsting[ranges={257-268}, float=h, caption={\TODO{think of good caption}}, label={lst:x64_intregister_next}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+
+\subsubsection{Functions}
+
+\subsubsection{Function Calls}
+
+\Lirsting[ranges={37-44}, float=h, caption={Definition of the parameter registers and their order.}, label={lst:x64_int_param_regs}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+
+\subsubsection{Control Flow}
+
+\begin{itemize}
+	\item if-else-expressions $\rightarrow$ conditional jumps
+	\item loops
+\end{itemize}
+
+\hline
 
 \begin{itemize}
 	\item Calling convention

@@ -170,15 +170,33 @@ Its internal layout may differ between programming languages.
 
 \subsection{Implementation}
 
-\begin{itemize}
-	\item every assembly line is one ``Instruction''
-\end{itemize}
+\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=L, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
 
-\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, float=h, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
+Even though many implementation details could be the same as for the \riscv{} compiler, there are some differences because we each created one separately and did not have any reference implementation.
+One such difference is that the x64 compiler's \qVerb{Instruction} definition which is shown in Listing~\ref{lst:x64_instruction} not only includes actual instructions, but also directives and symbols.
+This way, an entire assembly file can be represented as one \qVerb{Vec<Instruction>} with every \qverb{Instruction} representing one line of the assembly code.
+A matching \qVerb{Display} implementation then simply emits the respective assembly representation.
 
-\Lirsting[ranges={33-37}, float=h, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
+Line 20 shows the definition of the \qVerb{.section} directive, simply holding an instance of another enumeration containing the valid sections.
+Line 21 defines an assembly symbol, holding its name and a boolean whether a blank line should be added above.
+\TODO{did I say what symbols / labels are?}
+The name is saved as \textcolor{red}{a/an} \qVerb{Rc<str>} instead of a \qVerb{String} here to prevent some unnecessary cloning in some places.
+
+The normal instructions, e.g., \qVerb{add} and \qVerb{sub}, also cannot simply take registers as operands, as x64 also allows memory pointers and immediate values in many places.
+Instead, another enumeration, called \qVerb{IntValue}, is introduced to allow these three variants.
+Listing~\ref{lst:x64_intvalue} shows its definition.
 
 \subsubsection{Struct Fields}
+
+\Lirsting[ranges={33-37}, wrap=R, wrap width={0.45\textwidth}, fancyvrb={numbers=right}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
+
+The compiler struct itself shown in Listing~\ref{lst:x64_compiler} is also a bit different.
+Both compilers have a \qVerb{used_register} field, but this compiler does not need to store the size for each, because the registers themselves already have a defined size.
+Both compilers have a \qVerb{scopes} field for storing variable locations, but this compiler uses an \qVerb{Option<_>} for variables of the unit and never types.
+\TODO{why does \riscv{} not do this?}
+Both compilers store the global variables, but this compiler has separate fields for every size for easier alignment in the static memory which is not required for \riscv{}.
+\TODO{is this true?}
+Both compilers have one field for accumulating the final assembly code, but this compiler saves a list of \qVerb{Instruction}s instead of \qVerb{Block}s.
 
 \Lirsting[ranges={15-19, 25-31, 41-48, 55-60, 69-71}, float=h, caption={The x64 \qVerb{Compiler} struct definition.}, label={lst:x64_compiler}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 

@@ -174,7 +174,7 @@ Its internal layout may differ between programming languages.
 
 Even though many implementation details could be the same as for the \riscv{} compiler, there are some differences because we each created one separately and did not have any reference implementation.
 One such difference is that the x64 compiler's \qVerb{Instruction} definition which is shown in Listing~\ref{lst:x64_instruction} not only includes actual instructions, but also directives and symbols.
-This way, an entire assembly file can be represented as one \qVerb{Vec<Instruction>} with every \qverb{Instruction} representing one line of the assembly code.
+This way, an entire assembly file can be represented as one \qVerb{Vec<Instruction>} with every \qVerb{Instruction} representing one line of the assembly code.
 A matching \qVerb{Display} implementation then simply emits the respective assembly representation.
 
 Line 20 shows the definition of the \qVerb{.section} directive, simply holding an instance of another enumeration containing the valid sections.
@@ -191,18 +191,30 @@ Listing~\ref{lst:x64_intvalue} shows its definition.
 \Lirsting[ranges={33-37}, wrap=R, wrap width={0.45\textwidth}, fancyvrb={numbers=right}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
 
 The compiler struct itself shown in Listing~\ref{lst:x64_compiler} is also a bit different.
-Both compilers have a \qVerb{used_register} field, but this compiler does not need to store the size for each, because the registers themselves already have a defined size.
-Both compilers have a \qVerb{scopes} field for storing variable locations, but this compiler uses an \qVerb{Option<_>} for variables of the unit and never types.
+Both compilers have a \qVerb{used_registers} field, but this compiler does not need to store the size for each register, because the registers themselves already have a defined size.
+Both compilers have a \qVerb{scopes} field for storing variable locations, but this compiler uses an \qVerb{Option<_>} with \qVerb{None} representing variables of the unit and never types.
 \TODO{why does \riscv{} not do this?}
 Both compilers store the global variables, but this compiler has separate fields for every size for easier alignment in the static memory which is not required for \riscv{}.
 \TODO{is this true?}
+The same applies for constants in the \qVerb{.rodata} section.
 Both compilers have one field for accumulating the final assembly code, but this compiler saves a list of \qVerb{Instruction}s instead of \qVerb{Block}s.
 
-\Lirsting[ranges={15-19, 25-31, 41-48, 55-60, 69-71}, float=h, caption={The x64 \qVerb{Compiler} struct definition.}, label={lst:x64_compiler}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+\Lirsting[ranges={15-19, 26-31, 43-48, 55-60, 69-71}, float=htb, caption={The x64 \qVerb{Compiler} struct definition.}, label={lst:x64_compiler}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+
+Additional fields of this compiler are \qVerb{function_body}, \qVerb{stack_pointer}, and \qVerb{frame_size}.
+The \qVerb{function_body} field stores the instructions for the currently compiled function.
+During compilation of statements and expressions, emitted instructions are always appended to this list.
+The method for compiling a function body then produces the prologue and afterwards appends the list contents onto \qVerb{text_section}.
+This is required, because some values like the \qVerb{frame_size} that are needed in the prologue cannot be known beforehand, but must appear before the function body in assembly.
 
 \subsubsection{Memory Management}
 
-\Lirsting[ranges={184-188}, float=h, caption={Alignment of values on the stack.}, label={lst:x64_align}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+The \qVerb{stack_pointer} field is used to keep track of the current stack frame.
+Every time a variable definition is encountered, space for it is saved by increasing this stack pointer.
+
+\Lirsting[ranges={184-188}, float=htb, caption={Alignment of values on the stack.}, label={lst:x64_align}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+
+\Lirsting[ranges={254-271, 277-277, _280-283}, float=htb, caption={Stack space reservation for variables.}, label={lst:x64_push_to_stack}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
 \subsubsection{Register Allocation}
 

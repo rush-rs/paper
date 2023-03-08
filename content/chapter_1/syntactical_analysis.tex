@@ -33,7 +33,7 @@ Before the syntax of a program is validated it is common to have a lexer group c
 The set of tokens a language has is the union of the set of all terminal symbols used in context-free grammar rules and the set of regular grammar rules.
 For the language defined in Listing~\ref{lst:ebnf_reference_grammar} these are the five operators `\Verb{+}', `\Verb{-}', `\Verb{*}', `\Verb{/}', `\Verb{**}', and the `integer' non-terminal.
 
-\Lirsting[ranges={10-16}, path prefix={deps/rush}, wrap=L, wrap width=0.4\textwidth, caption={The rush \qVerb{Lexer} Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
+\Lirsting[ranges={10-16}, wrap=L, wrap width=0.4\textwidth, caption={The rush \qVerb{Lexer} Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
 
 The specifics of implementing a lexer are not explored in this paper, however a basic overview is still provided.
 The base principal of a lexer is to iterate over the characters of the input to produce tokens.
@@ -228,7 +228,7 @@ For all but one token kind the left precedence is lower than the right one, resu
 The higher the precedences are, the deeper in the tree the resulting expressions will be, and the earlier they are evaluated.
 All unrelated tokens are simply assigned a precedence of 0 for left and right.
 
-\Lirsting[ranges={172-173, 194-201}, path prefix={deps/rush}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush}]{deps/rush/crates/rush-parser/src/token.rs}
+\Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush}]{deps/rush/crates/rush-parser/src/token.rs}
 
 The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence as seen in Listing~\ref{lst:pratt_expr}.
 It then first matches on the current token kind to decide which expression to parse and stores the result in the \Verb{lhs}\footnote{Short for `left-hand side'} variable.
@@ -238,14 +238,14 @@ In that case, this check will only fail when the whole expression is over, as ev
 If it does not fail, the \Verb{infix_expr} method is called with the matching operator and the \Verb{lhs}.
 Afterwards \Verb{lhs} is overwritten with the returned value.
 
-\Lirsting[ranges={551-555, 568-570, _574-583, 613-618}, path prefix={deps/rush}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: Implementation for Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={551-555, 568-570, _574-583, 613-618}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: Implementation for Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
 
-\Lirsting[ranges={733-743, 749-749}, path prefix={deps/rush}, float=h, label={lst:pratt_grouped_expr}, caption={Pratt-Parser: Implementation for Grouped Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={733-743, 749-749}, float=h, label={lst:pratt_grouped_expr}, caption={Pratt-Parser: Implementation for Grouped Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 The \Verb{infix_expr} method in Listing~\ref{lst:pratt_infix_expr} simply stores the right \TODO{unclear it's the side `right', not `correct'} precedence of the operator token, advances to the next token, and calls the \Verb{expression} method again for its right-hand side, but this time with the stored \Verb{right_prec} as the minimum precedence.
 These simple calls and checks of precedences automatically result in correct grouping and nesting of the expressions.
 
-\Lirsting[ranges={751-751, _756-759, 770-770}, path prefix={deps/rush}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: Implementation for Infix Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={751-751, _756-759, 770-770}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: Implementation for Infix Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 \begin{figure}[hb]
 	\newcommand{\precs}[5][black]{

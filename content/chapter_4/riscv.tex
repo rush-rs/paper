@@ -297,7 +297,7 @@ Since the corelib's functions are specified in separate files, they are packaged
 The assembly code in Listing~\ref{lst:riscv_exit_corelib} shows the implementation of the \qVerb{exit} subroutine in the RISC-V corelib.
 The task of this subroutine is to invoke a specific functionality the Linux kernel by performing a \emph{system call}.
 
-\Lirsting[float=H, path prefix={deps/rush}, ranges={8-12}, caption={The Assembly Implementation of the \qVerb{exit} Subroutine}, label={lst:riscv_exit_corelib}]{deps/rush/crates/rush-compiler-risc-v/corelib/src/exit.s}
+\Lirsting[float=H, ranges={8-12}, caption={The Assembly Implementation of the \qVerb{exit} Subroutine}, label={lst:riscv_exit_corelib}]{deps/rush/crates/rush-compiler-risc-v/corelib/src/exit.s}
 
 A \emph{system call} (often abbreviated to \emph{syscall}) is an invocation of a function of operating system's kernel.
 In Linux, more than 90 percent of the available system calls are implemented on all architectures.
@@ -567,7 +567,7 @@ The core principle of the register allocator is that each method which can retur
 In order to choose an output register, each of those methods uses the helper method \qVerb{alloc_ireg}.
 The rust code in Listing~\ref{lst:riscv_alloc_ireg} shows the \qVerb{alloc_ireg} method of the RISC-V rush compiler.
 
-\Lirsting[ranges={175-186}, path prefix={deps/rush}, float=h, label={lst:riscv_alloc_ireg}, caption={\qVerb{alloc_ireg} Method of the RISC-V rush Compiler}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
+\Lirsting[ranges={175-186}, float=h, label={lst:riscv_alloc_ireg}, caption={\qVerb{alloc_ireg} Method of the RISC-V rush Compiler}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
 
 This method returns the first available register from the register pool containing either integer registers\footnote{The \enquote{i} in \qVerb{alloc_ireg} hints that it allocates integer registers}.
 Such a register pool contains all possible registers which can hold the data type of that class of registers.
@@ -623,7 +623,7 @@ Before register allocation can be explained using code samples, how registers ar
 Here, we should focus on the compilation of simple expressions.
 For this, the rust code in Listing~\ref{lst:riscv_expression} is to be considered.
 
-\Lirsting[float=h, ranges={596-602,662-663}, path prefix={deps/rush}, caption={Parts of the \qVerb{expression} Method in the RISC-V rush compiler}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={596-602,662-663}, caption={Parts of the \qVerb{expression} Method in the RISC-V rush compiler}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 The code in Listing~\ref{lst:riscv_expression} shows parts of the \qVerb{expression} method.
 This method is responsible for compiling expressions in the RISC-V rush compiler.
@@ -643,7 +643,7 @@ However, we still do not know when the compiler marks certain registers as used.
 In order to understand this problem, the compilation of the rush expression \LirstInline{rush}{n + m} is to be considered.
 The rust code in Listing~\ref{lst:riscv_infix_expr} shows parts of the \qVerb{infix_expr} method of the rush compiler.
 
-\Lirsting[float=h, ranges={761-761,849-864,868-868}, path prefix={deps/rush}, caption={Parts of the \qVerb{infix_expr} Method in the RISC-V rush compiler}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={761-761,849-864,868-868}, caption={Parts of the \qVerb{infix_expr} Method in the RISC-V rush compiler}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 Like the signature of the method suggests, it consumes an annotated tree-node representing an analyzed infix-expression.
 In line 853, the left-hand side expression is compiled, and its result register is saved in the variable \qVerb{lhs_reg}.
@@ -666,7 +666,7 @@ Next, we will consider the implementation of the \qVerb{infix_helper} helper met
 This method exists since translation of infix operators is required during compilation of both normal infix-expressions and assign-expressions with additional operations, \qVerb{a += 1} for instance.
 The rust code in Listing~\ref{lst:riscv_infix_helper} shows parts of this method.
 
-\Lirsting[float=h, ranges={871-871,874-881,987-991,1000-1001}, path prefix={deps/rush}, caption={Parts of the \qVerb{infix_helper} Method in the RISC-V rush compiler}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={871-871,874-881,987-991,1000-1001}, caption={Parts of the \qVerb{infix_helper} Method in the RISC-V rush compiler}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 As the method's signature suggests, the left-hand and right-hand side's registers and a type are used its parameters.
 Since this register abstraction does not contain type information, as registers are usually untyped, the type information conveys the type of either the left-hand or right-hand side expression.
@@ -700,7 +700,7 @@ the compiler considers the functions of the program.
 In this case, only the \qVerb{main} function is present.
 The rust code in Listing~\ref{lst:riscv_declare_main_fn} shows the \qVerb{declare_main_fn} method of the rush RISC-V compiler.
 
-\Lirsting[float=h, ranges={123-156}, path prefix={deps/rush}, caption={The \qVerb{declare_main_fn} Method in the RISC-V rush compiler}, label={lst:riscv_declare_main_fn}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={123-156}, caption={The \qVerb{declare_main_fn} Method in the RISC-V rush compiler}, label={lst:riscv_declare_main_fn}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 Like its signature suggests, the method takes a block, meaning a list of statements as its input.
 In the lines 124--126, the \qVerb{_start} label is created and marked as exported so that the linker will later find it.
@@ -740,7 +740,7 @@ For this, in line 153, the previously created epilogue label is now appended to 
 In line 154, the \qVerb{epilogue} method of the compiler is callled.
 The rust code in Listing~\ref{lst:riscv_epilogue} shows the \qVerb{epilogue} method of the rush RISC-V compiler.
 
-\Lirsting[float=h, ranges={66-87}, path prefix={deps/rush}, caption={The \qVerb{epilogue} Method in the RISC-V rush compiler}, label={lst:riscv_epilogue}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=h, ranges={66-87}, caption={The \qVerb{epilogue} Method in the RISC-V rush compiler}, label={lst:riscv_epilogue}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 As the context of the previous code snipped suggests, this method is called in order to generate the instructions for a function's epilogue.
 First, in the lines 67--68, the insertion position of the compiler is updated to the end of the epilogue label.
@@ -764,7 +764,7 @@ In line 2 and 3 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}, 
 For this, the rush RISC-V compiler implements a separate method named \qVerb{let_statement}.
 The rust code in Listing~\ref{lst:riscv_let_stmt} shows the \qVerb{let_statement} method of the rush RISC-V compiler.
 
-\Lirsting[float=h, ranges={554-561}, path prefix={deps/rush}, caption={The \qVerb{let_statement} Method in the RISC-V rush compiler}, label={lst:riscv_let_stmt}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={554-561}, caption={The \qVerb{let_statement} Method in the RISC-V rush compiler}, label={lst:riscv_let_stmt}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 This method only calls the \qVerb{save_expr_on_stack} method in order to save the resulting memory address in the current scope.
 The purpose of the \qVerb{save_expr_on_stack} is explained later.
@@ -776,7 +776,7 @@ This data is saved so that the variable can be accessed later.
 Since the main work is accomplished by the \qVerb{save_expr_on_stack} method, it will now be considered in detail.
 The rust code in Listing~\ref{lst:riscv_save_on_stack} displays parts of the \qVerb{save_expr_on_stack} which was called in line 558 of the previous listing.
 
-\Lirsting[float=h, ranges={563-563,_567-573,586-593}, path prefix={deps/rush}, caption={The \qVerb{save_expr_on_stack} Method in the RISC-V rush compiler}, label={lst:riscv_save_on_stack}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={563-563,_567-573,586-593}, caption={The \qVerb{save_expr_on_stack} Method in the RISC-V rush compiler}, label={lst:riscv_save_on_stack}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 This method takes an expression in order to save it on the stack.
 As its signature suggests, the method returns an \qVerb{Option<Pointer>}.
@@ -803,7 +803,7 @@ Even though the presented \qVerb{exit} function is special, the rush RISC-V comp
 The rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of the \qVerb{call_expr} method in the RISC-V rush compiler.
 This listing only shows the first part of the method since it is too large to be included in a single-page listing.
 
-\Lirsting[float=h, ranges={92-120,127-128,235-235}, path prefix={deps/rush}, caption={The \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=h, ranges={92-120,127-128,235-235}, caption={The \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 Since this method is responsible for translating function calls, its implementation has proven to be very complex and demanding.
 As the method's signature suggests, it consumes an analyzed call-expression in order to return an optional register.
@@ -839,7 +839,7 @@ Here, the \qVerb{nth_param} method on the \qVerb{FloatRegister} enum is called.
 
 The rust code in Listing~\ref{lst:riscv_nth_param} shows parts of this method.
 
-\Lirsting[float=H, ranges={215-217,224-227}, path prefix={deps/rush}, caption={The \qVerb{nth_param} Method in the RISC-V rush compiler}, label={lst:riscv_nth_param}]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
+\Lirsting[float=H, ranges={215-217,224-227}, caption={The \qVerb{nth_param} Method in the RISC-V rush compiler}, label={lst:riscv_nth_param}]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
 
 This method associates an index of a parameter to a register which could represent this position.
 For instance, the index 2 represents the third parameter, which is represented by the register \qVerb{fa2}.
@@ -860,7 +860,7 @@ Through this example, it becomes apparent what the task of the code displayed in
 However, only the first part of the \qVerb{call_expr} method is shown in this listing.
 The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the second part of the method.
 
-\Lirsting[float=H, ranges={130-173,198-199,235-235}, path prefix={deps/rush}, caption={The Second Part of the \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr_2}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=H, ranges={130-173,198-199,235-235}, caption={The Second Part of the \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr_2}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 In the lines 130--131, the \qVerb{int_cnt} and \qVerb{float_cnt} variables are reset to 0.
 In line 134, a new empty vector named \qVerb{params_regs} is created.
@@ -898,7 +898,7 @@ Now it has become clear how the argument expressions are compiled.
 Even until now, not the entire method has been shown.
 The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.
 
-\Lirsting[float=H, ranges={201-235}, path prefix={deps/rush}, caption={The Third Part of the \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr_3}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=H, ranges={201-235}, caption={The Third Part of the \qVerb{call_expr} Method in the RISC-V rush compiler}, label={lst:riscv_call_expr_3}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 The code in the lines 201--209 is responsible for mangling the name of the called function so that it includes the \qVerb{main..} prefix.
 However, if the \qVerb{exit} function is called, the name is not mangled.

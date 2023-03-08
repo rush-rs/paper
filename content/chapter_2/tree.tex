@@ -13,7 +13,7 @@ Why the \qVerb{Value} is wrapped inside \textcolor{red}{a/an} \qVerb{Rc<RefCell<
 Additionally, a map of function names to their tree node is saved.
 The \qVerb{Rc<_>} here is only necessary to conform to Rust's borrowing rules without unnecessarily cloning.
 
-\Lirsting[ranges={8-16}, path prefix={deps/rush}, float=htb, label={lst:tree_struct}, caption={Tree-Walking Interpreter: Type Definitions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
+\Lirsting[ranges={8-16}, float=htb, label={lst:tree_struct}, caption={Tree-Walking Interpreter: Type Definitions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
 
 In addition to the struct itself, result types for expressions and statements are defined.
 Statements either return \qVerb{()}\footnote{Rust's `unit' type, a type containing no data, comparable to `void' in other languages. Its notation describes an empty tuple.} on success or an \qVerb{InterruptKind} on failure.
@@ -21,7 +21,7 @@ Expressions use the same error type, but return a \qVerb{Value} on success, hold
 The definitions for both \qVerb{Value} and \qVerb{InterruptKind} are visible in Listing~\ref{lst:tree_value}.
 It is clearly visible that the interpreter simply makes use of Rust's types and does not need to worry about the hidden implementation details.
 
-\Lirsting[ranges={6-13, 22-28}, path prefix={deps/rush}, wrap=L, label={lst:tree_value}, caption={Tree-Walking Interpreter: \qVerb{Value} and \qVerb{InterruptKind} Definitions}]{deps/rush/crates/rush-interpreter-tree/src/value.rs}
+\Lirsting[ranges={6-13, 22-28}, wrap=L, label={lst:tree_value}, caption={Tree-Walking Interpreter: \qVerb{Value} and \qVerb{InterruptKind} Definitions}]{deps/rush/crates/rush-interpreter-tree/src/value.rs}
 
 \qVerb{InterruptKind} describes the different ways the interpreter can be interrupted.
 The first three variants, `return', `break', and `continue', are only partial interrupts, i.e., they do not necessarily stop execution of the whole program.
@@ -34,7 +34,7 @@ The rush interpreter only makes use of the analyzer's guarantees of result types
 
 \subsection{Implementation}
 
-\Lirsting[ranges={23-30, _39-41, 56-61}, path prefix={deps/rush}, float=htb, label={lst:tree_run_method}, caption={Tree-Walking Interpreter: Beginning of Execution}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
+\Lirsting[ranges={23-30, _39-41, 56-61}, float=htb, label={lst:tree_run_method}, caption={Tree-Walking Interpreter: Beginning of Execution}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
 
 Listing~\ref{lst:tree_run_method} displays the public \qVerb{run} method of the interpreter that serves as its entry point.
 Since the order of functions in rush does not matter and a function can be called before its definition in the file, the interpreter must first populate its \qVerb{functions} map, before any function code is run.
@@ -42,7 +42,7 @@ Afterwards the global variables are assigned their initial values.
 Only then is the code inside the main function called via the \qVerb{call_func} method.
 After it returns, the entire interpreter either returns a produced runtime error, an exit code caused by a rush call to \qVerb{exit}, or the success exit code `0' otherwise.
 
-\Lirsting[ranges={81-97}, path prefix={deps/rush}, float=htb, label={lst:tree_call_func}, caption={Tree-Walking Interpreter: Calling of Functions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
+\Lirsting[ranges={81-97}, float=htb, label={lst:tree_call_func}, caption={Tree-Walking Interpreter: Calling of Functions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
 
 The \qVerb{call_func} method, visible in Listing~\ref{lst:tree_call_func}, first checks whether a built-in functions was called.
 As the only built-in function in rush is \qVerb{exit}, a simple equality check is enough here.

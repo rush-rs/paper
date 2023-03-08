@@ -7,6 +7,10 @@
 % \input{preamble/pgfplots.tex}
 % \input{preamble/siunitx.tex}
 
+% Set `deps/rush` as path prefix in all lirstings, is ignored for files under other directories
+\NewCommandCopy{\oldLirsting}{\Lirsting}
+\renewcommand{\Lirsting}[2][]{\oldLirsting[path prefix={deps/rush},#1]{#2}}
+
 \pagenumbering{gobble}
 
 \begin{document}

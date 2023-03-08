@@ -170,7 +170,7 @@ Its internal layout may differ between programming languages.
 
 \subsection{Implementation}
 
-\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=L, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
+\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=L, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
 
 Even though many implementation details could be the same as for the \riscv{} compiler, there are some differences because we each created one separately and did not have any reference implementation.
 One such difference is that the x64 compiler's \qVerb{Instruction} definition which is shown in Listing~\ref{lst:x64_instruction} not only includes actual instructions, but also directives and symbols.
@@ -188,7 +188,7 @@ Listing~\ref{lst:x64_intvalue} shows its definition.
 
 \subsubsection{Struct Fields}
 
-\Lirsting[ranges={33-37}, wrap=R, wrap width={0.45\textwidth}, fancyvrb={numbers=right}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
+\Lirsting[ranges={33-37}, wrap=R, wrap width={0.45\textwidth}, fancyvrb={numbers=right}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
 
 The compiler struct itself shown in Listing~\ref{lst:x64_compiler} is also a bit different.
 Both compilers have a \qVerb{used_register} field, but this compiler does not need to store the size for each, because the registers themselves already have a defined size.
@@ -206,13 +206,13 @@ Both compilers have one field for accumulating the final assembly code, but this
 
 \subsubsection{Register Allocation}
 
-\Lirsting[ranges={257-268}, float=h, caption={\TODO{think of good caption}}, label={lst:x64_intregister_next}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+\Lirsting[ranges={257-268}, float=h, caption={\TODO{think of good caption}}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
 
 \subsubsection{Functions}
 
 \subsubsection{Function Calls}
 
-\Lirsting[ranges={37-44}, float=h, caption={Definition of the parameter registers and their order.}, label={lst:x64_int_param_regs}, path prefix={deps/rush}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+\Lirsting[ranges={37-44}, float=h, caption={Definition of the parameter registers and their order.}, label={lst:x64_int_param_regs}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
 
 \subsubsection{Control Flow}
 

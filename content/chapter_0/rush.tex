@@ -99,7 +99,7 @@ This concept is comparable to \emph{void} in other languages, like C or Java.
 In rush however, the unit type is treated like a value at runtime.
 Even though the unit type can be saved inside a variable or used as a function parameter, all rush compilers simply ignore it since it holds no value.
 In the rush code in Listing~\ref{lst:rush_fib}, the \qVerb{main} function also returns the unit type.
-For instance, a function \qVerb{foo} can be defined like \qVerb{fn foo() -> () {}}, as well as \qVerb{fn foo() {}}.
+For instance, a function \qVerb{foo} can be defined like `\LirstInline{rush}{fn foo() -> () {}}', as well as `\LirstInline{rush}{fn foo() {}}'.
 Therefore, manually specifying that a function returns the unit type is redundant and is considered bad practice.
 The \emph{never} type is used in order to denote that an expression or statement never finishes until the point where the never type would be materialized\footnote{Here, \emph{materialization} means that a value of the never type is instantiated}.
 Since the type is called \enquote{never}, such a value will never be instantiated.
@@ -107,7 +107,7 @@ Because the built-in \qVerb{exit} function terminates a program, its result will
 Furthermore, \qVerb{break}, \qVerb{continue}, and \qVerb{return} also result in the never type.
 As the explained exaples illustrate, the never type is mainly being used to mark diverging expressions.
 Therefore, through the never type, rush's type system is able to convey a lot of semantic meaning which is helpful during later stages of compilation.
-It is to be noted that the type cannot be used explicitly, meaning syntax like \qVerb{let a: ! = exit(0)} is illegal as it would not create any practical benefits.
+It is to be noted that the type cannot be used explicitly, meaning syntax like `\LirstInline{rush}{let a: ! = exit(0)}' is illegal as it would not create any practical benefits.
 
 In the rush project, most of the previously presented stages of compilation are implemented as their own individual code modules.
 This way, each component of the programming language can be developed, tested, and maintained separately.

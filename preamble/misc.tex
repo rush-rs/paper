@@ -40,8 +40,7 @@
 \renewcommand{\labelitemiv}{$\vcenter{\hbox{\rule{.5ex}{.5ex}}}$}
 
 % \setlength{\parindent}{0pt}
-\def\parskipLen{4pt}
-\setlength{\parskip}{\parskipLen}
+% \setlength{\parskip}{4pt}
 
 \usepackage[autostyle]{csquotes}
 
@@ -52,6 +51,11 @@
 %\newcommand{\rushCountTests}{\ignorespaces{\input "|python3 ./deps/rush/samples/tests/main.py count-tests"}\unskip}
 \newcommand{\rushCountTests}{\input{|python3 ./deps/rush/samples/tests/main.py count-tests}}
 \newcommand{\riscv}{RISC\babelhyphen{nobreak}V}
+
+\makeatletter
+\newcommand{\OuterEdge}{\ifodd\if@twoside\c@page\else\@ne\fi right\else left\fi}
+\newcommand{\InnerEdge}{\ifodd\if@twoside\c@page\else\@ne\fi left\else right\fi}
+\makeatother
 
 \newcommand{\qVerb}[2][]{`\Verb[#1]{#2}'}
 \newcommand{\VerbCmd}[2][]{\Verb[commandchars=\\\{\}, #1]{#2}}

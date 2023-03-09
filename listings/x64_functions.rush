@@ -1,0 +1,8 @@
+fn main() {
+    exit(foo(21));
+}
+
+fn foo(n: int) -> int {
+    return n * 2;
+    let b = n;
+}

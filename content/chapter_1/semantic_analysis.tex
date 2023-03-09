@@ -89,7 +89,9 @@ In order to obtain a deeper understanding of how the analyzer works, parts of it
 example from above will now be considered. However, before we can examine how some methods of the analyzer work,
 its most important struct fields should be discussed first.
 
-\Lirsting[ranges={12-18,26-26}, caption={Fields of the \qVerb{Analyzer} Struct}, label={lst:analyzer_attr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={12-18,26-26}, caption={Fields of the \qVerb{Analyzer} Struct}, label={lst:analyzer_attr}, float=h]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+
+\Lirsting[ansi=true, caption={Output When Compiling an Invalid rush Program}, wrap=R, wrap width={.57\textwidth}, label={lst:analyzer_imutable_err}]{listings/non_mut_variable_error.txt}
 
 Listing~\ref{lst:analyzer_attr} displays the struct fields of the semantic analyzer.
 The field \qVerb{functions} in line 13 associates a function name to the function's signature.
@@ -106,8 +108,6 @@ For instance, the analyzer keeps track of variable types, whether variables have
 By saving this much information about each declared variable, the analyzer can produce very helpful and accurate error messages or warnings.
 For reference, compiler output which incorporates diagnostics is displayed in Listing~\ref{lst:analyzer_imutable_err},
 it would occur when another value is assigned to an immutable variable.
-
-\Lirsting[ansi=true, caption={Output When Compiling an Invalid rush Program}, float=H, label={lst:analyzer_imutable_err}]{listings/non_mut_variable_error.txt}
 
 Moreover, the field \qVerb{curr_func_name} saves the name of the current function.
 This field is used in order to highlight unused functions correctly.

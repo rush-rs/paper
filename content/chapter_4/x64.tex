@@ -25,7 +25,7 @@ For instance, the \qVerb{idiv} instruction divides a signed 128-bit integer stor
 
 \subsection{x64 Assembly}
 
-\Lirsting[wrap=L, wrap width=0.4\textwidth, label={lst:x64_example}, caption={Example rush Program}]{listings/x64_simple.rush}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, label={lst:x64_example}, caption={Example rush Program}]{listings/x64_simple.rush}
 
 There are multiple different dialects of x64 assembly and multiple assemblers each supporting a different set of dialects.
 The rush x64 compiler emits assembly code using Intel syntax that can be assembled by the \emph{GNU Assembler} (GAS).
@@ -37,7 +37,7 @@ It begins with the \qVerb{.intel_syntax} directive, indicating that the followin
 Then, similar to the \riscv{} assembly code shown in the previous section, the \qVerb{_start} symbol is marked as global, as this is again the entry point.
 The sections are also the same, as these are defined by the ELF file format which is independent of ISAs.
 
-\Lirsting[wrap=R, wrap width=0.6\textwidth, fancyvrb={numbers=right}, label={lst:x64_asm_example}, caption={Compiler Output for the rush Program in Listing~\ref{lst:x64_example}}]{listings/x64_simple.s}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.6\textwidth, fancyvrb={numbers=right}, label={lst:x64_asm_example}, caption={Compiler Output for the rush Program in Listing~\ref{lst:x64_example}}]{listings/x64_simple.s}
 
 The main differences between this and the shown \riscv{} assembly, and also the other x64 assembly dialects, are the instruction mnemonics and the register names.
 When using the Intel syntax for x64, register names are always prepended by a percentage sign.
@@ -170,7 +170,7 @@ Its internal layout may differ between programming languages.
 
 \subsection{Implementation}
 
-\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=L, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
+\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=o, fancyvrb={numbers=\OuterEdge}, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
 
 Even though many implementation details could be the same as for the \riscv{} compiler, there are some differences because we each created one separately and did not have any reference implementation.
 One such difference is that the x64 compiler's \qVerb{Instruction} definition which is shown in Listing~\ref{lst:x64_instruction} not only includes actual instructions, but also directives and symbols.
@@ -188,39 +188,71 @@ Listing~\ref{lst:x64_intvalue} shows its definition.
 
 \subsubsection{Struct Fields}
 
-\Lirsting[ranges={33-37}, wrap=R, wrap width={0.45\textwidth}, fancyvrb={numbers=right}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
+\Lirsting[ranges={33-37}, wrap=o, wrap width={0.45\textwidth}, fancyvrb={numbers=\OuterEdge}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
 
 The compiler struct itself shown in Listing~\ref{lst:x64_compiler} is also a bit different.
 Both compilers have a \qVerb{used_registers} field, but this compiler does not need to store the size for each register, because the registers themselves already have a defined size.
-Both compilers have a \qVerb{scopes} field for storing variable locations, but this compiler uses an \qVerb{Option<_>} with \qVerb{None} representing variables of the unit and never types.
-\TODO{why does \riscv{} not do this?}
+Both compilers have a \qVerb{scopes} field for storing variable locations, but the \riscv{} compiler has the \qVerb{Option<_>} inside the \qVerb{Variable} struct.
 Both compilers store the global variables, but this compiler has separate fields for every size for easier alignment in the static memory which is not required for \riscv{}.
 \TODO{is this true?}
 The same applies for constants in the \qVerb{.rodata} section.
 Both compilers have one field for accumulating the final assembly code, but this compiler saves a list of \qVerb{Instruction}s instead of \qVerb{Block}s.
 
-\Lirsting[ranges={15-19, 26-31, 43-48, 55-60, 69-71}, float=htb, caption={The x64 \qVerb{Compiler} struct definition.}, label={lst:x64_compiler}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+\Lirsting[ranges={15-19, 25-31, 43-48, 55-60, 69-71}, float=htb, caption={The x64 \qVerb{Compiler} struct definition.}, label={lst:x64_compiler}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
 Additional fields of this compiler are \qVerb{function_body}, \qVerb{stack_pointer}, and \qVerb{frame_size}.
 The \qVerb{function_body} field stores the instructions for the currently compiled function.
 During compilation of statements and expressions, emitted instructions are always appended to this list.
 The method for compiling a function body then produces the prologue and afterwards appends the list contents onto \qVerb{text_section}.
-This is required, because some values like the \qVerb{frame_size} that are needed in the prologue cannot be known beforehand, but must appear before the function body in assembly.
+This is required, because some values like the \qVerb{frame_size} that are needed in the prologue cannot be known beforehand, but must appear before the function body in the assembly code.
 
 \subsubsection{Memory Management}
 
 The \qVerb{stack_pointer} field is used to keep track of the current stack frame.
-Every time a variable definition is encountered, space for it is saved by increasing this stack pointer.
+Every time a variable definition is encountered or a register is spilled, stack space for it is saved by increasing this stack pointer.
+This process is done by the \qVerb{push_to_stack} method visible in Listing~\ref{lst:x64_push_to_stack}.
+It takes a value, its size, and an optional comment as arguments.
+At first, the stack pointer is aligned to a multiple of the values' size by the \qVerb{align} function.
+Then, the number of bytes required for the value is added to it, and the frame size is increased in case it is not big enough yet.
+Now, the pointer to this value is constructed, using \qreg{rbp} as the base and the negated stack pointer as an offset.
+Finally, a \qVerb{mov} instruction for inserting the value at the location of the pointer is added to the assembly code, and the pointer is returned for further use.
+
+\Lirsting[ranges={254-271, 277-277, _280-283}, float=htb, caption={Stack space reservation for values.}, label={lst:x64_push_to_stack}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+
+Listing~\ref{lst:x64_align} shows the implementation for alignment.
+The pointer must only be modified if it is not a multiple of the wanted byte count yet.
+To calculate the amount of padding, the formula \qVerbCmd{size - (ptr \% size)} is used.
+For instance, say \qVerb{ptr} is 22 and \qVerb{size} is 8.
+The stack memory is then thought of in chunks of eight bytes each, where the resulting pointer should point to the start of the next empty chunk.
+With the pointer currently being 22, there are two full chunks and one chunk with six of the eight bytes occupied.
+Hence, two bytes of padding are needed to reach the next chunk.
+The expression \qVerbCmd{22 \% 8} yields 6, which is the number of bytes that are already in use in the last chunk.
+This result is then subtracted from 8 again to result in 2, the number of bytes for padding that is then added to the pointer.
+\TODO{move this paragraph to general concepts?}
 
 \Lirsting[ranges={184-188}, float=htb, caption={Alignment of values on the stack.}, label={lst:x64_align}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
-\Lirsting[ranges={254-271, 277-277, _280-283}, float=htb, caption={Stack space reservation for variables.}, label={lst:x64_push_to_stack}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
-
 \subsubsection{Register Allocation}
 
-\Lirsting[ranges={257-268}, float=h, caption={\TODO{think of good caption}}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+The register allocation algorithm of the x64 compiler differs quite a lot, too.
+Instead of marking individual registers as used or unused and then searching through a specified order for the first free one, this compiler uses an almost stack-like behavior.
+Again, one specific order of registers is defined, starting with the return register \qreg{rax}, followed by the argument registers in their correct order, and ending with the remaining general purpose registers.
+Whenever a free register is required, the \qVerb{next} method from Listing~\ref{lst:x64_intregister_next} on the last used register is called, returning the next register in line, which is then added to the \qVerb{used_registers} field.
+For freeing a register, the compiler just pops the last register off this list.
+This only works, because the rest of the compiler guarantees used registers to be freed in exactly the reverse order they were reserved in.
+The same is done separately for the float registers.
+
+\Lirsting[ranges={257-274}, float=h, caption={Register allocation in the rush x64 compiler.}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
 
 \subsubsection{Functions}
+
+\Lirsting[wrap=o, wrap width=0.3\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Another example rush program with two functions.}, label={lst:x64_functions_rush}]{listings/x64_functions.rush}
+
+To explain the process of compiling functions and function calls there is another example program to be considered in Listing~\ref{lst:x64_functions_rush} along with the produced assembly code in Listing~\ref{lst:x64_functions_asm}.
+
+\Lirsting[ranges={11-31}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Trimmed compiler output for the rush program in Listing~\ref{lst:x64_functions_rush}}, label={lst:x64_functions_asm}]{listings/x64_functions.s}
+
+\TODO{\qVerb{function_body} definition?}
 
 \subsubsection{Function Calls}
 
@@ -232,6 +264,8 @@ Every time a variable definition is encountered, space for it is saved by increa
 	\item if-else-expressions $\rightarrow$ conditional jumps
 	\item loops
 \end{itemize}
+
+\subsubsection{Division and Float Comparisons}
 
 \begin{itemize}
 	\item Calling convention

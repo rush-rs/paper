@@ -69,20 +69,21 @@ A reason for this is that use of the stack usually requires a lot of push or pop
 \subsection{Comparing the VM to the Tree-Walking Interpreter}
 \Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=h]{listings/vm_faster.rush}
 
-\begin{wrapfigure}{R}{.53\textwidth}
-    \center
-	\begin{tikzpicture}[
-			tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
-		]
-		\node{fn rec}
-		child { node {if-expression}
-				child { node {condition} child {node {n == 0}} }
-				child [missing]
-				child { node {if-branch} child {node {int-expression}} }
-				child [missing]
-				child { node {else-branch} child{node{call-expression}} }
-			};
-	\end{tikzpicture}
+\begin{wrapfigure}{R}{.45\textwidth}
+	\begin{adjustbox}{max totalsize={\textwidth}{!},center}
+		\begin{tikzpicture}[
+				tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
+			]
+			\node{fn rec}
+			child { node {if-expression}
+					child { node {condition} child {node {n == 0}} }
+					child [missing]
+					child { node {if-branch} child {node {int-expression}} }
+					child [missing]
+					child { node {else-branch} child{node{call-expression}} }
+				};
+		\end{tikzpicture}
+	\end{adjustbox}
 	\caption{Abstract Syntax Tree and VM Instructions of a Recursive rush Program}\label{fig:tree_vs_vm_tree}
 \end{wrapfigure}
 

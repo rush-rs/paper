@@ -87,7 +87,7 @@ The \qVerb{visit_block} method then iterates over its contained statements and e
 In this case, that is only the call to \qVerb{exit}.
 Since calls in rush are considered expressions and expressions can also be used wherever statements are allowed, the \qVerb{visit_statement} method only forwards to \qVerb{visit_expression}, which itself forwards to \qVerb{visit_call_expr}.
 The call expression then evaluates each argument expression by calling \qVerb{visit_expression} again.
-Here, that involves another call expression, this time of the `plus\_two' function.
+Here, that involves another call expression, this time of the \qVerb{plus_two} function.
 It again evaluates its arguments, that being the access of the global variable `global' here, and then runs the function's block.
 The call stack at the point of reaching the return statement, is displayed in Figure~\ref{fig:tree_call_stack}.
 Now the expression \qVerb{num + 2} is evaluated by first evaluating both sides of the \qVerb{+} sign on their own and then adding the results.
@@ -116,4 +116,4 @@ However, as mentioned, a reference counter only provides \textbf{shared} access 
 In Rust that implies not being able to mutate the value, as that would again break the borrowing rules.
 In order to still support mutable variables while having pointers to them, we can make use of another type the Rust standard library conveniently provides.
 A \qVerb{RefCell<_>} implements so-called \emph{interior mutability}\footnote{Types in Rust that have interior mutability allow mutation through shared references} by enforcing Rust's borrowing rules at runtime.
-By now wrapping values inside both a reference counter and a \Verb{RefCell}, it is possible to support mutable variables and pointers.
+By now wrapping values inside both a reference counter and a \qVerb{RefCell}, it is possible to support mutable variables and pointers.

@@ -20,7 +20,7 @@ Following the von Neumann architecture, a processor would usually contain compon
 Because the ALU is designed to perform logical and mathematical operations as fast as possible,
 it lacks the ability to fetch and execute instructions from memory directly, presumably to keep its implementation simple.
 Therefore, the processor contains a control unit which manages the \emph{fetch-decode-execute} cycle.
-This cycle is a simplification of the steps a processor performs in order to execute an instruction.
+This cycle is a simplification of the steps a processor performs in order to execute instructions.
 The list below explains the individual steps of the fetch-decode-execute cycle.
 
 \begin{itemize}
@@ -43,14 +43,14 @@ More sophisticated processors often use many performance-enhancing techniques li
 In most cases, a virtual machine executes instructions similarly to the fetch-decode-execute cycle.
 Although the von Neumann architecture is relatively simple, one does not always have to adopt it when implementing a virtual machine.
 Since virtual machines are purely abstract constructs without physical limitations, design constraints are usually kept to a minimum.
-Therefore, a virtual machine can also be implemented with the high-level constructs of the source language in mind.
+Therefore, a virtual machine can also be implemented with the high-level abstractions of its input language in mind.
 For instance, the VM might feature specialized break, continue, or loop instructions which are not present in modern-day CPUs.
 Designing the architecture of a virtual machine can sometimes be a challenging task since choosing an adequate set of features may involve a lot of testing iterations.
 Because neither the compiler nor the VM exist in the beginning, one should carefully plan the implementation of their VM's architecture.
 
 \subsection{Register-Based and Stack-Based Machines}
 
-One of the main decisions to be made when designing a VM is how it implements temporary storage.
+One of the main decisions to be made during the design of the VM is how it implements temporary storage.
 Physical processors often use \emph{registers} in order to make larger computations feasible.
 Registers are a limited set of very fast, low capacity storage units.
 On most relevant architectures today, like \emph{x86\_64}, each general-purpose register is able to hold as much as 64 bits of information.

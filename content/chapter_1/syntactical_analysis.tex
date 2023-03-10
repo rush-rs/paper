@@ -9,8 +9,7 @@ This is done in two steps that are closely related and often combined, the \emph
 \subsection{Formal Syntactical Definition by a Grammar}
 
 Just like every natural language, most programming languages also conform to a grammar.
-However, grammars for programming languages most often are of type 2 or 3 in the Chomsky hierarchy, that is \emph{context-free} and \emph{regular} languages, whereas natural languages often are type 1 or 0.
-\TODO{citation}
+However, grammars for programming languages most often are of type 2 or 3 in the Chomsky hierarchy, that is \emph{context-free} and \emph{regular} languages, whereas natural languages often are type 1 or 0~\cite[p.~24]{Watson2017}.
 Additionally, it is not uncommon for parser writers to formally define the grammar using some notation.
 Popular options include \emph{BNF}\footnote{Backus-Naur Form, named after the two main inventors~\cite{Backus1960}} and \emph{EBNF}\footnote{Extended Backus-Naur Form, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, the latter of which we use here.
 This paper does not fully explain these notations, however Listing~\ref{lst:ebnf_reference_grammar} shows a short example grammar notated using EBNF.
@@ -128,16 +127,15 @@ That way, all child nodes are processed before their parent node.
 This results in the tree being constructed from the leafs at the bottom upwards to the root.
 
 Top-down and bottom-up parsers are further categorized into many more subcategories.
-The two we will focus on here are \emph{LL$(k)$} parsers and \emph{LR$(k)$} parsers.
+The two we will focus on here are so-called \emph{LL$(k)$} parsers and \emph{LR$(k)$} parsers.
 \TODO{`we will' ok?}
-\TODO{citation for naming convention}
 These are named after the direction of reading the tokens, `L' being from left to right, and the derivation they use.
 `L' is the leftmost derivation and `R' the rightmost derivation.
-\TODO{what are derivations? + citation}
+\TODO{what are derivations? + citation can be found here \cite[pp.~75f]{Watson2017}}
 The parenthesized $k$ represents a natural number with $k\in\mathbb{N}_0$ describing the number of tokens for \emph{lookahead}.
 Often $k$ is either $1$ or $0$ for a two or one wide window respectively.
 This window moves just like previously explained for the lexer, and observes $k$ \textbf{tokens}, not characters, simultaneously.
-Since in most cases $k$ is $1$, it is common to omit specifying it and to just speak of `LL' and `LR' parsers.
+Since in most cases $k$ is $1$, it is common to omit specifying it and to just speak of `LL' and `LR' parsers~\cite[pp.86-88]{Watson2017}.
 
 Alternatively to utilizing lookahead tokens, it is possible to create parsers with backtracking.
 Using that approach, a parser has to guess which syntax construct follows, if it can't concretely know based on the first token.
@@ -310,10 +308,9 @@ It should then become clear how Pratt-Parsing achieves parsing with precedences 
 
 \subsubsection{Parser Generators}\label{sec:parser_generators}
 
-For most intents and purposes it is generally not recommended and necessary to implement parsers, and with that\textcolor{red}{,} lexers, manually.
-\TODO{citation}
+For most purposes, it is generally not necessary to implement parsers, and with that, lexers, manually.
 Instead, there are so-called \emph{parser generators} that generate parsers based on some specification of the desired syntax and the required precedences.
-Often parser generators define a domain specific grammar notation for the syntax specification, although some parser generators also accept traditional grammar notations as input.
+Often, parser generators define a domain specific grammar notation for the syntax specification, although some parser generators also accept traditional grammar notations as input.
 % As previously discussed, implementing table-driven parsers, like the shift-reduce LR parsers, is way too error-prone to be done by hand.
 % But because of the flexibility and greater language support they bring over LL parsers, it is still preferable to use such a parser for production ready languages.
 Most parser generators target some variation of \emph{table-driven} LR parsers.

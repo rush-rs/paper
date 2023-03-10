@@ -143,9 +143,9 @@ Any single one of these registers would then for instance hold two 64-bit values
 		\cell{...}
 		\cell{\nth{1} stack argument} \cellcom{\VerbCmd{\%rbp+16}}
 		\finishframe{previous}
-		\startframe
 		\cell{return address} \cellcom{\VerbCmd{\%rbp+8}}
 		\cell{previous \qreg{rbp} value} \cellcom{\VerbCmd{\%rbp}}
+		\startframe
 		\bcell{unspecified} \cellcom{\VerbCmd{\%rbp-8}}
 		\bcell{...}
 		\bcell{variable size} \cellcom{\VerbCmd{\%rsp}}
@@ -164,6 +164,7 @@ Secondly, the address \qreg{rbp} points to is different by 16 bytes.
 Therefore, in x64 the first stack argument is accessed by offsetting \qreg{rbp} by 16, whereas in \riscv{} the \qVerb{fp} register already points to the first stack argument without any offset.
 In both calling conventions every stack argument uses eight bytes of space.
 In addition, x64 has no special return address register, but only stores the return address on the stack and retrieves it from there when needed.
+\TODO{stack frame size must be a multiple of 16 bytes}
 
 The unspecified space between \qVerbCmd{\%rbp-8} and \qreg{rsp} can be freely used by the current function to save local variables.
 Its internal layout may differ between programming languages.
@@ -249,14 +250,40 @@ The same is done separately for the float registers.
 \Lirsting[wrap=o, wrap width=0.3\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Another example rush program with two functions.}, label={lst:x64_functions_rush}]{listings/x64_functions.rush}
 
 To explain the process of compiling functions and function calls there is another example program to be considered in Listing~\ref{lst:x64_functions_rush} along with the produced assembly code in Listing~\ref{lst:x64_functions_asm}.
+Though not explicitly labelled, the x64 compiler also uses the concept of a function prologue, body, and epilogue.
+Since the \qVerb{main} function in this example does not require any stack space for variables or register spilling, the prologue is automatically left out, and the epilogue does not contain a \qVerb{leave} instruction for freeing the memory.
+The \qVerb{foo} function however does declare a local variable and thus requires the stack space to be allocated in the prologue.
+Lines~20--22 are responsible for this.
+As previously shown in Figure~\ref{fig:x64_stack}, the stack should first contain the return address and then the previous base pointer, the former of which is already handled by the \qVerb{call} instruction.
+Therefore, the function's prologue begins with pushing \qreg{rbp} onto the stack.
+Afterwards, the base pointer's value is set to the current stack pointer.
+The stack pointer itself is then decremented by the number of bytes needed for the function which is saved in \qVerb{frame_size}, rounded up to a multiple of 16.
 
 \Lirsting[ranges={11-31}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Trimmed compiler output for the rush program in Listing~\ref{lst:x64_functions_rush}}, label={lst:x64_functions_asm}]{listings/x64_functions.s}
+
+The epilogue ranges from line~29 to line~31.
+It defines a symbol where \qVerb{return} statements can jump to, releases the stack frame using the \qVerb{leave} instruction, and returns control to the caller with \qVerb{ret}.
+Usage of the return symbol can be seen in line~26, which does an unconditional jump to there, rendering all intermediate instructions as unreachable.
+This is the expected behavior, because the jump instruction was emitted for the \qVerb{return} statement in line~6 of the rush program, which should skip to the end of the function.
+The return value was moved into the \qreg{rax} register, or its correspondingly sized variant, in advance.
 
 \TODO{\qVerb{function_body} definition?}
 
 \subsubsection{Function Calls}
 
-\Lirsting[ranges={37-44}, float=h, caption={Definition of the parameter registers and their order.}, label={lst:x64_int_param_regs}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+% \Lirsting[ranges={37-44}, wrap=o, wrap width=0.61\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Definition of the parameter registers and their order. \TODO{this listing could be removed}}, label={lst:x64_int_param_regs}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+
+To support function calls, two main aspects must be considered: passing arguments from the caller, and retrieving arguments in the callee.
+
+Generally, for passing arguments the compiler simply iterates over the argument expressions, compiles each one in turn, and moves their result into the appropriate register, or onto the stack if no registers are left.
+As the passing of the first six integer arguments is done through the same registers, a function call always requires access to these exact registers, or at least a subset of them.
+That means, if some of the registers happen to be in use already, their content has to be spilled to the stack and replaced with the argument value.
+An example for when this might happen is a function call as a non-first argument to another function call like `\LirstInline{rush}{foo(42, bar('x'))}'.
+When the inner function call, here \qVerb{bar}, wants to move its first argument \qVerb{'x'} into \qreg{rdi}, it notices this register is already used for the first argument of the outer function call, \qVerb{42}.
+
+Each function that takes parameters should move all passed arguments from their registers onto the stack in order to make the registers available for the rest of the function body.
+In Listing~\ref{lst:x64_functions_asm} this happens in line~23 for the one parameter called \qVerb{n}.
+More optimized compilers can of course try to keep the arguments in the registers for as long as they are not specifically needed elsewhere, but as the rush compilers only serve educational purposes this is not done.
 
 \subsubsection{Control Flow}
 

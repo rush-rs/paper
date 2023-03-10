@@ -27,11 +27,10 @@ Most modern browsers include such a WebAssembly runtime, but there are also stan
 \subsection{WebAssembly Modules}
 
 Every valid WebAssembly file must contain exactly one module.
-\TODO{confirm, CITATION}
 The WebAssembly specification defines two different representations for these modules.
-First, there is a human-readable text representation, called \emph{WAT}\footnote{WebAssembly Text}, closely resembling S-Expressions\footnote{\TODO{what are S-Expressions}}.
+First, there is a human-readable text representation, called \emph{WAT}\footnote{Short for \enquote{WebAssembly Text}~\cite[p.~40]{Sendil2022-fy}}, closely resembling S-Expressions\footnote{Short for \enquote{symbolic expression}, used for representing  nested, tree-structured data~\cite[p.~41]{Sendil2022-fy}}.
 This is comparable to assembly languages for CPU architectures and is the typical target for compilers.
-Secondly, WebAssembly modules can also be represented using its binary format, which is optimized for size and comparable to the final binary files produced by assemblers.
+Secondly, WebAssembly modules can also be represented in a binary format, which is optimized for size, and comparable to the binary files produced by assemblers~\cite[pp.~40--44]{Sendil2022-fy}.
 Most often these binary modules are constructed from a text module by using a tool such as \emph{wat2wasm} from the \emph{WebAssembly Binary Toolkit (WABT)}.
 However, the rush WebAssembly compiler instead opts to target the binary format directly, highlighting a few reasons for why most compilers should not do this.
 Listing~\ref{lst:wat_demo_wat} and Listing~\ref{lst:wat_demo_hex} on page~\pageref{lst:wat_demo_wat} show the same basic WebAssembly module once as WAT and once as a commented hex dump of the same module in its binary representation as produced by \url{https://webassembly.github.io/wabt/demo/wat2wasm/}.
@@ -40,11 +39,10 @@ Listing~\ref{lst:wat_demo_wat} and Listing~\ref{lst:wat_demo_hex} on page~\pager
 \Lirsting[float=p, label={lst:wat_demo_hex}, caption={Simple WebAssembly Module in Binary Representation}]{listings/wat_demo.hexdump}
 
 Focusing on the text representation first, the shown module contains one function that takes two \qVerb{i32}s as parameters and returns a single \qVerb{i32}.
-\TODO{CITATION for statements below}
 An \qVerb{i32} in WebAssembly represents an uninterpreted 32-Bit integer, that is, it is not clear whether the integer is signed or unsigned from the type itself.
 Instead, values of this type can be interpreted as either signed or unsigned by different instructions.
 For instance, the instruction \qVerb{i32.eq}, which checks for equality between two \qVerb{i32} values, behaves the same no matter the integer's signedness.
-In contrast, \qVerb{i32.lt_s} and \qVerb{i32.lt_u} are two instructions both querying whether one \qVerb{i32} is less than another, once for signed and once for unsigned integers as denoted by the suffix.
+In contrast, \qVerb{i32.lt_s} and \qVerb{i32.lt_u} are two instructions both querying whether one \qVerb{i32} is less than another, once for signed and once for unsigned integers as denoted by the suffix~\cite[p.46]{Sendil2022-fy}.
 
 The mentioned function is exported by the module under the name `addTwo' to make it accessible from outside.
 What exactly `outside' is depends on the context the module is run in.

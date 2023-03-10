@@ -1,8 +1,9 @@
 \section{Using a Virtual Machine}
 
 Just like a tree-walking interpreter, a virtual machine presents a way of implementing an interpreter for a programming language.
-However, the way a virtual machine operates fundamentally differs from a tree-walking interpreter.
-We have implemented a virtual machine backend for rush in order to compare it to the previously explained tree-walking interpreter.
+However, the way a virtual machine operates differs fundamentally from a tree-walking interpreter.
+In order to compare a virtual machine to a tree-walking interpreter,
+we have implemented a virtual machine backend which can execute rush programs.
 
 \subsection{Defining a Virtual Machine}
 
@@ -11,13 +12,13 @@ This emulation often includes additional devices like the computer's display or 
 whereas in this context, the term describes a software entity which emulates how a processor interprets instructions.
 Since the VM is unable to traverse the AST, it depends on a compiler generating its input instructions.
 
-Since a physical processor and a virtual machine share some fundamental traits,
+Because a physical processor and a virtual machine share some fundamental traits,
 the architecture of a virtual machine is often closely resembling the \emph{von Neumann architecture}.
 This architecture was first introduced by John Neumann in the year 1945.
 Von Neumann originally presented a design which allows implementing a computer using relatively few components.
 Following the von Neumann architecture, a processor would usually contain components like an \emph{arithmetic logic unit} (ALU), a control unit, multiple registers, memory, and basic IO~\cite[p.~172]{Ledin2020-yp}.
-The ALU is often designed so that it performs logical and mathematical operations as fast as possible.
-However, to keep its implementation simple, it lacks the ability to fetch and execute instructions from memory directly.
+Because the ALU is designed to perform logical and mathematical operations as fast as possible,
+it lacks the ability to fetch and execute instructions from memory directly, presumably to keep its implementation simple.
 Therefore, the processor contains a control unit which manages the \emph{fetch-decode-execute} cycle.
 This cycle is a simplification of the steps a processor performs in order to execute an instruction.
 The list below explains the individual steps of the fetch-decode-execute cycle.
@@ -72,7 +73,7 @@ The rush virtual machine is a stack-based machine implemented using the Rust pro
 The machine's architecture was solely developed for this project and includes a \emph{stack} for storing short-term data, \emph{linear memory} for storing variables, and a separate \emph{call stack} for managing function calls.
 Like most virtual machines, the rush VM uses a fetch-decode-execute cycle in order to interpret programs.
 
-\Lirsting[ranges={16-26}, caption={Struct Definition of the VM}, label={lst:vm_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={16-26}, caption={Struct Definition of the VM}, label={lst:vm_struct}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 Listing~\ref{lst:vm_struct} displays the struct definition of the rush VM\@.
 The \qVerb{stack} field in line 18 saves the main stack for temporary values using Rust's \qVerb{Vec} type.
@@ -84,9 +85,9 @@ It holds the \emph{memory pointer}, which saves the index of the last free cell 
 Lastly, a field named \qVerb{call_stack} is declared.
 This field is responsible for managing function calls and returns.
 
-The instructions in Figure~\ref{fig:tree_vs_vm_vm} can be interpreted by the rush VM\@.
-Here, the output program is partitioned in functions which each contain a list of their instructions.
-Since function and variable names are replaced by indices, inefficient names can be entirely omitted in the output instructions.
+The instructions in Listing~\ref{lst:tree_vs_vm_vm} can be interpreted by the rush VM\@.
+Programs for the rush VM are always partitioned into functions which each represent a sequence of instructions.
+Since function and variable names are replaced by indices, human-readable names causing inefficiencies can be entirely omitted in the output instructions.
 For better understanding, the individual functions have been manually annotated with their human-readable names.
 
 \begin{wrapfigure}{L}{0.58\textwidth}
@@ -127,8 +128,8 @@ The first block of instructions is called `\emph{prelude}' since its only task i
 Global variables need to be initialized at the beginning of a program so that they can be accessed later in the program.
 If global variables were present in the example, the prelude would contain the instructions used for initializing them.
 If the prelude was omitted, the main function would instead contain these instructions since it is executed at program start.
-However, recursion of the `\texttt{main}' function is legal in rush.
-Therefore, each time the `\texttt{main}' function recurses, all global variables would be restored to their initial values.
+However, recursion of the \qVerb{main} function is legal in rush.
+Therefore, each time the \qVerb{main} function recurses, all global variables would be restored to their initial values.
 In order to prevent this bug, the rush VM uses a prelude function which is guaranteed to run only once.
 
 Linear memory in the VM is represented as an array of runtime values of variables.
@@ -342,8 +343,7 @@ Now that we have explained how some important parts of the rush VM work, the que
 Therefore, the compiler targeting the rush VM is presented in the following chapter.
 
 \subsection{Comparing the VM to the Tree-Walking Interpreter}
-\Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=h]{listings/vm_faster.rush}
-
+\Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
 
 One significant benefit of virtual machines is that they execute programs faster compared to tree-walking interpreters.
 A reason for this speedup is that tree traversal involves a lot of overhead which is omitted when instructions are interpreted.

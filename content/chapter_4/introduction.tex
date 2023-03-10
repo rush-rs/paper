@@ -62,7 +62,7 @@ This process is performed by a program named the \emph{assembler} and is often c
 A typical characteristic of assembly code is that it seems relatively cryptic to a human reading it.
 Furthermore, compared to high-level languages like C, assembly code is relatively low-level since it can be used to interact with the hardware directly.
 
-For instance, the RISC-V instruction \qVerb{add a0, a0, 2} would be used in integer addition.
+For instance, the \riscv{} instruction \qVerb{add a0, a0, 2} would be used in integer addition.
 This example contains most characteristics of an assembly language program.
 Like hinted previously, the name of the instruction is a mnemonic.
 In this case, \qVerb{addi} stands for \enquote{add immediate}.
@@ -159,7 +159,7 @@ For a compiler, the limited amount of registers presents a big challenge.
 Some architectures may require that the operands of arithmetic or logical instructions have been explicitly loaded into registers beforehand.
 In this case, registers would be required in nearly all computations.
 In order to understand how registers management can present a challenge, Listing~\ref{lst:register_alloc} should be considered.
-This snippet displays RISC-V assembly instructions which calculate the sum of the two integers 40 and 2.
+This snippet displays \riscv{} assembly instructions which calculate the sum of the two integers 40 and 2.
 In line 4, the integer value 40 is placed in the register \qVerb{a0}.
 In line 5, another integer, this time 2 is placed in \qVerb{a1}.
 

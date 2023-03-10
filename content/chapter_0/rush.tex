@@ -78,7 +78,7 @@ Table~\ref{tbl:rush_types} provides an overview about all the types which are pr
 
 \begin{wraptable}{r}{.4\textwidth}
 	\centering
-	\caption{Lines of code of the project's components in commit \protect\rushCommit}\label{tbl:rush_loc_components}
+    \caption{Lines of code of the project's components in commit \protect\rushCommit{}}\label{tbl:rush_loc_components}
 	\begin{tabularx}{\linewidth}{|L|l|}
 		\hline
 		\rowcolor{gray!20} Component & LoC\footnotemark                                 \\ \hline
@@ -87,7 +87,7 @@ Table~\ref{tbl:rush_types} provides an overview about all the types which are pr
 		VM compiler / runtime        & \tokei{./deps/rush/crates/rush-interpreter-vm}   \\ \hline
 		WASM compiler                & \tokei{./deps/rush/crates/rush-compiler-wasm}    \\ \hline
 		LLVM compiler                & \tokei{./deps/rush/crates/rush-compiler-llvm}    \\ \hline
-		RISC-V compiler              & \tokei{./deps/rush/crates/rush-compiler-risc-v}  \\ \hline
+        \riscv{} compiler              & \tokei{./deps/rush/crates/rush-compiler-risc-v}  \\ \hline
 		x86 compiler                 & \tokei{./deps/rush/crates/rush-compiler-x86-64}  \\ \hline
 	\end{tabularx}
 \end{wraptable}
@@ -111,12 +111,12 @@ It is to be noted that the type cannot be used explicitly, meaning syntax like `
 
 In the rush project, most of the previously presented stages of compilation are implemented as their own individual code modules.
 This way, each component of the programming language can be developed, tested, and maintained separately.
-In the git commit \rushCommit, the entire rush project includes
+In the git commit \rushCommit{}, the entire rush project includes
 \tokei{./deps/rush} lines of source code\footnote{Blank lines and comments are not counted}.
 On the first sight, this might seem like a large number for a simple programming language.
 However, the rush project includes a lexer, a parser, a semantic analyzer, five compilers, one interpreter, and several other tools like a language server for IDE support.
 Table~\ref{tbl:rush_loc_components} shows the lines of code of the project's individual components.
 Here, it becomes apparent that the tree-walking interpreter contains the least amount of code, as it is the simplest.
 The compilers targeting high level targets both require around 1,500 lines.
-As for the low-level compilers, they both require over 2000 lines of code, with x86 requiring around 500 lines more than RISC-V.
+As for the low-level compilers, they both require over 2000 lines of code, with x86 requiring around 500 lines more than \riscv{}.
 By considering this table, the complexity of the individual components become apparent.

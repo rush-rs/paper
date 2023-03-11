@@ -354,7 +354,7 @@ Since the function only contains a single expression, the if-expression node is 
 The only direct child of the root node is the single if-expression present in the function's body.
 The if-expression contains a condition, an if-branch, and an else-branch.
 
-\Lirsting[raw=true, wrap=l, wrap width=.32\textwidth, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
+\Lirsting[raw=true, wrap=l, wrap width={.32\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
 
 Since the function should not call itself again if \qVerb{n} is equal to 0, the if-branch returns 0.
 In the else-branch, the \texttt{rec} function calls itself recursively.

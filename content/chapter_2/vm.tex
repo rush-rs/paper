@@ -79,7 +79,7 @@ Listing~\ref{lst:vm_struct} displays the struct definition of the rush VM\@.
 The \qVerb{stack} field in line 18 saves the main stack for temporary values using Rust's \qVerb{Vec} type.
 In line 20, the \qVerb{mem} field is declared.
 This field represents the linear memory used for storing variables.
-Since the \qVerb{Value} is wrapped in an \qVerb{Option}, each cell may also hold a \texttt{None} value representing uninitialized memory.
+Since the \qVerb{Value} is wrapped in an \qVerb{Option}, each cell may also hold a \qVerb{None} value representing uninitialized memory.
 In line 23, the \qVerb{mem_ptr} field is declared.
 It holds the \emph{memory pointer}, which saves the index of the last free cell in \qVerb{mem}.
 Lastly, a field named \qVerb{call_stack} is declared.
@@ -142,7 +142,7 @@ For example, in a recursive function, each recursion adds more variables to the 
 However, the rush VM also implements a \emph{relative addressing} mode which can be used without knowledge about the absolute position of the memory cell.
 For instance, the same variable can be addressed through index 1 using the relative addressing mode.
 The mode is called \emph{relative} because all addresses are specified relative to the memory pointer.
-In Figure~\ref{fig:rush_vm_linmem}, the memory pointer (shortened to \enquote{mp}) is set to 3.
+In Figure~\ref{fig:rush_vm_linmem}, the memory pointer (shortened to \qVerb{mp}) is set to 3.
 Considering the value of the memory pointer, the absolute address of any relative address can be calculated at runtime.
 Here, the absolute address is the sum of the relative index $rel$ and the runtime memory pointer $mp$.
 By also implementing this relative addressing mode,
@@ -155,9 +155,9 @@ Lastly, the third column contains the absolute address of the cell, calculated t
 In order to get a deeper understanding of the addressing modes, a practical example can be considered.
 The code in Listing~\ref{lst:rush_pointer_simple} displays a rush program in which a pointer to a variable is created.
 First, the integer variable \qVerb{num} is created.
-In line 3, a pointer variable called \texttt{to\_num} is created by \emph{referencing} the \qVerb{num} variable.
+In line 3, a pointer variable called \qVerb{to_num} is created by \emph{referencing} the \qVerb{num} variable.
 
-\Lirsting[caption={Minimal Pointer Example in rush}, label={lst:rush_pointer_simple}, float=h]{listings/simple_pointer.rush}
+\Lirsting[caption={Minimal Pointer Example in rush}, label={lst:rush_pointer_simple}, wrap=L, wrap width={.28\textwidth}]{listings/simple_pointer.rush}
 
 In the rush VM, absolute addressing is only used for global variables and pointers.
 Since a pointer specifies the address of another variable, its runtime value will be the absolute address of its target variable.
@@ -167,7 +167,7 @@ This instruction calculates the absolute address of its operand and pushes the r
 Here, the operand is the relative address of the variable to be referenced.
 Listing~\ref{lst:rush_pointer_simple_vm_instructions} shows the VM instructions generated from the rush program in Listing~\ref{lst:rush_pointer_simple}.
 
-\Lirsting[raw=true, caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, float=H]{listings/vm_instructions_simple_pointer.txt}
+\Lirsting[raw=true, caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, fancyvrb={numbers=right}, wrap=R, wrap width={.27\textwidth}]{listings/vm_instructions_simple_pointer.txt}
 
 The first instruction \qVerb{setmp} (\emph{set memory pointer}) increases the memory pointer by two since the operand is a positive number.
 This is because the \qVerb{main} function contains two local variables whose space is to be allocated at the start of the function.
@@ -184,7 +184,7 @@ Now, the absolute address of \qVerb{num} is saved at the relative address -1.
 This is because the compiler targeting the VM assigns variables to higher relative addresses first.
 The compiler then progresses into lower relative memory as more variables of the function are declared.
 
-To summarize the above paragraph, this example uses relative addressing in order to declare local variables of a function.
+To summarize the previous paragraph, this example uses relative addressing in order to declare local variables of a function.
 However, absolute addressing is also used when variables are referenced in order to create pointers.
 Therefore, each addressing mode serves a separate and important purpose.
 
@@ -192,7 +192,7 @@ Therefore, each addressing mode serves a separate and important purpose.
 
 By considering the minimal pointer example from above, we now have a rough idea how the VM might execute instructions.
 In order to get a better understanding of how the rush VM works exactly, we will explain how it executes the program in Listing~\ref{lst:rush_vm_faster}.
-For this, we should consider the instructions in Figure~\ref{fig:tree_vs_vm} again.
+For this, we should consider the instructions in Listing~\ref{lst:tree_vs_vm_vm} again.
 The first instruction of the prelude function is `\texttt{setmp}'.
 This instruction adjusts the memory pointer by the amount specified in the instruction's operand.
 In this case however, the memory pointer remains unmodified since the operand of the instruction is 0.
@@ -236,53 +236,53 @@ This way, function calls are implemented in a simple but robust manner.
 \end{figure}
 
 Now that the call-instruction has been interpreted, the VM begins executing the first instruction of the main-function.
-Since the main-function only calls the \texttt{rec} function with the argument 1000, there are no new concepts to consider in this function.
-After the call instruction in line 7, the VM starts executing the instructions of the \texttt{rec} function.
-At the beginning of the \texttt{rec} function, the memory pointer is incremented by 1.
-This might seem erroneous since the \texttt{rec} function contains no visible variable declarations in its body.
+Since the main-function only calls the \qVerb{rec} function with the argument 1000, there are no new concepts to consider in this function.
+After the call instruction in line 7, the VM starts executing the instructions of the \qVerb{rec} function.
+At the beginning of the \qVerb{rec} function, the memory pointer is incremented by 1.
+This might seem erroneous since the \qVerb{rec} function contains no visible variable declarations in its body.
 However, this behavior is correct since function parameters count as variable declarations.
 Since the function takes one parameter, the memory pointer is incremented by one cell.
-Next, the instruction \texttt{svari} saves the value of the parameter which was previously pushed onto the stack at the relative address 0.
+Next, the instruction \qVerb{svari} saves the value of the parameter which was previously pushed onto the stack at the relative address 0.
 In line 12, the relative address of the memory cell containing the value of the parameter is pushed onto the stack.
-It is then consumed by the \texttt{gvar} instruction in line 13.
-At this point the top element on the stack contains an address-value referring to the target of the \texttt{gvar} instruction.
+It is then consumed by the \qVerb{gvar} instruction in line 13.
+At this point the top element on the stack contains an address-value referring to the target of the \qVerb{gvar} instruction.
 Therefore, the instruction first pops the top element from the stack.
 In this case, the value of the popped element is the relative address 0.
 Then, the instruction retrieves the value of the target variable and pushes it onto the stack.
 
 In line 14, the constant value 0 is pushed onto the stack.
-Next, the \texttt{eq} instruction pops two elements from the stack in order to test them for equality.
+Next, the \qVerb{eq} instruction pops two elements from the stack in order to test them for equality.
 Then, the result of the comparison is pushed onto the stack as a boolean value.
-In this case, the instruction compares if the current value of \texttt{n} is equal to 0.
-In line 16, the \texttt{jmpfalse} instruction is executed.
-This instruction jumps to the specified instruction index if the value on top of the stack is \texttt{false}.
-In this case, if the value on the stack is false, the parameter \texttt{n} was not equal to 0.
+In this case, the instruction compares if the current value of \qVerb{n} is equal to 0.
+In line 16, the \qVerb{jmpfalse} instruction is executed.
+This instruction jumps to the specified instruction index if the value on top of the stack is \qVerb{false}.
+In this case, if the value on the stack is false, the parameter \qVerb{n} was not equal to 0.
 Now, the VM would jump to the instruction in line 19.
-Here, the value of the parameter \texttt{n} is pushed onto the stack using the previously explained \texttt{push} and \texttt{gvar} instructions.
-Now, the top item on the stack is the value of the parameter \texttt{n}.
-In line 21, the \texttt{push} instruction pushes a constant 1 onto the stack.
-Next, the \texttt{sub} instruction pops the first two elements from the stack in order to subtract their values from each other.
-In this case, the instruction subtracts 1 from the value of \texttt{n} and pushes the result onto the stack.
-Next, the \texttt{rec} calls itself recursively using a previously explained \texttt{call} instruction.
+Here, the value of the parameter \qVerb{n} is pushed onto the stack using the previously explained \qVerb{push} and \qVerb{gvar} instructions.
+Now, the top item on the stack is the value of the parameter \qVerb{n}.
+In line 21, the \qVerb{push} instruction pushes a constant 1 onto the stack.
+Next, the \qVerb{sub} instruction pops the first two elements from the stack in order to subtract their values from each other.
+In this case, the instruction subtracts 1 from the value of \qVerb{n} and pushes the result onto the stack.
+Next, the \qVerb{rec} calls itself recursively using a previously explained \qVerb{call} instruction.
 Since the call argument is the top element on the stack, the result of the subtraction is used as the argument of the recursive call.
-Next, the function decrements the memory pointer in order to deallocate used memory using the \texttt{setmp} instruction in line 24.
+Next, the function decrements the memory pointer in order to deallocate used memory using the \qVerb{setmp} instruction in line 24.
 At the end of a function, the memory pointer is always decremented by the amount it was incremented at the beginning of the function.
 By deallocating the now unused memory, the compiler prevents the code from leaking memory at runtime.
-Lastly, the \texttt{ret} instruction is used to return from the function.
-Now we have considered what happens if the value of \texttt{n} was not equal to 0.
+Lastly, the \qVerb{ret} instruction is used to return from the function.
+Now we have considered what happens if the value of \qVerb{n} was not equal to 0.
 
-However, if the result of the comparison in line 15 is true, meaning that \texttt{n} is equal to 0, the \texttt{jmpfalse} instruction in line 16 does nothing.
-In this case, the VM continues to the \texttt{push} instruction in line 17.
+However, if the result of the comparison in line 15 is true, meaning that \qVerb{n} is equal to 0, the \qVerb{jmpfalse} instruction in line 16 does nothing.
+In this case, the VM continues to the \qVerb{push} instruction in line 17.
 Here, the constant value 0 is pushed onto the stack.
-Next, the VM interprets the \texttt{jmp} instruction in line 18.
-Unlike \texttt{jmpfalse}, this instruction performs its jump without any condition.
+Next, the VM interprets the \qVerb{jmp} instruction in line 18.
+Unlike \qVerb{jmpfalse}, this instruction performs its jump without any condition.
 In this case, the instruction jumps to the instruction at index 14 of the current function.
-The instruction at index 14 is \texttt{setmp} in line 24.
+The instruction at index 14 is \qVerb{setmp} in line 24.
 Since functions also return values by placing them on top of the stack, the return-value would be 0 in this case.
 Since we have covered what the instructions in the lines 24 and 25 do, we can summarize that the function returns the value 0 in this case.
 
 \subsection{Fetch-Decode-Execute Cycle of the VM}
-Now that the semantic meaning of the instructions in Figure~\ref{fig:tree_vs_vm} has been explained, we will explain how the fetch-decode-execute cycle works in the VM\@.
+Now that the semantic meaning of the instructions in Listing~\ref{lst:tree_vs_vm_vm} has been explained, we will explain how the fetch-decode-execute cycle works in the VM\@.
 The code in Listing~\ref{lst:vm_run_meth} displays the `\texttt{run}' method of the rush VM\@.
 
 \Lirsting[ranges={168-179}, caption={The \qVerb{run} Method of the rush VM}, label={lst:vm_run_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
@@ -348,14 +348,14 @@ Therefore, the compiler targeting the rush VM is presented in the following chap
 One significant benefit of virtual machines is that they execute programs faster compared to tree-walking interpreters.
 A reason for this speedup is that tree traversal involves a lot of overhead which is omitted when instructions are interpreted.
 The code in Listing~\ref{lst:rush_vm_faster} displays a recursive function implemented in rush.
-
-\Lirsting[raw=true, wrap=l, wrap width=.32\textwidth, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
-
 Figure~\ref{fig:tree_vs_vm_tree} displays a heavily simplified syntax tree representing the function displayed in Listing~\ref{lst:rush_vm_faster}.
 The root node of the tree represents the \qVerb{rec} function.
 Since the function only contains a single expression, the if-expression node is the only child of the root node.
 The only direct child of the root node is the single if-expression present in the function's body.
 The if-expression contains a condition, an if-branch, and an else-branch.
+
+\Lirsting[raw=true, wrap=l, wrap width=.32\textwidth, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
+
 Since the function should not call itself again if \qVerb{n} is equal to 0, the if-branch returns 0.
 In the else-branch, the \texttt{rec} function calls itself recursively.
 When the above program is executed using the tree-walking interpreter, the algorithm traverses the entire tree of the \qVerb{rec} function every time it recurses.
@@ -368,7 +368,7 @@ In order to improve efficiency, an algorithm could traverse the AST once, saving
 Then, the semantic meaning of the previously traversed tree could be interpreted repeatedly without the additional overhead.
 This behavior is used in the rush VM since it interprets instructions previously generated by a compiler.
 The compiler only traverses the AST once, generating VM instructions during the process.
-The instructions in Listing~\ref{fig:tree_vs_vm_vm} represent the program in Listing~\ref{lst:rush_vm_faster}.
+The instructions in Listing~\ref{lst:tree_vs_vm_vm} represent the program in Listing~\ref{lst:rush_vm_faster}.
 Every time the \qVerb{call} instruction in line 23 is executed, the VM only needs to jump to the instruction in line 10 in order to execute the \qVerb{rec} function recursively.
 Since repeated traversal of the syntax tree is omitted, rush programs will run significantly faster using the VM compared to the tree-walking interpreter.
 Using the VM, executing the \qVerb{rec} function using an input of $n = 1000$ took around 160 $\mu$s.
@@ -376,7 +376,7 @@ However, executing the identical code using the tree-walking interpreter took ar
 The rush VM executed the identical code roughly 2.6 times faster than the tree-walking interpreter.
 However, the initial delay caused by compilation was not considered in this benchmark.
 
-\begin{wrapfigure}{R}{.57\textwidth}
+\begin{wrapfigure}{R}{.56\textwidth}
 	\begin{adjustbox}{max totalsize={\textwidth}{!},center}
 		\begin{tikzpicture}[
 				tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},

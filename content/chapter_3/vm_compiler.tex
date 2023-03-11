@@ -4,10 +4,10 @@ Since the rush VM interprets instructions directly, there must be a compiler tar
 For this purpose, we have implemented a compiler translating rush source code into instructions which can be understood by the VM\@.
 Since the VM's architecture was developed with the features of rush in mind,
 the compiler sometimes requires surprisingly little effort for translating certain AST-nodes.
-For instance, the compiler translates infix-expressions, such as `\texttt{n + m}', into instructions using the \texttt{infix\_expr} method.
+For instance, the compiler translates infix-expressions, such as `\texttt{n + m}', into instructions using the \qVerb{infix_expr} method.
 This method is displayed in Listing~\ref{lst:vm_compile_infix_expr}.
 
-\Lirsting[ranges={522-524,536-543}, caption={Compilation of Infix-Expressions Targeting the VM}, label={lst:vm_compile_infix_expr}, float=H]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
+\Lirsting[ranges={522-524,536-543}, caption={Compilation of Infix-Expressions Targeting the VM}, label={lst:vm_compile_infix_expr}, float=h]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
 
 This method differentiates between the `\texttt{Or}' / `\texttt{And}' operators and other possible operators since the former require some extra code to be emitted.
 However, due to simplicity, the focus only lies on the compilation of the latter, meaning any other type of infix-expression.
@@ -19,10 +19,10 @@ It is to be mentioned that most of the other rush compilers required significant
 The reason for the simplicity of this implementation is the fact that the rush VM implements one instruction for each infix-operator.
 Since this VM implements all features of the source language, complex hacks for implementing some operations are not required and thereby simplify the compiler's implementation.
 
-\Lirsting[ranges={445-447,457-461}, caption={Compilation of Expressions Targeting the VM}, label={lst:vm_compile_expr}, float=H]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
+\Lirsting[ranges={445-447,457-461}, caption={Compilation of Expressions Targeting the VM}, label={lst:vm_compile_expr}, float=h]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
 
 The code in Listing~\ref{lst:vm_compile_expr} shows parts of the `\texttt{expression}' method of the rush VM compiler.
-When we examine the method's signature, it becomes apparent that it consumes an \texttt{AnalyzedExpresssion}.
+When we examine the method's signature, it becomes apparent that it consumes an \qVerb{AnalyzedExpresssion}.
 However, the method does not return anything which represents the runtime value of the expression.
 This is possible because the results of the expressions displayed in the snipped are pushed onto the stack directly.
 In line 447, the code for translating a constant integer expression can be seen.
@@ -63,6 +63,7 @@ Therefore, the total amount of iterations is 1.
 		\centering
 		\Lirsting[fancyvrb={frame=none}]{listings/vm_basic_loop.rush}
 	\end{minipage}%
+	\hfill
 	\begin{minipage}{.5\textwidth}
 		\centering
 		\Lirsting[raw=true, fancyvrb={frame=none}]{listings/vm_basic_loop_instructions.txt}
@@ -81,14 +82,14 @@ This instruction is only used in assign-expressions in order to duplicate the ad
 After `\texttt{n}' was incremented, the instruction in line 10 jumps to the instruction index 11.
 However, the last valid index is 10, it is represented by the `\texttt{jmp 3}' instruction in line 11.
 If this jump is executed, the VM has no next instruction to fetch and therefore stops its fetch-decode-execute cycle.
-Since this instruction jumps to a position outside the loop, it represents the \texttt{break} statement in line 5 of the source program.
+Since this instruction jumps to a position outside the loop, it represents the \qVerb{break} statement in line 5 of the source program.
 The `\texttt{jmp}' instruction in line 11 is responsible for the repetition introduced by the loop.
 This instruction jumps to the first instruction of the loop's body in line 4.
 Therefore, the instructions inside the loop's body are executed repeatedly.
 The difficulty presented by this design is that the index of the jump's target instruction must be known before the target instruction is inserted.
 The code in Listing~\ref{lst:rush_vm_compiler_loop} displays a part of the method responsible for compiling loops for the rush VM\@.
 
-\Lirsting[ranges={320-323,331-331,337-344}, caption={Implementation of Loops in the rush VM Compiler}, label={lst:rush_vm_compiler_loop}, float=H]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
+\Lirsting[ranges={320-323,331-331,337-344}, caption={Implementation of Loops in the rush VM Compiler}, label={lst:rush_vm_compiler_loop}, float=h]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
 
 In line 331, the loop's body is compiled and instructions generated during this process are inserted into the output sequence.
 The next statement in line 337 inserts an instruction responsible for jumping back to the start of the loop's body.
@@ -104,7 +105,7 @@ The first list contains the indices of jump-instructions generated by `\texttt{b
 The second list saves the indices of jump-instructions emitted by `\texttt{continue}' statements inside the loop's body.
 For instance, if the compiler encounters a `\texttt{break}' statement, the code in Listing~\ref{lst:rush_vm_compiler_break} is executed.
 
-\Lirsting[ranges={253-253,268-273,287-288}, caption={Compilation of `\texttt{break}' Statements in the rush VM Compiler}, label={lst:rush_vm_compiler_break}, float=H]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
+\Lirsting[ranges={253-253,268-273,287-288}, caption={Compilation of `\texttt{break}' Statements in the rush VM Compiler}, label={lst:rush_vm_compiler_break}, float=h]{deps/rush/crates/rush-interpreter-vm/src/compiler.rs}
 
 Here, the `\texttt{pos}' variable saves the index of the jump-instruction to be inserted.
 In line 271, this index is then inserted into the list containing the placeholder indices of the current loop.

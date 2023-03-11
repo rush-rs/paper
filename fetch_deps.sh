@@ -5,19 +5,6 @@ set -e
 
 mkdir -p deps
 
-install_pacman() {
-    if [ -x "$(command -v pacman)" ]; then
-        if pacman -Qs "$1" > /dev/null; then
-            echo "Pacman: $1 is installed"
-        else
-            echo "Pacman: $1 is not installed: installing..."
-            sudo pacman -S "$1" --noconfirm
-        fi
-    else
-        echo "Pacman: command not fount, please install '$1' manually"
-    fi
-}
-
 fetch_repo() {
     if ! [ -d "deps/$2" ]; then
         git clone "https://github.com/$1/$2.git" "deps/$2"
@@ -28,8 +15,8 @@ fetch_repo() {
     fi
 }
 
-# Pacman packages
-install_pacman perl-image-exiftool
+# TODO: create a Dockerfile
+#install_pacman ttf-fira-sans
 
 # tree-sitter
 fetch_repo nvim-treesitter nvim-treesitter

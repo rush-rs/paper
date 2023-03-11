@@ -21,7 +21,7 @@ Although it is also usable in \riscv{} assembly, it is only provided by the asse
 In x64 however, \qVerb{call} is a normal instruction just like every other one.
 
 For x64 specifically, there are also some instructions that only operate on certain specific registers.
-For instance, the \qVerb{idiv} instruction divides a signed 128-bit integer stored in the two 64-bit registers \qreg{rdx} and \qreg{rax} by the given operand, and stores the result in the \qreg{rax} register and the remainder in the \qreg{rdx} register. This makes any usage of such instructions significantly more involved, as values in these registers that should be preserved must temporarily be spilled to the stack.
+For instance, the \qVerb{idiv}\label{x64_idiv} instruction divides a signed 128-bit integer stored in the two 64-bit registers \qreg{rdx} and \qreg{rax} by the given operand, and stores the result in the \qreg{rax} register and the remainder in the \qreg{rdx} register. This makes any usage of such instructions significantly more involved, as values in these registers that should be preserved must temporarily be spilled to the stack.
 
 \subsection{x64 Assembly}
 
@@ -65,14 +65,14 @@ Here the directive \qVerb{.quad} inserts a quadruple word.
 	\begin{tabular}{c|ccc|c|l}
 		\rowcolor{gray!25} 64-Bit & 32-Bit     & 16-Bit     & 8-Bit      & Caller-Saved & Purpose                                    \\
 		\hline
+		\reg{rbp}                 & \reg{ebp}  & \reg{bp}   & \reg{bpl}  &              & base pointer / frame pointer               \\
+		\reg{rsp}                 & \reg{esp}  & \reg{sp}   & \reg{spl}  &              & stack pointer                              \\
 		\reg{rax}                 & \reg{eax}  & \reg{ax}   & \reg{al}   & \checkmark{} & \nth{1} return register                    \\
 		\reg{rbx}                 & \reg{ebx}  & \reg{bx}   & \reg{bl}   &              &                                            \\
 		\reg{rcx}                 & \reg{ecx}  & \reg{cx}   & \reg{cl}   & \checkmark{} & \nth{4} argument register                  \\
 		\reg{rdx}                 & \reg{edx}  & \reg{dx}   & \reg{dl}   & \checkmark{} & \gape{\makecell[l]{\nth{2} return register \\\nth{3} argument register}} \\
 		\reg{rsi}                 & \reg{esi}  & \reg{si}   & \reg{sil}  & \checkmark{} & \nth{2} argument register                  \\
 		\reg{rdi}                 & \reg{edi}  & \reg{di}   & \reg{dil}  & \checkmark{} & \nth{1} argument register                  \\
-		\reg{rbp}                 & \reg{ebp}  & \reg{bp}   & \reg{bpl}  &              & base pointer / frame pointer               \\
-		\reg{rsp}                 & \reg{esp}  & \reg{sp}   & \reg{spl}  & \checkmark{} & stack pointer                              \\
 		\reg{r8}                  & \reg{r8d}  & \reg{r8w}  & \reg{r8b}  & \checkmark{} & \nth{5} argument register                  \\
 		\reg{r9}                  & \reg{r9d}  & \reg{r9w}  & \reg{r9b}  & \checkmark{} & \nth{6} argument register                  \\
 		\reg{r10}                 & \reg{r10d} & \reg{r10w} & \reg{r10b} & \checkmark{} &                                            \\
@@ -93,7 +93,6 @@ However, instead of these being additional storage, they simply alias to the low
 For instance, when writing the byte $(2a)_{16}$ into \qreg{al}, the least significant byte of \qreg{ax}, \qreg{eax}, and \qreg{rax} changes to $(2a)_{16}$, too.
 The upper bytes are untouched, however.
 That means, if for example \qreg{ax} contains the value $(a455)_{16}$ before writing, it will contain $(a42a)_{16}$ afterwards, not $(002a)_{16}$.
-\TODO{include parens?}
 
 These registers for smaller sizes are not present for legacy reasons though.
 Considering line~18 from Listing~\ref{lst:x64_asm_example}, the move of the value behind the \qVerb{byte ptr} requires the destination register to be of size \qVerb{byte}, too.
@@ -115,12 +114,9 @@ The additional 64 bits are provided for \emph{single instruction multiple data} 
 They can be used by more optimized compilers to operate on multiple values at a time.
 Any single one of these registers would then for instance hold two 64-bit values or four 32-bit values.
 
-\begin{itemize}
-	\item mention useless instructions?
-	\item alignment?
-	\item corelib?
-	\item pointers? (should be the same as \riscv{})
-\end{itemize}
+\TODO{mention obsolete instructions?~\cite[p.~4]{Patterson2017}}
+
+\TODO{explain pointers? (should be the same as \riscv{})}
 
 \subsection{Stack Layout and Calling Convention}
 
@@ -135,22 +131,26 @@ Any single one of these registers would then for instance hold two 64-bit values
 		\addtocounter{cellnb}{-1}
 
 		% copied code from `\stacktop{}` to not reset counter to in turn allow `\startframe` above this
-		\draw[freecell] (0,\value{cellnb})
+		\draw[padding] (0,\value{cellnb})
 		+(-2,.5) -- +(-2,-.5) -- +(2,-.5) -- +(2,.5);
 		\draw (0,\value{cellnb}) node{...};
 
-		\cell{n\textsuperscript{th} stack argument} \cellcom{\VerbCmd{\%rbp+}$16+8n$}
-		\cell{...}
+		\cell{n\textsuperscript{th} stack argument} \cellcom{\VerbCmd{\%rbp+}$(16+8n)$}
+		\cell[padding]{...}
+		% custom draw instead of `\cellcom` for yshift
+		\draw (2.4,\value{cellnb}) node[anchor=west, yshift=3.5pt] {\vdots};
 		\cell{\nth{1} stack argument} \cellcom{\VerbCmd{\%rbp+16}}
 		\finishframe{previous}
+
 		\cell{return address} \cellcom{\VerbCmd{\%rbp+8}}
 		\cell{previous \qreg{rbp} value} \cellcom{\VerbCmd{\%rbp}}
+
 		\startframe
-		\bcell{unspecified} \cellcom{\VerbCmd{\%rbp-8}}
-		\bcell{...}
-		\bcell{variable size} \cellcom{\VerbCmd{\%rsp}}
-		% \padding{3}{\makecell{unspecified\\variable size}} \cellcom{\VerbCmd{\%rbp-8}} \cellcom{\VerbCmd{\%rsp}}
-		\stackbottom
+		\padding{3}{\makecell{unspecified\\variable size}} \cellcom{\VerbCmd{\%rsp}}
+		% custom draws instead of `\cellcom` for yshift and padding cell offset
+		\draw (2.4,\value{cellnb}+1) node[anchor=west, yshift=3.5pt] {\vdots};
+		\draw (2.4,\value{cellnb}+2) node[anchor=west] {\VerbCmd{\%rbp-8}};
+		\stackbottom[padding]
 		\finishframe{current}
 	\end{tikzpicture}
 	\caption[Stack Layout of x64]{Stack Layout of x64~\cite[p.~21]{Lu2022}}\label{fig:x64_stack}
@@ -162,12 +162,10 @@ The overall outline is similar to that of \riscv{}, but some details differ.
 For one, the order of the saved return address and the saved \qreg{rbp} register is inverted.
 Secondly, the address \qreg{rbp} points to is different by 16 bytes.
 Therefore, in x64 the first stack argument is accessed by offsetting \qreg{rbp} by 16, whereas in \riscv{} the \qVerb{fp} register already points to the first stack argument without any offset.
-In both calling conventions every stack argument uses eight bytes of space.
-In addition, x64 has no special return address register, but only stores the return address on the stack and retrieves it from there when needed.
-\TODO{stack frame size must be a multiple of 16 bytes}
-
+In both calling conventions every stack argument uses eight bytes of space, but x64 has no special return address register, and instead only stores the return address on the stack and retrieves it from there when needed.
+At the moment of calling a function, the stack frame's size must be aligned to a multiple of 16 bytes.
 The unspecified space between \qVerbCmd{\%rbp-8} and \qreg{rsp} can be freely used by the current function to save local variables.
-Its internal layout may differ between programming languages.
+Its internal layout may differ between programming languages~\cite[p.~21]{Lu2022}.
 
 \subsection{Implementation}
 
@@ -181,7 +179,7 @@ A matching \qVerb{Display} implementation then simply emits the respective assem
 Line 20 shows the definition of the \qVerb{.section} directive, simply holding an instance of another enumeration containing the valid sections.
 Line 21 defines an assembly symbol, holding its name and a boolean whether a blank line should be added above.
 \TODO{did I say what symbols / labels are?}
-The name is saved as \textcolor{red}{a/an} \qVerb{Rc<str>} instead of a \qVerb{String} here to prevent some unnecessary cloning in some places.
+The name is saved as an \qVerb{Rc<str>} instead of a \qVerb{String} here to prevent some unnecessary cloning in some places.
 
 The normal instructions, e.g., \qVerb{add} and \qVerb{sub}, also cannot simply take registers as operands, as x64 also allows memory pointers and immediate values in many places.
 Instead, another enumeration, called \qVerb{IntValue}, is introduced to allow these three variants.
@@ -278,30 +276,112 @@ To support function calls, two main aspects must be considered: passing argument
 Generally, for passing arguments the compiler simply iterates over the argument expressions, compiles each one in turn, and moves their result into the appropriate register, or onto the stack if no registers are left.
 As the passing of the first six integer arguments is done through the same registers, a function call always requires access to these exact registers, or at least a subset of them.
 That means, if some of the registers happen to be in use already, their content has to be spilled to the stack and replaced with the argument value.
-An example for when this might happen is a function call as a non-first argument to another function call like `\LirstInline{rush}{foo(42, bar('x'))}'.
+An example for when this might happen is a function call as a non-first argument to another function call, like in `\LirstInline{rush}{foo(42, bar('x'))}'.
 When the inner function call, here \qVerb{bar}, wants to move its first argument \qVerb{'x'} into \qreg{rdi}, it notices this register is already used for the first argument of the outer function call, \qVerb{42}.
 
 Each function that takes parameters should move all passed arguments from their registers onto the stack in order to make the registers available for the rest of the function body.
 In Listing~\ref{lst:x64_functions_asm} this happens in line~23 for the one parameter called \qVerb{n}.
 More optimized compilers can of course try to keep the arguments in the registers for as long as they are not specifically needed elsewhere, but as the rush compilers only serve educational purposes this is not done.
 
+\subsubsection{Corelib?}
+
 \subsubsection{Control Flow}
 
-\begin{itemize}
-	\item if-else-expressions $\rightarrow$ conditional jumps
-	\item loops
-\end{itemize}
+\Lirsting[ranges={5-13}, wrap=o, wrap width=0.55\textwidth, fancyvrb={numbers=\OuterEdge}, caption={A rush example function containing if-expressions and a loop.}, label={lst:x64_control_flow_rush}]{listings/x64_control_flow.rush}
 
-\subsubsection{Division and Float Comparisons}
+Just as with \riscv{}, control flow constructs like loops and if-branches must be represented using simple jumps in assembly.
+There are both conditional and unconditional jumps, the latter of which was already slightly touched upon when explaining \qVerb{return} statements in a previous section.
+An unconditional jump, done in x64 with the \qVerb{jmp} instruction, only takes a symbol to jump to and does so, as the name implies, without checking for any condition.
+Conditional jumps are rather a set of different instructions, each testing a different condition.
+The way x64 handles conditions again differs from \riscv{}.
+It provides a set of flags indicating various relations between two values, which are set by dedicated compare instructions like \qVerb{cmp} for integers, \qVerb{test} for booleans, and \qVerb{ucomisd} for floats.
+A conditional jump instruction like \qVerb{je} (\textbf{j}ump if \textbf{e}qual) then only has to query the flag that indicates equality, and optionally performs a jump based on its value.
 
-\begin{itemize}
-	\item Calling convention
-	\item \riscv{} Reader: \emph{ASCII adjust after addition} $\rightarrow$ \emph{aaa} $\rightarrow$ obsolete, collectively occupy 1.6\% of opcode space\cite[p.~4]{Patterson2017}
-	\item
-	      \enquote{Modular vs. Incremental ISAs Intel was betting its future on a high-end microprocessor, but that was still years away.
-		      To counter Zilog, Intel developed a stop-gap processor and called it the 8086. It was intended to be short-lived and not have any successors,
-		      but that’s not how things turned out. The high-end processor ended up being late to market, and when it did come out, it was too slow.
-		      So the 8086 architecture lived on—it evolved into a 32-bit processor and eventually into a 64-bit one.
-		      The names kept changing (80186, 80286, i386, i486, Pentium), but the underlying instruction set remained intact. —Stephen P. Morse, architect of the 8086}\cite{Morse2017}.
-	      $\Rightarrow$ only meant as a temporary architecture
-\end{itemize}
+\Lirsting[ranges={17-56}, float=htb, caption={Trimmed compiler output for the rush function in Listing~\ref{lst:x64_control_flow_rush}}, label={lst:x64_control_flow_asm}]{listings/x64_control_flow.s}
+
+Listing~\ref{lst:x64_control_flow_rush} shows one last example rush function with the produced assembly code in Listing~\ref{lst:x64_control_flow_asm}, this time containing if-expressions and a loop with one \qVerb{break} and one \qVerb{continue} statement.
+The purpose of this function is nonexistent, and the semantic analyzer rightfully complains about unreachable statements and unused variables, but it still serves to show translation of these constructs to assembly.
+
+\begin{wrapfigure}{o}{0.5\textwidth}
+	\begin{tikzpicture}[every node/.style={minimum size=1.5ex}]
+		\node(s)[vstack=8, rectangle split part align=left]{%
+			\strut \emph{condition}
+			\nodepart{two}  \strut jump to \qVerb{.block_x} if condition is false
+			\nodepart{three}\strut \emph{if-block}
+			\nodepart{four} \strut jump to \qVerb{.block_y}
+			\nodepart{five} \strut \Verb{.block_x:}
+			\nodepart{six}  \strut \emph{else-block}
+			\nodepart{seven}\strut \Verb{.block_y:}
+			\nodepart{eight}\strut \dots
+		};
+		\draw[arrow] (s.two east) to [out=-30,in=30] (s.five east);
+		\draw[arrow] (s.four east) to [out=-30,in=30] (s.seven east);
+	\end{tikzpicture}
+	\caption{Structure of if-expressions in assembly.}\label{fig:asm_if}
+\end{wrapfigure}
+
+Compiled if-expressions always follow the same outline as it is shown in Figure~\ref{fig:asm_if}.
+First, the condition is compiled and an initial jump instruction that jumps to the else-block in case the condition evaluates to `false' is emitted.
+Following that are the instructions for the if-block, concluded by an unconditional jump to behind the else-block.
+Now, the first symbol is inserted, here \qVerb{.block_x}, followed by the else-block.
+The whole thing ends with the second symbol, here \qVerb{.block_y}.
+Any following code goes after that.
+It is apparent that this structure encodes the expected if-else branching behavior.
+The code from the if-block is only ever reached, if the condition is true, and it then skips over the else-block to the following instructions.
+If the condition is false, the if-block is immediately skipped and only the else-block is executed which then also continues with the following instructions, causing the two branches to merge.
+
+Starting with the if-expression in line~6 of Listing~\ref{lst:x64_control_flow_rush}, the condition here is merely a boolean variable.
+In order to execute a jump based on the value of this variable, the \qVerb{test} instruction is used in line~22 of Listing~\ref{lst:x64_control_flow_asm} with both the variable pointer and a constant `1' as operands.
+This results in the equality flag being set to `1' if a bitwise AND operation of these operands results in `0', that is, if the boolean variable is `false'.
+The following \qVerb{je} instruction in line~23 therefore skips to the else-block in case the boolean value was `false'.
+
+The compiler could now simply compile all condition expressions as usual, always resulting in one \qVerb{IntValue} holding a boolean and use the same simple boolean check every time.
+However, since x64 provides additional jump instructions for basic conditions like \qVerb{==}, \qVerb{!=}, \qVerb{>=}, or \qVerb{<}, the compiler will try to use one of these when the source rush expression is simple enough.
+This can be seen in lines~30--33 of the assembly code, which represent the condition of the if-expression in line~7 of the rush code.
+The compiler detects the condition to be a simple equality check between two floats, and therefore issues a \qVerb{ucomisd} instruction in line~31 to compare the floats, and a \qVerb{jne} instruction in line~33 to jump if the floats are not equal.
+The cause for the \qVerb{jp}\label{x64_ucomisd} instruction in between is explained later.
+
+\TODO{show rust snippets}
+
+The representation of the loop is much simpler.
+It must only define two symbols, one before and one after the loop contents, and unconditionally jump back to the former at the end of every iteration.
+This second point is the reason for why the comments in Listing~\ref{lst:x64_control_flow_asm} show two \qVerb{continue} statements, even though the rush function only had one.
+An unconditional jump back to the loop's start is exactly the behavior of \qVerb{continue} statements.
+And \qVerb{break} statements are not much different either, they just jump to behind the loop instead.
+For conditional loops, that is, while-loops and for-loops, there is an additional head effectively performing `\LirstInline{rush}{if !condition { break; }}' at the start of each iteration.
+For-loops also initialize a variable before the first iteration and call the update expression at the end of each one.
+
+\subsubsection{Integer Division and Float Comparisons}
+
+This subsection's title might seem a little specific compared to the others, but it has the simple reason that this subsection highlights two unexpectedly complex hurdles which we encountered during the creation of this compiler.
+They were both already hinted at before.
+Firstly, there is integer division with the \qVerb{idiv} instruction, which was shortly explained in the introduction to x64 on page~\pageref{x64_idiv}.
+It is used when compiling rush infix expressions between two integers with either the \qVerb{/} or the \qVerbCmd{\%} operator.
+
+\Lirsting[ranges={56-56, 65-78, _90-104, 110-115}, float=htb, caption={Compilation of integer division in x64.}, label={lst:x64_infix_idiv}]{deps/rush/crates/rush-compiler-x86-64/src/infix.rs}
+
+Listing~\ref{lst:x64_infix_idiv} shows this compilation process.
+As \qVerb{idiv} always operates on the \qreg{rax} and \qreg{rdx} registers, it must first be assured that they are free for use.
+The left-hand side of the division, the numerator, is then moved into \qreg{rax} and sign-extended\footnote{\TODO{what is sign-extension}} to 128 bits via the \qVerb{cqo} instruction.
+Now, the right-hand side, the denominator, is made sure to either be a register or a memory pointer, which is then used in the call to \qVerb{idiv} in line~93.
+The division result, either \qreg{rax} or \qreg{rdx} depending on the operator, is then moved into the register that previously contained the numerator, as this is guaranteed to be available now.
+To finish up, possibly spilled registers are reloaded, and the register is returned as the expression's result.
+The resulting assembly of this can be seen in lines~43--45 in Listing~\ref{lst:x64_control_flow_asm}.
+
+The second unexpected hurdle were floating point number comparisons.
+Floating point numbers as defined by the IEEE standard have the special property of not forming a total order \TODO{cite}.
+That means, not any two arbitrary values are comparable.
+For instance, the float standard defines a `NaN'\footnote{short for ``not a number''} value, which cannot be compared to itself.
+In rush an expression comparing two incomparable float values should result in `false'.
+This is the reason for the additional \qVerb{jp} instruction in line~32 of Listing~\ref{lst:x64_control_flow_asm} that was previously hinted at on page~\pageref{x64_ucomisd}.
+When comparing two floats with the \qVerb{ucomisd} instruction and there is no clear order defined, the \emph{parity} flag is set to `1'.
+The \qVerb{jp} instruction then jumps straight to the else-block if this flag is set, hereby interpreting an expression like \qVerb{NaN == NaN} as false.
+
+\Lirsting[ranges={927-927, 944-959}, float=htb, caption={Compilation of float comparisons in x64.}, label={lst:x64_infix_ucomisd}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+
+How this is achieved in the compiler is visible in Listing~\ref{lst:x64_infix_ucomisd}.
+The shown code snippet is inside the \qVerb{condition} method which is used during compilation of if-expressions and conditional loops.
+After pushing the \qVerb{ucomisd} instruction, two additional checks are performed.
+Firstly, if the condition is \qVerb{==}, then add a conditional jump to the else-block for when the result is unordered.
+Secondly, if the condition is \qVerb{!=}, then add a conditional jump to the else-block for when the result is \emph{not} unordered.
+An expression like \qVerb{NaN != NaN} is therefore considered to be true.

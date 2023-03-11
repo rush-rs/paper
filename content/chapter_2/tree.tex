@@ -9,7 +9,7 @@ It stores a list of \emph{scopes}, that being maps of variable names to their va
 \TODO{are rush's scoping rules already explained?}
 \TODO{is runtime / compile time already explained?}
 \TODO{are globals already mentioned?}
-Why the \qVerb{Value} is wrapped inside \textcolor{red}{a/an} \qVerb{Rc<RefCell<Value>>} here is explained later in Section~\ref{sec:tree_pointers}.
+Why the \qVerb{Value} is wrapped inside an \qVerb{Rc<RefCell<Value>>} here is explained later in Section~\ref{sec:tree_pointers}.
 Additionally, a map of function names to their tree node is saved.
 The \qVerb{Rc<_>} here is only necessary to conform to Rust's borrowing rules without unnecessarily cloning.
 

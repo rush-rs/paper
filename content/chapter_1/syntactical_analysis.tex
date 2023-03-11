@@ -146,7 +146,7 @@ An example for LR parsing is the \emph{shift-reduce} parsing approach, which is 
 One thing to note however, is that LR parsers are generally very complicated to implement manually.
 LL parsers on the contrary are usually much simpler to implement, but come with a limitation.
 By design, they must recognize a node by its first $n=k+1$ tokens, where $n$ is the window size.
-However, due to that restriction, not every context-free language can be parsed by \textcolor{red}{a/an} LL parser.
+However, due to that restriction, not every context-free language can be parsed by an LL parser.
 An example for that is given in Listing~\ref{lst:ebnf_reference_pratt}.
 
 \Lirsting[float=h, caption={Example Language a Traditional LL$(1)$ Parser Cannot Parse}, label={lst:ebnf_reference_pratt}]{listings/ebnf_reference_pratt.ebnf}
@@ -287,7 +287,7 @@ These simple calls and checks of precedences automatically result in correct gro
 This might be made clearer by Figure~\ref{fig:token_precs}.
 It shows the tokens with their respective left and right precedence for the input `\Verb{(1+2*3)/4**5}', which represents the mathematical expression $\frac{1+2\cdot3}{4^5}$.
 The for this example irrelevant precedences have been grayed out.
-Starting from the left, the parser first encounters \textcolor{red}{a/an} `\Verb{LParen}' token and therefore decides to parse a `\Verb{grouped_expr}'.
+Starting from the left, the parser first encounters an `\Verb{LParen}' token and therefore decides to parse a `\Verb{grouped_expr}'.
 Inside that method, `\Verb{expression}' is again called, again with `\Verb{prec}' being 0.
 The difference is that now the current token is `\Verb{Int(1)}'.
 That token is then parsed as a simple integer expression and stored in `\Verb{lhs}'.

@@ -1,0 +1,13 @@
+fn main() {
+    bar(true);
+}
+
+fn bar(a: bool) {
+    let b = if a { 42f } else { 3.14 };
+    let c = if b == 42f { 11 } else { 3 };
+    loop {
+        break;
+        continue;
+        3 / c;
+    }
+}

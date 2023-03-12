@@ -7,7 +7,7 @@ The main differences lie in the instruction count and complexity.
 For the purposes of this paper, the still widely used CISC architecture \emph{x86\_64}\footnote{later shortened to \emph{x64}} is used as an example, just like \riscv{} was used to represent RISC architectures in the previous section.
 While \riscv{} with all extensions used by rush\footnote{The used extensions are RV32I, RV64I, RV32M, RV64M, RV32D, and RV64D.} has about 100 different instructions~\cite[Chapter~24]{Waterman2019}, x64 is estimated to have about 3600 instructions~\cite{Rodgers2017}.
 This has the simple reason that at the time most CISC architectures were developed, many developers still programmed in assembly languages by hand, without the use of compilers.
-Additional instructions for higher level concepts were therefore very helpful.
+Additional instructions for higher level concepts were therefore very helpful~\cite[p.~9]{Dandamudi2005Risc}.
 
 One example for such an instruction is the \qVerb{leave} instruction from x64.
 It is used to release the current stack frame at the end of a procedure.
@@ -54,9 +54,12 @@ All other sizes except for the byte are then named based on the word size.
 Therefore, \riscv{} assigns 16-bit, 32-bit, and 64-bit the names \emph{half word}, \emph{word}, and \emph{double word} respectively.
 For x64 they are instead called \emph{word}, \emph{double word}, and \emph{quadruple word}.
 These names are usually shortened to only include the first letter of the factor, for instance a double word is called \emph{dword}.
-In some instances, see line 28, alternative short forms are used.
+In some instances, see line~28, alternative short forms are used.
 Here the directive \qVerb{.quad} inserts a quadruple word.
-\TODO{in x64 instructions the first source operand usually is also the destination}
+
+Another important difference between x64 and \riscv{} is the typical operand structure of instructions.
+\riscv{} takes three operands for \qVerb{add}, \qVerb{sub}, and many other instructions, these being the destination, the first source, and the second source.
+The norm in x64 instead is using just two operands where the first doubles as both the first source and the destination~\cite[pp.~14--20]{Dandamudi2005Risc}.
 
 \begin{table}[h]
 	\centering
@@ -95,9 +98,9 @@ The upper bytes are untouched, however.
 That means, if for example \qreg{ax} contains the value $(a455)_{16}$ before writing, it will contain $(a42a)_{16}$ afterwards, not $(002a)_{16}$.
 
 These registers for smaller sizes are not present for legacy reasons though.
-Considering line~18 from Listing~\ref{lst:x64_asm_example}, the move of the value behind the \qVerb{byte ptr} requires the destination register to be of size \qVerb{byte}, too.
+Considering line~18 from Listing~\ref{lst:x64_asm_example}, the move of the value behind the \qVerb{byte ptr} requires the destination register to one byte in size, too.
 For this reason, the compiler uses the \qreg{sil} register here, instead of its 64-bit equivalent \qreg{rsi}.
-Line 19 then performs the cast from the boolean, saved as a byte, to a 64-bit integer.
+Line~19 then performs the cast from the boolean, saved as a byte, to a 64-bit integer.
 It does this by taking the 64-bit variant of the register, in this case \qreg{rsi}, and assuring all bits, except for the least significant eight, are zeros.
 The latter is done using the \emph{bitwise AND} operation with the number $2^8-1=255$, which in binary is represented by eight ones.
 
@@ -176,8 +179,8 @@ One such difference is that the x64 compiler's \qVerb{Instruction} definition wh
 This way, an entire assembly file can be represented as one \qVerb{Vec<Instruction>} with every \qVerb{Instruction} representing one line of the assembly code.
 A matching \qVerb{Display} implementation then simply emits the respective assembly representation.
 
-Line 20 shows the definition of the \qVerb{.section} directive, simply holding an instance of another enumeration containing the valid sections.
-Line 21 defines an assembly symbol, holding its name and a boolean whether a blank line should be added above.
+Line~20 shows the definition of the \qVerb{.section} directive, simply holding an instance of another enumeration containing the valid sections.
+Line~21 defines an assembly symbol, holding its name and a boolean whether a blank line should be added above.
 \TODO{did I say what symbols / labels are?}
 The name is saved as an \qVerb{Rc<str>} instead of a \qVerb{String} here to prevent some unnecessary cloning in some places.
 
@@ -233,15 +236,16 @@ This result is then subtracted from 8 again to result in 2, the number of bytes 
 
 \subsubsection{Register Allocation}
 
+\Lirsting[ranges={257-265, 270-272:26, _272:59-274}, wrap=0, wrap width=0.5\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Register allocation in the rush x64 compiler.}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+
 The register allocation algorithm of the x64 compiler differs quite a lot, too.
 Instead of marking individual registers as used or unused and then searching through a specified order for the first free one, this compiler uses an almost stack-like behavior.
 Again, one specific order of registers is defined, starting with the return register \qreg{rax}, followed by the argument registers in their correct order, and ending with the remaining general purpose registers.
 Whenever a free register is required, the \qVerb{next} method from Listing~\ref{lst:x64_intregister_next} on the last used register is called, returning the next register in line, which is then added to the \qVerb{used_registers} field.
 For freeing a register, the compiler just pops the last register off this list.
 This only works, because the rest of the compiler guarantees used registers to be freed in exactly the reverse order they were reserved in.
+With this guarantee it is apparent that at any point in time during compilation, the registers in the \qVerb{used_registers} field are in the exact order specified by Listing~\ref{lst:x64_intregister_next} without gaps.
 The same is done separately for the float registers.
-
-\Lirsting[ranges={257-274}, float=h, caption={Register allocation in the rush x64 compiler.}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
 
 \subsubsection{Functions}
 

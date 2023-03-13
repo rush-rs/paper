@@ -306,3 +306,4 @@ TSWLatexianTemp*
 *.pdf
 /listings/generated
 /lirstings.cache.json
+/tokei.cache.json

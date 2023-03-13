@@ -221,19 +221,6 @@ Finally, a \qVerb{mov} instruction for inserting the value at the location of th
 
 \Lirsting[ranges={254-271, 277-277, _280-283}, float=htb, caption={Stack space reservation for values.}, label={lst:x64_push_to_stack}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
-Listing~\ref{lst:x64_align} shows the implementation for alignment.
-The pointer must only be modified if it is not a multiple of the wanted byte count yet.
-To calculate the amount of padding, the formula \qVerbCmd{size - (ptr \% size)} is used.
-For instance, say \qVerb{ptr} is 22 and \qVerb{size} is 8.
-The stack memory is then thought of in chunks of eight bytes each, where the resulting pointer should point to the start of the next empty chunk.
-With the pointer currently being 22, there are two full chunks and one chunk with six of the eight bytes occupied.
-Hence, two bytes of padding are needed to reach the next chunk.
-The expression \qVerbCmd{22 \% 8} yields 6, which is the number of bytes that are already in use in the last chunk.
-This result is then subtracted from 8 again to result in 2, the number of bytes for padding that is then added to the pointer.
-\TODO{move this paragraph to general concepts?}
-
-\Lirsting[ranges={184-188}, float=htb, caption={Alignment of values on the stack.}, label={lst:x64_align}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
-
 \subsubsection{Register Allocation}
 
 \Lirsting[ranges={257-265, 270-272:26, _272:59-274}, wrap=0, wrap width=0.5\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Register allocation in the rush x64 compiler.}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}

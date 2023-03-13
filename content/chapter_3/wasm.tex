@@ -1,23 +1,5 @@
 \section{Compilation to WebAssembly}\label{sec:wasm}
 
-\begin{enumerate}
-	\item what is WASM and why
-	\item modules
-	      \begin{itemize}
-		      \item binary and text format (sections, leb128)
-		      \item globals, functions, imports, exports, \ldots
-		      \item uncommon to target binary format
-	      \end{itemize}
-	\item WASI
-	\item basic implementation
-	      \begin{itemize}
-		      \item leb128
-		      \item sections
-		      \item \Verb{self.function_body}
-	      \end{itemize}
-	\item example program
-\end{enumerate}
-
 The first `external' compilation target presented here is \emph{WebAssembly}, or \emph{WASM} for short.
 \TODO{research origins and goals of WASM and explain them here, CITATION}
 Unlike the name implies, WebAssembly is not only used in web applications.
@@ -113,7 +95,7 @@ Listing~\ref{lst:wasm_instructions} shows an extract.
 The \qVerb{Compiler} struct has a lot of fields for various purposes.
 Only a few are shown in Listing~\ref{lst:wasm_compiler} and explained here.
 To begin, a few fields regarding the currently compiled function are defined.
-The \qVerb{function_body} contains the bytes with instructions for this function, and \qVerb{locals} stores which locals the function has along with their types.
+The \qVerb{function_body} contains the bytes with instructions for the current function, and \qVerb{locals} stores which local variables the function has along with their types.
 In the binary format the locals are stored as a WebAssembly vector, that is, it starts with the number of locals, followed by each local.
 Since the compiler cannot know the count of local variables beforehand, it stores them as a vector of byte vectors first.
 This way, in the end it can first append the vector's length to the final output and then concatenate the contents.
@@ -128,23 +110,79 @@ They are of type \qVerb{Vec<Vec<u8>>} for the same reason as \qVerb{locals}.
 Listing~\ref{lst:wasm_compiler_entry} contains the compiler's entry point function.
 Some details are left out, but essentially it simply calls another method to compile the program itself and then concatenates all sections together to form the final binary.
 It also already imports all required functions from WASI and exports blank linear memory as required by WASI.
-The \qVerb{Self::section} helper function is used to add the section identifier, byte length, and element count for each section.
+The \qVerb{Self::section} helper function is used to add the section identifier, byte length, and element count in front of each section's contents.
 
 \Lirsting[ranges={70-70, 81-81, 104-109, 124-126}, float=h, label={lst:wasm_compiler_entry}, caption={Entry Point of the WASM Compiler}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
 
-Inside the \qVerb{self.program} method, the global variables are defined and initialized, and all function signatures are added to the `Type' section and `Function' section and the \qVerb{self.functions} map.
+Inside the \qVerb{self.program} method, the global variables are defined and initialized, and all function signatures are added to the `Type' and `Function' sections and the \qVerb{self.functions} map.
 Afterwards, it calls \qVerb{self.function_definition} for every defined function.
 This has to happen in these two steps, because rush allows functions to be called before their definition in the file.
-For every function body, first all statements and the optional trailing expression are compiled by their respective methods, and then the values of \qVerb{self.function_body} and \qVerb{self.locals} along with their combined length are appended to the code section.
+For every function body, first, all statements and the optional trailing expression are compiled by their respective methods, and then the values of \qVerb{self.function_body} and \qVerb{self.locals} along with their combined length are appended to the code section.
 
 All other nodes have a matching method defined again, as every time an AST is traversed.
 Each of those methods simply pushes instructions to \qVerb{self.function_body}.
-Because WebAssembly is stack-based, none of them has to return any value, not even the expressions.
+Because WebAssembly is stack-based, none of them have to return any value, not even the expressions.
 They simply add their instructions to the resulting code and call methods for nested nodes beforehand.
 By the stack's nature, this will result in correct behavior, just like in the VM.
 
-\TODO{function calls?}
+\subsubsection{Function Calls}
+
+Compared to the other compilers presented later, supporting functions and function calls is very straight forward for WebAssembly.
+It was already explained that WebAssembly modules already have a concept of functions with parameters and return values, so mapping rush functions to these is the obvious strategy.
+Calling a declared function is as simple as compiling all argument expressions in order, causing all evaluated arguments to be on top of the stack, and emitting a \qVerb{call} instruction with the target function's index.
+
+\subsubsection{Logical Operators}
+
+\Lirsting[ranges={758-779, _796-798, 864-864}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, label={lst:wasm_logical_infix}, caption={Compilation of logical operators.}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
+
+One interesting special case to highlight is the compilation of logical operators\footnote{Operators that only operate on boolean values, typically \qVerb{&&} and \qVerb{||}.} in infix expressions.
+This comes down to the fact that in many programming languages, and likewise in rush, these operators evaluate \emph{lazily}, that is, they only evaluate their right-hand side if the result is not already clear by the left-hand side.
+Listing~\ref{lst:wasm_logical_infix} shows the relevant part of the \qVerb{infix_expr} method in the WASM compiler.
+At the start of this method, before the normal logic is reached, there are special cases for the \qVerb{&&} and \qVerb{||} operators.
+Shown here is only the code for the \qVerb{&&} operator, but that for \qVerb{||} works alike.
+It is evident that the operation is compiled as if it were an if-expression like `\LirstInline{rush}{if !lhs { false } else { rhs }}' where \qVerb{lhs} and \qVerb{rhs} stand for `left-hand side' and `right-hand side' respectively.
+Using this strategy, the expected behavior of lazy evaluation is achieved, unlike if it were simply compiling both sides and comparing the results with an \qVerb{i32.and} instruction.
+The negation of the left-hand side is done in line~764 using the \qVerb{i32.eqz} instruction which consumes an \qVerb{i32} from the top of the stack and replaces it with either `0' or `1' based on weather the value was equal to zero.
+Because the top-most value is already a boolean, the instruction has the effect of negating it.
+In line~777 an early return is issued to skip the logic used for all other infix operators.
+
+The other compilers explained in this paper, while not mentioning it again, all use the same strategy for these logical operators.
 
 \subsection{Example}
 
-\TODO{example?}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, label={lst:wasm_example}, caption={Example rush program.}]{listings/x64_simple.rush}
+
+Listing~\ref{lst:wasm_example} shows an example rush program containing a global integer variable \qVerb{a}, a local boolean variable \qVerb{b}, and a call to the built-in \qVerb{exit} function.
+The generated compiler output, converted to WAT using `wasm2wat' and manually commented, is shown in Listing~\ref{lst:wasm_example_wat}.
+% TODO: As the binary format contains the function signatures separately in the `Type' section rather than together with the function's instructions, the `wasm2wat' tool declares ...
+Since the compiler detects usage of the \qVerb{exit} function, it imports the corresponding \qVerb{proc_exit} function from WASI under the name \qVerb{__wasi_exit} in line~3.
+Below the `main' function is the definition and export of blank memory in line~20 and line~23 respectively, as to conform with WASI's requirements.
+The `main' function is also exported as \qVerb{_start} in line~22 and also separately declared as the module's entry point in line~24, both two have this function be the one to start execution.
+Line~21 declares the global \qVerb{a} as a mutable \emph{i64} and sets the initial value of `2'.
+
+\Lirsting[float=htb, label={lst:wasm_example_wat}, caption={Commented compiler output for the rush program in Listing~\ref{lst:wasm_example}.}]{listings/x64_simple.wat}
+
+Inside the `main' function, the first thing is the declaration of the local variable \qVerb{b} with the type \qVerb{i32} in line~6.
+The type is \qVerb{i32}, even though a boolean would really only need one bit, because WebAssembly only defines this and \qVerb{i64} as integer types, and therefore uses the smaller of the two for booleans.
+\TODO{was this already explained earlier?}
+As indicated by the comments, the first four instructions represent the rush statement \qVerb{a += 1;} from line~4 of the source.
+They push both the current value of \qVerb{a} and a constant `1' onto the stack, which are then added together by the \qVerb{i64.add} instruction.
+The resulting sum is then popped off the stack and set as the new value for \qVerb{a}.
+To set the value of \qVerb{b} to \qVerb{true}, a constant `1' is pushed in line~13 and then used as the new value for \qVerb{b} in line~14.
+
+The call to \qVerb{exit} is a bit more complex.
+First, the values of both \qVerb{a} and \qVerb{b} are retrieved.
+The cast from a boolean to an integer is performed by the single instruction \qVerb{i64.extend_i32_u}, which zero-extends\footnote{\TODO{what is zero-extension}} the 32-bit value to a 64-bit one.
+The two integers are then added together in line~19.
+Because WASI's \qVerb{proc_exit} function only takes a 32-bit integer for the exit code but rush uses 64-bit integers for its \qVerb{int} type, the argument value must be converted into an \qVerb{i32} first.
+This happens in line~20 with the \qVerb{i32.wrap_i64} instruction.
+In case the value is too large to fit into a 32-bit integer, it is wrapped back down to `0', effectively only interpreting the lower 32 bits of the 64-bit number.
+After this happened, the call to \qVerb{__wasi_exit} can now be performed without problems.
+
+One might notice the trailing \qVerb{unreachable} instruction in line~22.
+The rush WebAssembly compiler inserts one such instruction after every expression that was analyzed to have the \qVerb{!} type.
+As the name suggests, the instruction asserts to the WebAssembly runtime that this instruction is never reached.
+This is helpful in cases where such expressions are used inside other expressions, such as `\LirstInline{rush}{1 + exit(2)}', and the semantic analyzer ignores the invalid type of the right-hand side, because it knows the outer expression will never be reached during runtime.
+The same information must be given to the WebAssembly runtime using the \qVerb{unreachable} instruction, since the specification requires runtimes to validate modules for correct types before executing them.
+
+\TODO{loops?}

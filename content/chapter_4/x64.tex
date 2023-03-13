@@ -37,7 +37,7 @@ It begins with the \qVerb{.intel_syntax} directive, indicating that the followin
 Then, similar to the \riscv{} assembly code shown in the previous section, the \qVerb{_start} symbol is marked as global, as this is again the entry point.
 The sections are also the same, as these are defined by the ELF file format which is independent of ISAs.
 
-\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.6\textwidth, fancyvrb={numbers=right}, label={lst:x64_asm_example}, caption={Compiler Output for the rush Program in Listing~\ref{lst:x64_example}}]{listings/x64_simple.s}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.6\textwidth, label={lst:x64_asm_example}, caption={Compiler Output for the rush Program in Listing~\ref{lst:x64_example}}]{listings/x64_simple.s}
 
 The main differences between this and the shown \riscv{} assembly, and also the other x64 assembly dialects, are the instruction mnemonics and the register names.
 When using the Intel syntax for x64, register names are always prepended by a percentage sign.

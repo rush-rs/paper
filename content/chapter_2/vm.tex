@@ -190,96 +190,105 @@ Therefore, each addressing mode serves a separate and important purpose.
 
 \subsection{How the Virtual Machine Executes A rush Program}
 
-By considering the previous pointer example, we now have a rough idea how the VM might execute instructions.
-In order to get a better understanding of how the rush VM works exactly, we will explain how it executes the program in Listing~\ref{lst:rush_vm_faster}.
-For this, we should consider the instructions in Listing~\ref{lst:tree_vs_vm_vm} again.
+\Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
+
+By considering the previous pointer example, one now has a rough idea of how the VM executes a program.
+In order to get a better understanding, the execution of the program in Listing~\ref{lst:rush_vm_faster} will now be explained.
+For this, the instructions in Listing~\ref{lst:tree_vs_vm_vm} on page~\pageref{lst:tree_vs_vm_vm} should be considered.
 The first instruction of the prelude function is `\texttt{setmp}'.
 This instruction adjusts the memory pointer by the amount specified in the instruction's operand.
 In this case however, the memory pointer remains unmodified since the operand of the instruction is 0.
 Next, the `\texttt{call 1}' instruction calls the `\texttt{main}' function.
 In order to understand how function calls work in this VM, we must consider the call stack of the rush VM\@.
-Before the call-instruction, the caller pushes any call-arguments onto the stack so that they can be used as parameters by the callee.
-Figure~\ref{fig:rush_vm_call_stack} displays the state of the VMs call stack after the `\texttt{call 1}' instruction would be executed.
+Before the call-instruction, the caller pushes any arguments onto the stack so that they can be used as parameters by the callee.
+Figure~\ref{fig:rush_vm_call_stack} displays the state of the VMs call stack after the `\texttt{call 1}' instruction has been executed.
 During execution of a call-instruction, the VM pushes a new stack frame onto its call stack.
-Listing~\ref{lst:call_frame_struct} shows how a call frame is implemented.
+Listing~\ref{lst:call_frame_struct} shows how the \qVerb{CallFrame} struct is implemented.
 
 \Lirsting[ranges={29-34}, caption={Struct Definition of a \qVerb{CallFrame}}, label={lst:call_frame_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 In this implementation, each call frame holds two important pieces of information.
 In line 31 of Listing~\ref{lst:call_frame_struct}, the `\texttt{ip}' field is declared.
-It specifies the \emph{instruction pointer} which holds the index of the current instruction.
+It specifies the \emph{instruction pointer}, which saves the index of the current instruction.
+This index is relative for each function, meaning that the instruction pointer 0 can refer to multiple instructions,
+each in another function.
 Since the `\texttt{call}' instruction was interpreted previously, the instruction pointer of the new call frame is set to 0 as execution should continue at the first instruction of the called function.
-The `\texttt{fp}' field is declared in line 33.
-This field specifies the \emph{function pointer} which holds the index of the current function.
+The second important field, `\texttt{fp}', is declared in line 33.
+It specifies the \emph{function pointer}, which saves the index of the current function.
+Therefore, the combination of the instruction- and function pointer specifies the instruction to be executed.
+After the function call, `\texttt{fp}' is set to 1 since \qVerb{ip} should now refer to the instructions inside the \qVerb{main} function.
 
-After the function call, `\texttt{fp}' is set to 1 since the main function is called and instruction should start at the first instruction of the main function.
-Figure~\ref{fig:rush_vm_call_stack} shows how the call stack of the VM looks like after the `\texttt{call}' instruction has been interpreted.
-Function calls are managed in a stack in order to allow returning from functions.
-If the VM encounters a `\texttt{ret}'\footnote{Short for \enquote{return}} instruction, it should leave the current function.
+Function calls are managed in a stack in order to allow early returns from functions.
+If the VM encounters a `\texttt{ret}'\footnote{Short for \enquote{return}} instruction, it should leave the current function immediately.
 However, it should also know where to resume its fetch-decode-execute cycle.
-For this, the VM just simply pops the top element from its call-stack.
+For this, the VM simply pops the top element from its call-stack, meaning that the call frame of the current function is removed.
 Now, the top element on the stack contains the call-frame of the caller function.
 In this call frame, `\texttt{ip}' still points to the `\texttt{call}' instruction which was responsible for calling the function.
 Since `\texttt{ip}' is incremented automatically after most instructions, the VM resumes instruction execution at the first instruction after the call-instruction.
+Therefore, the call frame of the caller function stays unaffected as long as the called function is executed.
 This way, function calls are implemented in a simple but robust manner.
 
-\begin{figure}
+\begin{wrapfigure}{L}{.4\textwidth}
 	\centering
 	\begin{tikzpicture}
-		\node[stack=3, rectangle split part align=center, text width=10ex, text centered, inner xsep=0]{
+		\node[
+            stack=3,
+            rectangle split part align=center,
+            text width=10ex, text centered, inner xsep=0,
+			rectangle split part fill={none, gray!10, none},
+        ]{
 			\shortstack{prelude\\$fp=0$\\$ip=1$}
 			\nodepart{two}{\shortstack{main\\$fp=1$\\$ip=0$}}
 			\nodepart{three}{\ldots}
 		};
 	\end{tikzpicture}
 	\caption{Call Stack of the rush VM}\label{fig:rush_vm_call_stack}
-\end{figure}
+\end{wrapfigure}
 
-Now that the call-instruction has been interpreted, the VM begins executing the first instruction of the main-function.
+Now that the \qVerb{call} instruction has been interpreted, the VM begins executing the first instruction of the \qVerb{main} function.
 Since the main-function only calls the \qVerb{rec} function with the argument 1000, there are no new concepts to consider in this function.
-After the call instruction in line 7, the VM starts executing the instructions of the \qVerb{rec} function.
+When the VM encounters the call instruction in line 7, execution continues with the instructions of the \qVerb{rec} function.
 At the beginning of the \qVerb{rec} function, the memory pointer is incremented by 1.
 This might seem erroneous since the \qVerb{rec} function contains no visible variable declarations in its body.
 However, this behavior is correct since function parameters count as variable declarations.
 Since the function takes one parameter, the memory pointer is incremented by one cell.
-Next, the instruction \qVerb{svari} saves the value of the parameter which was previously pushed onto the stack at the relative address 0.
+Next, the \qVerb{svari} instruction saves the value of the parameter which was previously pushed onto the stack at the relative address 0.
 In line 12, the relative address of the memory cell containing the value of the parameter is pushed onto the stack.
+At this point, the top element on the stack contains an address-value referring to the target of the \qVerb{gvar} instruction.
 It is then consumed by the \qVerb{gvar} instruction in line 13.
-At this point the top element on the stack contains an address-value referring to the target of the \qVerb{gvar} instruction.
-Therefore, the instruction first pops the top element from the stack.
-In this case, the value of the popped element is the relative address 0.
-Then, the instruction retrieves the value of the target variable and pushes it onto the stack.
+Therefore, the instruction first pops the top element from the stack in order to
+retrieve the value of the variable at the specified location and to push its value on the stack.
+In this case, the value of the popped element is the relative address 0, meaning that the instruction retrieves the value of first parameter.
 
 In line 14, the constant value 0 is pushed onto the stack.
 Next, the \qVerb{eq} instruction pops two elements from the stack in order to test them for equality.
-Then, the result of the comparison is pushed onto the stack as a boolean value.
-In this case, the instruction compares if the current value of \qVerb{n} is equal to 0.
-In line 16, the \qVerb{jmpfalse} instruction is executed.
-This instruction jumps to the specified instruction index if the value on top of the stack is \qVerb{false}.
-In this case, if the value on the stack is false, the parameter \qVerb{n} was not equal to 0.
-Now, the VM would jump to the instruction in line 19.
+Then, the result of the equality test is pushed on the stack as a boolean value.
+In other words, here, the instruction compares whether the current value of \qVerb{n} is equal to 0 in order to produce a boolean result.
+The \qVerb{jmpfalse} instruction in line 16 jumps to the specified instruction index if the boolean value on top of the stack is false.
+In this example, if the value on the stack is false, the parameter \qVerb{n} was not equal to 0.
+If this was the case, the VM would jump to the instruction in line 19 as it represents index 9 of the \qVerb{rec} function.
 Here, the value of the parameter \qVerb{n} is pushed onto the stack using the previously explained \qVerb{push} and \qVerb{gvar} instructions.
 Now, the top item on the stack is the value of the parameter \qVerb{n}.
-In line 21, the \qVerb{push} instruction pushes a constant 1 onto the stack.
+In line 21, the \qVerb{push} instruction pushes a constant 1 on the stack.
 Next, the \qVerb{sub} instruction pops the first two elements from the stack in order to subtract their values from each other.
-In this case, the instruction subtracts 1 from the value of \qVerb{n} and pushes the result onto the stack.
-Next, the \qVerb{rec} calls itself recursively using a previously explained \qVerb{call} instruction.
+In this case, the instruction subtracts 1 from the value of \qVerb{n}, pushing the result on the stack at the end.
+Next, the \qVerb{rec} function calls itself recursively using the previously explained \qVerb{call} instruction.
 Since the call argument is the top element on the stack, the result of the subtraction is used as the argument of the recursive call.
-Next, the function decrements the memory pointer in order to deallocate used memory using the \qVerb{setmp} instruction in line 24.
+Next, the \qVerb{setmp} instruction in line 24 decrements the memory pointer in order to deallocate used memory\footnote{Since the operand is negative, the instruction decrements \qVerb{mp}}.
 At the end of a function, the memory pointer is always decremented by the amount it was incremented at the beginning of the function.
 By deallocating the now unused memory, the compiler prevents the code from leaking memory at runtime.
-Lastly, the \qVerb{ret} instruction is used to return from the function.
-Now we have considered what happens if the value of \qVerb{n} was not equal to 0.
+Lastly, the \qVerb{ret} instruction is used to return from the \qVerb{rec} function.
+Now, the case in which the value of \qVerb{n} is not equal to 0 was considered.
 
-However, if the result of the comparison in line 15 is true, meaning that \qVerb{n} is equal to 0, the \qVerb{jmpfalse} instruction in line 16 does nothing.
-In this case, the VM continues to the \qVerb{push} instruction in line 17.
+
+On the opposite, if the result of the comparison in line 15 was true, meaning that \qVerb{n} is equal to 0, the \qVerb{jmpfalse} instruction in line 16 would perform no operation.
+In this case, the VM continues execution at the \qVerb{push} instruction in line 17.
 Here, the constant value 0 is pushed onto the stack.
+Since functions also return values by placing them on top of the stack, the return-value would be 0 in this case.
 Next, the VM interprets the \qVerb{jmp} instruction in line 18.
 Unlike \qVerb{jmpfalse}, this instruction performs its jump without any condition.
-In this case, the instruction jumps to the instruction at index 14 of the current function.
-The instruction at index 14 is \qVerb{setmp} in line 24.
-Since functions also return values by placing them on top of the stack, the return-value would be 0 in this case.
-Since we have covered what the instructions in the lines 24 and 25 do, we can summarize that the function returns the value 0 in this case.
+Here, the instruction jumps to the instruction at index 14 of the current function, meaning \qVerb{setmp} in line 24.
+Since we have covered what the instructions in the lines 24 and 25 accomplish, we can summarize that the function returns the value 0 in case \qVerb{n} was equal to 0.
 
 \subsection{Fetch-Decode-Execute Cycle of the VM}
 Now that the semantic meaning of the instructions in Listing~\ref{lst:tree_vs_vm_vm} has been explained, we will explain how the fetch-decode-execute cycle works in the VM\@.
@@ -343,7 +352,6 @@ Now that we have explained how some important parts of the rush VM work, the que
 Therefore, the compiler targeting the rush VM is presented in the following chapter.
 
 \subsection{Comparing the VM to the Tree-Walking Interpreter}
-\Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
 
 One significant benefit of virtual machines is that they execute programs faster compared to tree-walking interpreters.
 A reason for this speedup is that tree traversal involves a lot of overhead which is omitted when instructions are interpreted.

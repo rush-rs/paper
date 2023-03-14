@@ -18,7 +18,7 @@ For reference, Appendix~\ref{apx:grammar} contains the full grammar of rush.
 \TODO{explain start symbol?}
 \TODO{formal definition of grammars $G=(N,T,S,P)$?}
 
-\Lirsting[float=h, caption={Grammar for Basic Arithmetic in EBNF Notation}, label={lst:ebnf_reference_grammar}]{listings/ebnf_reference.ebnf}
+\Lirsting[float=h, caption={Grammar for basic arithmetic in EBNF notation.}, label={lst:ebnf_reference_grammar}]{listings/ebnf_reference.ebnf}
 
 One thing worth explaining is the `\Verb{-}' at the end of line 5.
 It is used to exclude a set of symbols from the preceding rule.
@@ -32,7 +32,7 @@ Before the syntax of a program is validated it is common to have a lexer group c
 The set of tokens a language has is the union of the set of all terminal symbols used in context-free grammar rules and the set of regular grammar rules.
 For the language defined in Listing~\ref{lst:ebnf_reference_grammar} these are the five operators `\Verb{+}', `\Verb{-}', `\Verb{*}', `\Verb{/}', `\Verb{**}', and the `integer' non-terminal.
 
-\Lirsting[ranges={10-16}, wrap=L, wrap width=0.4\textwidth, caption={The rush \qVerb{Lexer} Struct Definition}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
+\Lirsting[ranges={10-16}, wrap=L, wrap width=0.4\textwidth, caption={The rush \qVerb{Lexer} struct definition.}, label={lst:lexer}]{deps/rush/crates/rush-parser/src/lexer.rs}
 
 The specifics of implementing a lexer are not explored in this paper, however a basic overview is still provided.
 The base principal of a lexer is to iterate over the characters of the input to produce tokens.
@@ -55,7 +55,7 @@ Here every row in the table represents one point in time displaying the lexer's 
 			\node[fit={(current bounding box)}, inner ysep=.5mm, inner xsep=0]{};
 		}}
 	\centering
-	\caption{Advancing Window of a Lexer}\label{tbl:lexer}
+	\caption{Advancing window of a lexer.}\label{tbl:lexer}
 	\begin{tabularx}{0.95\textwidth}{rCLLl}
 		Calls & State                                                                                                                                                     & \colorbox{black!20}{\Verb{curr_char}} & \colorbox{black!10}{\Verb{next_char}} & Output Token  \\
 		\\[-1.1em]\hline\\[-1.1em]
@@ -78,7 +78,7 @@ In the first three rows this count is still 0, as this happens during initializa
 The \Verb{Pow} token, composed of two `\Verb{*}' symbols, requires the lexer to advance two times before it can be returned, which is represented by the two rows in which the call count is 4.
 A simplified \Verb{Token} struct definition for the example language from Listing~\ref{lst:ebnf_reference_grammar} is shown in Listing~\ref{lst:token_simple}.
 
-\Lirsting[wrap=L, wrap width=0.3\textwidth, caption={Simplified \qVerb{Token} Struct Definition}, label={lst:token_simple}]{listings/token_simple.rs}
+\Lirsting[wrap=L, wrap width=0.3\textwidth, caption={Simplified \qVerb{Token} struct definition.}, label={lst:token_simple}]{listings/token_simple.rs}
 
 In addition to the current and next character, a lexer also has to keep track of the current position in the source text for it to provide helpful diagnostics with locations to the user.
 This is done in the \Verb{location} field which is incremented every time the lexer advances to the next character.
@@ -114,7 +114,7 @@ In the case of rush an AST with limited location information is used, because ru
 						child {node {Factor}
 								child {node {\Verb{Int(3)}}}}}};
 	\end{tikzpicture}
-	\caption{Abstract Syntax Tree for `\texttt{1+2**3}'}\label{fig:parser_simple_ast}
+	\caption{Abstract syntax tree for `\texttt{1+2**3}'.}\label{fig:parser_simple_ast}
 \end{wrapfigure}
 
 Not every parser is the same and there are a few different strategies for implementing one.
@@ -149,7 +149,7 @@ By design, they must recognize a node by its first $n=k+1$ tokens, where $n$ is 
 However, due to that restriction, not every context-free language can be parsed by an LL parser.
 An example for that is given in Listing~\ref{lst:ebnf_reference_pratt}.
 
-\Lirsting[float=h, caption={Example Language a Traditional LL$(1)$ Parser Cannot Parse}, label={lst:ebnf_reference_pratt}]{listings/ebnf_reference_pratt.ebnf}
+\Lirsting[float=h, caption={Example language a traditional LL$(1)$ parser cannot parse.}, label={lst:ebnf_reference_pratt}]{listings/ebnf_reference_pratt.ebnf}
 
 Most LL parsers are \emph{recursive-descent} parsers, including the rush parser.
 Implementation of such a recursive-descent parser is rather uncomplicated.
@@ -160,7 +160,7 @@ In Rust the mapping from EBNF grammar notation to type definitions is very simpl
 \TODO{struct signature example?}
 
 \begin{table}[h]
-	\caption{Mapping From EBNF Grammar to Rust Type Definitions}\label{tbl:ebnf_to_rust}
+	\caption{Mapping from EBNF grammar to Rust type definitions.}\label{tbl:ebnf_to_rust}
 	\rowcolors{2}{gray!15}{}
 	\begin{tabularx}{0.95\textwidth}{Ll}
 		\rowcolor{gray!25} EBNF                         & Rust                                                                         \\
@@ -206,7 +206,7 @@ Right associativity instead uses recursion on the right-hand side of the operato
 				child {node {Expression}
 						child {node {\Verb{Int(3)}}}}};
 	\end{tikzpicture}
-	\caption{Abstract Syntax Tree for `\texttt{1+2**3}' Using Pratt-Parsing}\label{fig:parser_simple_ast_pratt}
+	\caption{Abstract syntax tree for `\texttt{1+2**3}' using Pratt-parsing.}\label{fig:parser_simple_ast_pratt}
 \end{wrapfigure}
 
 For LR parsers the precedence and associativity for each operator is encoded within the parser table.
@@ -226,7 +226,7 @@ For all but one token kind the left precedence is lower than the right one, resu
 The higher the precedences are, the deeper in the tree the resulting expressions will be, and the earlier they are evaluated.
 All unrelated tokens are simply assigned a precedence of 0 for left and right.
 
-\Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token Precedences in rush}]{deps/rush/crates/rush-parser/src/token.rs}
+\Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token precedences in rush.}]{deps/rush/crates/rush-parser/src/token.rs}
 
 The \Verb{expression} method on the \Verb{Parser} struct is then modified to take a parameter for the current precedence as seen in Listing~\ref{lst:pratt_expr}.
 It then first matches on the current token kind to decide which expression to parse and stores the result in the \Verb{lhs}\footnote{Short for `left-hand side'} variable.
@@ -236,14 +236,14 @@ In that case, this check will only fail when the whole expression is over, as ev
 If it does not fail, the \Verb{infix_expr} method is called with the matching operator and the \Verb{lhs}.
 Afterwards \Verb{lhs} is overwritten with the returned value.
 
-\Lirsting[ranges={551-555, 568-570, _574-583, 613-618}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: Implementation for Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={551-555, 568-570, _574-583, 613-618}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: implementation for expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
 
-\Lirsting[ranges={733-743, 749-749}, float=h, label={lst:pratt_grouped_expr}, caption={Pratt-Parser: Implementation for Grouped Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={733-743, 749-749}, float=h, label={lst:pratt_grouped_expr}, caption={Pratt-Parser: implementation for grouped expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 The \Verb{infix_expr} method in Listing~\ref{lst:pratt_infix_expr} simply stores the right \TODO{unclear it's the side `right', not `correct'} precedence of the operator token, advances to the next token, and calls the \Verb{expression} method again for its right-hand side, but this time with the stored \Verb{right_prec} as the minimum precedence.
 These simple calls and checks of precedences automatically result in correct grouping and nesting of the expressions.
 
-\Lirsting[ranges={751-751, _756-759, 770-770}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: Implementation for Infix Expressions}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={751-751, _756-759, 770-770}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: implementation for infix expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 \begin{figure}[hb]
 	\newcommand{\precs}[5][black]{
@@ -281,7 +281,7 @@ These simple calls and checks of precedences automatically result in correct gro
 		\precs      {\Verb{Pow}}   {**}    {26}{25}
 		\precs[gray]{\Verb{Int(5)}}{5}     {0} {0}
 	\end{tikzpicture}
-	\caption{Token Precedences for Input `\Verb{(1+2*3)/4**5}`}\label{fig:token_precs}
+	\caption{Token precedences for the input `\Verb{(1+2*3)/4**5}`.}\label{fig:token_precs}
 \end{figure}
 
 This might be made clearer by Figure~\ref{fig:token_precs}.

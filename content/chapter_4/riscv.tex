@@ -20,7 +20,7 @@ Therefore, it seems like \riscv{} could be a significant architecture to be used
 
 \begin{wraptable}{r}{.4\textwidth}
 	\centering
-	\caption{Common Registers in \riscv{}}{\cite[p.~155]{Waterman2019}}\label{tbl:riscv_regs}
+	\caption{Common registers of the \riscv{} architecture.}{\cite[p.~155]{Waterman2019}}\label{tbl:riscv_regs}
 	\begin{tabularx}{\linewidth}{l|L}
 		\rowcolor{gray!10} Register   & Purpose                         \\ \hline
 		\texttt{zero}                 & Hardwired zero                  \\ \hline
@@ -108,7 +108,7 @@ These special registers, like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra}, are thorou
 		% TODO: uncomment the line below?
 		%\stackbottom
 	\end{tikzpicture}
-	\caption{Example Stack Layout in \riscv{}}\label{fig:riscv_basic_stack}
+	\caption{Example stack layout in \riscv{}.}\label{fig:riscv_basic_stack}
 \end{wrapfigure}
 
 As mentioned in the dedicated subsection about the stack, it presents a way to save data outside of registers.
@@ -127,7 +127,7 @@ Thus, a stack frame is defined by its upper and lower bounds, represented by \qV
 In order to understand how the above behavior is used in practice, Figure~\ref{fig:riscv_basic_stack} is to be considered.
 Furthermore, the rush program in Listing~\ref{lst:rush_riscv_stack} should be considered.
 
-\Lirsting[caption={A rush Program Containing Two Variables}, label={lst:rush_riscv_stack}, float=H]{listings/riscv_stack.rush}
+\Lirsting[caption={A rush program containing two variables.}, label={lst:rush_riscv_stack}, float=H]{listings/riscv_stack.rush}
 
 This snipped shows a rush program which contains two functions.
 In the \qVerb{main} function of this program, two variables are defined.
@@ -204,7 +204,7 @@ If the variable is referenced at a later point, the compiler performs a simple l
 		\node(sp)[left of=stack, xshift=-2.2cm, yshift=-1.6cm] {\scriptsize SP$_1$};
 		\draw[arrow, shorten >= 2pt](sp) -- (stack.six west);
 	\end{tikzpicture}
-	\caption{Spilled Registers During a \riscv{} Function Call}\label{fig:riscv_call_spill}
+	\caption{Spilled registers during a \riscv{} function call.}\label{fig:riscv_call_spill}
 \end{wrapfigure}
 
 Just like previously explained, most architectures provide a calling convention which dictates how low-level function calls should be managed.
@@ -298,7 +298,7 @@ Since the corelib's functions are specified in separate files, they are packaged
 The assembly code in Listing~\ref{lst:riscv_exit_corelib} shows the implementation of the \qVerb{exit} subroutine in the \riscv{} corelib.
 The task of this subroutine is to invoke a specific functionality the Linux kernel by performing a \emph{system call}.
 
-\Lirsting[float=H, ranges={8-12}, caption={The Assembly Implementation of the \qVerb{exit} Subroutine}, label={lst:riscv_exit_corelib}]{deps/rush/crates/rush-compiler-risc-v/corelib/src/exit.s}
+\Lirsting[float=H, ranges={8-12}, caption={The assembly implementation of the \qVerb{exit} subroutine.}, label={lst:riscv_exit_corelib}]{deps/rush/crates/rush-compiler-risc-v/corelib/src/exit.s}
 
 A \emph{system call} (often abbreviated to \emph{syscall}) is an invocation of a function of operating system's kernel.
 In Linux, more than 90 percent of the available system calls are implemented on all architectures.
@@ -331,12 +331,12 @@ The code in Listing~\ref{lst:riscv_simple_asm} on page~\pageref{lst:riscv_simple
 Because the assembler code of the \qVerb{foo} function would take up too much space in the assembler program, it is intentionally omitted from this listing.
 Since the excluded function does not introduce any new concepts anyway, omitting it will not lead to a loss of explained concepts.
 
-\Lirsting[float=H, caption={Example rush Program Containing Two Functions}, label={lst:riscv_simple}]{listings/riscv_simple.rush}
+\Lirsting[float=H, caption={Example rush program containing two functions.}, label={lst:riscv_simple}]{listings/riscv_simple.rush}
 
 \begin{wrapfigure}{L}{0.5\textwidth}
 	\centering
 	\Lirsting[ranges={1-31, -4 53-56}, fancyvrb={frame=none}]{listings/generated/riscv_simple.s}
-	\caption{Compiler Output from the Rush Program in Listing~\ref{lst:riscv_simple}}\label{lst:riscv_simple_asm}
+	\caption{Compiler output from the rush program in Listing~\ref{lst:riscv_simple}.}\label{lst:riscv_simple_asm}
 \end{wrapfigure}
 
 In line 1, the \qVerb{.global} assembler directive is used to declare the global symbol \qVerb{_start}~\cite[p.~36]{Patterson2017}.
@@ -421,12 +421,12 @@ In order to get a rough understanding of how pointers work in this compiler, the
 
 \begin{minipage}{.34\textwidth}
 	\center
-	\Lirsting[float=H, fancyvrb={frame=none}, caption={Example rush Program Containing a Pointer}, label={lst:rush_simple_pointer}]{listings/rush_simple_pointer.rush}
+	\Lirsting[float=H, fancyvrb={frame=none}, caption={Example rush program containing a pointer.}, label={lst:rush_simple_pointer}]{listings/rush_simple_pointer.rush}
 \end{minipage}%
 \hspace{3cm}
 \begin{minipage}{.45\textwidth}
 	\center
-	\Lirsting[float=H, fancyvrb={frame=none}, ranges={10-10,18-24}, caption={\riscv{} Assembly Output Generated from Listing~\ref{lst:rush_simple_pointer}}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
+	\Lirsting[float=H, fancyvrb={frame=none}, ranges={10-10,18-24}, caption={\riscv{} assembly output generated from Listing~\ref{lst:rush_simple_pointer}.}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
 \end{minipage}
 
 
@@ -469,7 +469,7 @@ Unlike the LLVM or WASM compiler, this compiler emits \riscv{} assembly files wh
 Before any complex code samples can be considered, important struct fields of the compiler first need to be explained.
 The rust code in Listing~\ref{lst:riscv_compiler_attr} shows important struct fields of the rush compiler targeting \riscv{}.
 
-\Lirsting[ranges={11-11,15-15,19-34}, caption={Fields of the \riscv{} \qVerb{Compiler} Struct}, label={lst:riscv_compiler_attr}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[ranges={11-11,15-15,19-34}, caption={Fields of the \riscv{} \qVerb{Compiler} struct.}, label={lst:riscv_compiler_attr}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 In line 15, the field \qVerb{blocks} is declared.
 This field holds a vector containing values of the type \qVerb{Block}.
@@ -477,7 +477,7 @@ That type provides an abstraction representing a label with its basic block in t
 Therefore, this struct needs to contain a string field for its label and a vector for its instructions.
 The Listing~\ref{lst:riscv_instruction_enum} shows parts of the Rust code which declares the \qVerb{Instruction} enum.
 
-\Lirsting[ranges={62-62,74-76,114-114}, caption={The \qVerb{Instruction} Enum in the \riscv{} Compiler}, label={lst:riscv_instruction_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/instruction.rs}
+\Lirsting[ranges={62-62,74-76,114-114}, caption={The \qVerb{Instruction} enum in the \riscv{} compiler.}, label={lst:riscv_instruction_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/instruction.rs}
 
 Although the listing shows only a few of the implemented instructions, this enum contains all instruction variants which the compiler might need at a later point.
 Depending on the type of instruction, the corresponding enum includes fields which define its operands.
@@ -487,7 +487,7 @@ Due to this, the enum also contains a field for a value of the type \qVerb{IntRe
 The Rust code in Listing~\ref{lst:riscv_intregister_enum} shows parts of the declaration of the \qVerb{IntRegister} enum.
 Like the name implies, this enum holds all possible registers which the architecture provides.
 
-\Lirsting[ranges={107-107,137-139,145-145}, caption={The \qVerb{IntRegister} Enum in the \riscv{} Compiler}, label={lst:riscv_intregister_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
+\Lirsting[ranges={107-107,137-139,145-145}, caption={The \qVerb{IntRegister} enum in the \riscv{} compiler.}, label={lst:riscv_intregister_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
 
 Even though just the integer registers are shown in this listing, a similar enum for floating-point registers also exists in this implementation.
 Another important struct field is declared in line 19 of Listing~\ref{lst:riscv_compiler_attr}.
@@ -541,12 +541,12 @@ The latter shows parts of the assembly output representing the logic in the \qVe
 
 \begin{minipage}{.34\textwidth}
 	\center
-	\Lirsting[caption={Rush Program Calculating the Sum of Integers}, label={lst:rush_riscv_simple_sum}, float=H]{listings/simple_add.rush}
+	\Lirsting[caption={A rush program calculating the sum of integers.}, label={lst:rush_riscv_simple_sum}, float=H]{listings/simple_add.rush}
 \end{minipage}%
 \hspace{3cm}
 \begin{minipage}{.45\textwidth}
 	\center
-	\Lirsting[ranges={18-25},caption={Assembly Output of Rush Program in Listing~\ref{lst:rush_riscv_simple_sum}}, label={lst:asm_riscv_simple_sum}, float=H]{listings/generated/rush_simple_add.s}
+	\Lirsting[ranges={18-25},caption={Assembly output of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}.}, label={lst:asm_riscv_simple_sum}, float=H]{listings/generated/rush_simple_add.s}
 \end{minipage}
 
 In the lines 2 and 3 of the rush program, the integer variables \qVerb{a} and \qVerb{b} are declared.
@@ -568,7 +568,7 @@ The core principle of the register allocator is that each method which can retur
 In order to choose an output register, each of those methods uses the helper method \qVerb{alloc_ireg}.
 The rust code in Listing~\ref{lst:riscv_alloc_ireg} shows the \qVerb{alloc_ireg} method of the \riscv{} rush compiler.
 
-\Lirsting[ranges={175-186}, float=h, label={lst:riscv_alloc_ireg}, caption={\qVerb{alloc_ireg} Method of the \riscv{} rush Compiler}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
+\Lirsting[ranges={175-186}, float=h, label={lst:riscv_alloc_ireg}, caption={The \qVerb{alloc_ireg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
 
 This method returns the first available register from the register pool containing either integer registers\footnote{The \enquote{i} in \qVerb{alloc_ireg} hints that it allocates integer registers}.
 Such a register pool contains all possible registers which can hold the data type of that class of registers.
@@ -608,7 +608,7 @@ Just like the previous method, its implementation is so simple that a code listi
 		\node(ff)[below of=stack, yshift=-.5cm] {\scriptsize first free};
 		\draw[arrow, shorten >= 4pt](ff) -- (stack.three south);
 	\end{tikzpicture}
-	\caption{Integer Register Pool of the \riscv{} rush Compiler}\label{fig:riscv_iregister_pool}
+	\caption{Integer register pool of the \riscv{} rush compiler.}\label{fig:riscv_iregister_pool}
 \end{figure}
 
 Figure~\ref{fig:riscv_iregister_pool} shows an abstract representation of the compiler's integer register pool.
@@ -625,7 +625,7 @@ Before register allocation can be explained using code samples, how registers ar
 Here, we should focus on the compilation of simple expressions.
 For this, the rust code in Listing~\ref{lst:riscv_expression} is to be considered.
 
-\Lirsting[float=h, ranges={596-602,662-663}, caption={Parts of the \qVerb{expression} Method in the \riscv{} rush compiler}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={596-602,662-663}, caption={Parts of the \qVerb{expression} method in the \riscv{} rush compiler.}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 The code in Listing~\ref{lst:riscv_expression} shows parts of the \qVerb{expression} method.
 This method is responsible for compiling expressions in the \riscv{} rush compiler.
@@ -645,7 +645,7 @@ However, we still do not know when the compiler marks certain registers as used.
 In order to understand this problem, the compilation of the rush expression \LirstInline{rush}{n + m} is to be considered.
 The rust code in Listing~\ref{lst:riscv_infix_expr} shows parts of the \qVerb{infix_expr} method of the rush compiler.
 
-\Lirsting[float=h, ranges={761-761,849-864,868-868}, caption={Parts of the \qVerb{infix_expr} Method in the \riscv{} rush compiler}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={761-761,849-864,868-868}, caption={Parts of the \qVerb{infix_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 Like the signature of the method suggests, it consumes an annotated tree-node representing an analyzed infix-expression.
 In line 853, the left-hand side expression is compiled, and its result register is saved in the variable \qVerb{lhs_reg}.
@@ -668,7 +668,7 @@ Next, we will consider the implementation of the \qVerb{infix_helper} helper met
 This method exists since translation of infix operators is required during compilation of both normal infix-expressions and assign-expressions with additional operations, \qVerb{a += 1} for instance.
 The rust code in Listing~\ref{lst:riscv_infix_helper} shows parts of this method.
 
-\Lirsting[float=h, ranges={871-871,874-881,987-991,1000-1001}, caption={Parts of the \qVerb{infix_helper} Method in the \riscv{} rush compiler}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={871-871,874-881,987-991,1000-1001}, caption={Parts of the \qVerb{infix_helper} method in the \riscv{} rush compiler.}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 As the method's signature suggests, the left-hand and right-hand side's registers and a type are used its parameters.
 Since this register abstraction does not contain type information, as registers are usually untyped, the type information conveys the type of either the left-hand or right-hand side expression.
@@ -702,7 +702,7 @@ the compiler considers the functions of the program.
 In this case, only the \qVerb{main} function is present.
 The rust code in Listing~\ref{lst:riscv_declare_main_fn} shows the \qVerb{declare_main_fn} method of the rush \riscv{} compiler.
 
-\Lirsting[float=h, ranges={123-156}, caption={The \qVerb{declare_main_fn} Method in the \riscv{} rush compiler}, label={lst:riscv_declare_main_fn}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={123-156}, caption={The \qVerb{declare_main_fn} method of the \riscv{} rush compiler.}, label={lst:riscv_declare_main_fn}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 Like its signature suggests, the method takes a block, meaning a list of statements as its input.
 In the lines 124--126, the \qVerb{_start} label is created and marked as exported so that the linker will later find it.
@@ -742,7 +742,7 @@ For this, in line 153, the previously created epilogue label is now appended to 
 In line 154, the \qVerb{epilogue} method of the compiler is callled.
 The rust code in Listing~\ref{lst:riscv_epilogue} shows the \qVerb{epilogue} method of the rush \riscv{} compiler.
 
-\Lirsting[float=h, ranges={66-87}, caption={The \qVerb{epilogue} Method in the \riscv{} rush compiler}, label={lst:riscv_epilogue}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=h, ranges={66-87}, caption={The \qVerb{epilogue} method of the \riscv{} rush compiler.}, label={lst:riscv_epilogue}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 As the context of the previous code snipped suggests, this method is called in order to generate the instructions for a function's epilogue.
 First, in the lines 67--68, the insertion position of the compiler is updated to the end of the epilogue label.
@@ -766,7 +766,7 @@ In line 2 and 3 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}, 
 For this, the rush \riscv{} compiler implements a separate method named \qVerb{let_statement}.
 The rust code in Listing~\ref{lst:riscv_let_stmt} shows the \qVerb{let_statement} method of the rush \riscv{} compiler.
 
-\Lirsting[float=h, ranges={554-561}, caption={The \qVerb{let_statement} Method in the \riscv{} rush compiler}, label={lst:riscv_let_stmt}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={554-561}, caption={The \qVerb{let_statement} method of the \riscv{} rush compiler.}, label={lst:riscv_let_stmt}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 This method only calls the \qVerb{save_expr_on_stack} method in order to save the resulting memory address in the current scope.
 The purpose of the \qVerb{save_expr_on_stack} is explained later.
@@ -841,7 +841,7 @@ Here, the \qVerb{nth_param} method on the \qVerb{FloatRegister} enum is called.
 
 The rust code in Listing~\ref{lst:riscv_nth_param} shows parts of this method.
 
-\Lirsting[float=H, ranges={215-217,224-227}, caption={The \qVerb{nth_param} Method in the \riscv{} rush compiler}, label={lst:riscv_nth_param}]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
+\Lirsting[float=H, ranges={215-217,224-227}, caption={The \qVerb{nth_param} method of the \riscv{} rush compiler.}, label={lst:riscv_nth_param}]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
 
 This method associates an index of a parameter to a register which could represent this position.
 For instance, the index 2 represents the third parameter, which is represented by the register \qVerb{fa2}.
@@ -862,7 +862,7 @@ Through this example, it becomes apparent what the task of the code displayed in
 However, only the first part of the \qVerb{call_expr} method is shown in this listing.
 The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the second part of the method.
 
-\Lirsting[float=H, ranges={130-173,198-199,235-235}, caption={The Second Part of the \qVerb{call_expr} Method in the \riscv{} rush compiler}, label={lst:riscv_call_expr_2}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=H, ranges={130-173,198-199,235-235}, caption={The second part of the \qVerb{call_expr} method of the \riscv{} rush compiler.}, label={lst:riscv_call_expr_2}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 In the lines 130--131, the \qVerb{int_cnt} and \qVerb{float_cnt} variables are reset to 0.
 In line 134, a new empty vector named \qVerb{params_regs} is created.
@@ -900,7 +900,7 @@ Now it has become clear how the argument expressions are compiled.
 Even until now, not the entire method has been shown.
 The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.
 
-\Lirsting[float=H, ranges={201-235}, caption={The Third Part of the \qVerb{call_expr} Method in the \riscv{} rush compiler}, label={lst:riscv_call_expr_3}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=H, ranges={201-235}, caption={The third part of the \qVerb{call_expr} method of the \riscv{} rush compiler.}, label={lst:riscv_call_expr_3}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 The code in the lines 201--209 is responsible for mangling the name of the called function so that it includes the \qVerb{main..} prefix.
 However, if the \qVerb{exit} function is called, the name is not mangled.

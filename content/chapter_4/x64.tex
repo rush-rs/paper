@@ -25,7 +25,7 @@ For instance, the \qVerb{idiv}\label{x64_idiv} instruction divides a signed 128-
 
 \subsection{x64 Assembly}
 
-\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, label={lst:x64_example}, caption={Example rush Program}]{listings/x64_simple.rush}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, label={lst:x64_example}, caption={Example rush program.}]{listings/x64_simple.rush}
 
 There are multiple different dialects of x64 assembly and multiple assemblers each supporting a different set of dialects.
 The rush x64 compiler emits assembly code using Intel syntax that can be assembled by the \emph{GNU Assembler} (GAS).
@@ -37,7 +37,7 @@ It begins with the \qVerb{.intel_syntax} directive, indicating that the followin
 Then, similar to the \riscv{} assembly code shown in the previous section, the \qVerb{_start} symbol is marked as global, as this is again the entry point.
 The sections are also the same, as these are defined by the ELF file format which is independent of ISAs.
 
-\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.6\textwidth, label={lst:x64_asm_example}, caption={Compiler Output for the rush Program in Listing~\ref{lst:x64_example}}]{listings/x64_simple.s}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.6\textwidth, label={lst:x64_asm_example}, caption={Compiler output from the rush program in Listing~\ref{lst:x64_example}.}]{listings/x64_simple.s}
 
 The main differences between this and the shown \riscv{} assembly, and also the other x64 assembly dialects, are the instruction mnemonics and the register names.
 When using the Intel syntax for x64, register names are always prepended by a percentage sign.
@@ -63,7 +63,7 @@ The norm in x64 instead is using just two operands where the first doubles as bo
 
 \begin{table}[h]
 	\centering
-	\caption[x64 Integer Registers]{x64 Integer Registers~\cite[pp.~20,26]{Lu2022}}\label{tbl:x64_registers}
+	\caption[x64 Integer Registers]{x64 integer registers~\cite[pp.~20,26]{Lu2022}.}\label{tbl:x64_registers}
 	\rowcolors{2}{gray!15}{}
 	\begin{tabular}{c|ccc|c|l}
 		\rowcolor{gray!25} 64-Bit & 32-Bit     & 16-Bit     & 8-Bit      & Caller-Saved & Purpose                                    \\
@@ -156,7 +156,7 @@ Any single one of these registers would then for instance hold two 64-bit values
 		\stackbottom[padding]
 		\finishframe{current}
 	\end{tikzpicture}
-	\caption[Stack Layout of x64]{Stack Layout of x64~\cite[p.~21]{Lu2022}}\label{fig:x64_stack}
+	\caption[Stack Layout of x64]{Stack layout of the x64 architecture~\cite[p.~21]{Lu2022}.}\label{fig:x64_stack}
 \end{wrapfigure}
 
 Alongside the instructions and registers defined by x64 itself, the \emph{System~V} ABI defines how programs should structure the stack during execution.
@@ -248,7 +248,7 @@ Therefore, the function's prologue begins with pushing \qreg{rbp} onto the stack
 Afterwards, the base pointer's value is set to the current stack pointer.
 The stack pointer itself is then decremented by the number of bytes needed for the function which is saved in \qVerb{frame_size}, rounded up to a multiple of 16.
 
-\Lirsting[ranges={11-31}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Trimmed compiler output for the rush program in Listing~\ref{lst:x64_functions_rush}}, label={lst:x64_functions_asm}]{listings/x64_functions.s}
+\Lirsting[ranges={11-31}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Trimmed compiler output for the rush program in Listing~\ref{lst:x64_functions_rush}.}, label={lst:x64_functions_asm}]{listings/x64_functions.s}
 
 The epilogue ranges from line~29 to line~31.
 It defines a symbol where \qVerb{return} statements can jump to, releases the stack frame using the \qVerb{leave} instruction, and returns control to the caller with \qVerb{ret}.

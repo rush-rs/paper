@@ -52,7 +52,7 @@ this list only includes entries which are of importance later in later sections 
 		\node (codegen) [entity, fill=none, below=of machine] {Operating system \\ and Hardware level};
 		\draw [arrow] (machine) -- (codegen);
 	\end{tikzpicture}
-	\caption{Level of Abstraction provided by Assembly}\label{fig:abstractions}
+	\caption{Level of abstraction provided by assembly.}\label{fig:abstractions}
 \end{wrapfigure}
 
 Assembly language describes a type of low-level programming languages which are directly influenced by the target architecture.
@@ -124,7 +124,7 @@ However, the compiler could also emit binary data directly, thus making its impl
 		\draw [darrow, very thick, double] (CPU) -- node[anchor=east, yshift=-.1cm] {fast} (registers);
 		\draw [darrow] (CPU) -- node[anchor=west] {slow} (memory);
 	\end{tikzpicture}
-	\caption{Relationship Between Registers, Memory, and the CPU}\label{fig:cpu_reg_mem}
+	\caption{Relationship between registers, memory, and the CPU.}\label{fig:cpu_reg_mem}
 \end{wrapfigure}
 
 Most processors contain numerous registers in order to hold data, instructions, and state information.
@@ -153,7 +153,7 @@ For instance, there may be registers which contain information about the CPU's c
 Furthermore, common architectures also include special-purpose registers for modifying the machine's memory.
 Therefore, there is nearly always an appropriate register matching the requirement~\cite[Chapter~2]{Dandamudi2005}.
 
-\Lirsting[wrap=L, raw=true, ranges={4-6}, wrap width=0.3\textwidth, caption={Example Assembly Program for Explaining Register Allocation}, label={lst:register_alloc}]{listings/register_alloc_simple.s}
+\Lirsting[wrap=L, raw=true, ranges={4-6}, wrap width=0.3\textwidth, caption={Example assembly program for explaining register allocation.}, label={lst:register_alloc}]{listings/register_alloc_simple.s}
 
 For a compiler, the limited amount of registers presents a big challenge.
 Some architectures may require that the operands of arithmetic or logical instructions have been explicitly loaded into registers beforehand.
@@ -328,7 +328,7 @@ Sometimes, pointers are mandatory for solving a specific computational problem.
 Furthermore, leveraging pointers often leads to more efficient and compact code~\cite[p.~93]{Ritchie1988}.
 A problem which can only be solved by using pointers is displayed in the rush program in Listing~\ref{lst:rush_increment_by_value}.
 
-\Lirsting[float=H, caption={Rush Program Trying to Alter the Variable Behind an Argument}, label={lst:rush_increment_by_value}]{listings/rush_increment_by_value.rush}
+\Lirsting[float=H, caption={A rush program trying to alter the variable behind an argument.}, label={lst:rush_increment_by_value}]{listings/rush_increment_by_value.rush}
 
 This rush program contains the \qVerb{main} and \qVerb{modify} functions.
 In line 2 of the \qVerb{main} function, the mutable variable \qVerb{answer} is defined with an initial value of 42.
@@ -343,7 +343,7 @@ However, since rush passes function arguments by value and not by reference, the
 In order to solve this problem, pointers are required.
 The code in Listing~\ref{lst:rush_increment_by_reference} displays a rush program which is able to solve this problem.
 
-\Lirsting[float=H, caption={Rush Program Altering the Variable Behind an Argument}, label={lst:rush_increment_by_reference}]{listings/rush_increment_by_reference.rush}
+\Lirsting[float=H, caption={A rush program altering the variable behind an argument.}, label={lst:rush_increment_by_reference}]{listings/rush_increment_by_reference.rush}
 
 Most parts of this rush program look similar to the one displayed in Listing~\ref{lst:rush_increment_by_value}.
 However, some parts of the code have been adjusted so that they use pointers.

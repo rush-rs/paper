@@ -73,7 +73,7 @@ The rush virtual machine is a stack-based machine implemented using the Rust pro
 The machine's architecture was solely developed for this project and includes a \emph{stack} for storing short-term data, \emph{linear memory} for storing variables, and a separate \emph{call stack} for managing function calls.
 Like most virtual machines, the rush VM uses a fetch-decode-execute cycle in order to interpret programs.
 
-\Lirsting[ranges={16-26}, caption={Struct Definition of the VM}, label={lst:vm_struct}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={16-26}, caption={Struct definition of the VM.}, label={lst:vm_struct}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 Listing~\ref{lst:vm_struct} displays the struct definition of the rush VM\@.
 The \qVerb{stack} field in line 18 saves the main stack for temporary values using Rust's \qVerb{Vec} type.
@@ -121,7 +121,7 @@ For better understanding, the individual functions have been manually annotated 
 		\draw [->] (Left-5.5-|Left-last) to [bend left] (Right-5.5-|Right-1);
 		\draw [thick, dashed] (Right-3.5-|Right-4) --  node[anchor=west, xshift=0cm, align=center] {\scriptsize memory\\ \scriptsize pointer $= 3$} ([xshift=4cm]Right-3.5-|Right-3);
 	\end{tikzpicture}
-    \caption{Linear Memory of the rush VM \TODO{Is this correct?}}\label{fig:rush_vm_linmem}
+    \caption{Linear memory of the rush VM \TODO{Is this correct?}.}\label{fig:rush_vm_linmem}
 \end{wrapfigure}
 
 The first block of instructions is called `\emph{prelude}' since its only task is to declare global variables and call the `\texttt{main}' function.
@@ -205,7 +205,7 @@ Figure~\ref{fig:rush_vm_call_stack} displays the state of the VMs call stack aft
 During execution of a call-instruction, the VM pushes a new stack frame onto its call stack.
 Listing~\ref{lst:call_frame_struct} shows how the \qVerb{CallFrame} struct is implemented.
 
-\Lirsting[ranges={29-34}, caption={Struct Definition of a \qVerb{CallFrame}}, label={lst:call_frame_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={29-34}, caption={Struct definition of a \qVerb{CallFrame}.}, label={lst:call_frame_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 In this implementation, each call frame holds two important pieces of information.
 In line 31 of Listing~\ref{lst:call_frame_struct}, the `\texttt{ip}' field is declared.
@@ -242,7 +242,7 @@ This way, function calls are implemented in a simple but robust manner.
 			\nodepart{three}{\ldots}
 		};
 	\end{tikzpicture}
-	\caption{Call Stack of the rush VM}\label{fig:rush_vm_call_stack}
+	\caption{Example call stack of the rush VM.}\label{fig:rush_vm_call_stack}
 \end{wrapfigure}
 
 Now that the \qVerb{call} instruction has been interpreted, the VM begins executing the first instruction of the \qVerb{main} function.
@@ -280,7 +280,6 @@ By deallocating the now unused memory, the compiler prevents the code from leaki
 Lastly, the \qVerb{ret} instruction is used to return from the \qVerb{rec} function.
 Now, the case in which the value of \qVerb{n} is not equal to 0 was considered.
 
-
 On the opposite, if the result of the comparison in line 15 was true, meaning that \qVerb{n} is equal to 0, the \qVerb{jmpfalse} instruction in line 16 would perform no operation.
 In this case, the VM continues execution at the \qVerb{push} instruction in line 17.
 Here, the constant value 0 is pushed onto the stack.
@@ -294,7 +293,7 @@ Since we have covered what the instructions in the lines 24 and 25 accomplish, w
 Now that the semantic meaning of the instructions in Listing~\ref{lst:tree_vs_vm_vm} has been explained, we will explain how the fetch-decode-execute cycle works in the VM\@.
 The code in Listing~\ref{lst:vm_run_meth} displays the `\texttt{run}' method of the rush VM\@.
 
-\Lirsting[ranges={168-179}, caption={The \qVerb{run} Method of the rush VM}, label={lst:vm_run_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={168-179}, caption={The \qVerb{run} method of the rush VM.}, label={lst:vm_run_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 This method manages the entire fetch-decode-execute cycle of the VM\@.
 It is immediately apparent that this method looks relatively simple considering that it plays such of a vital role in the VM\@.
@@ -314,7 +313,7 @@ What might seem odd is that in this code, one cannot observe the instruction poi
 Therefore, one might think that the VM stays in an endless loop without ever progressing to the next instruction.
 In order to answer the final question of how the current instruction is executed, and the instruction pointer is incremented, we will now examine the code in Listing~\ref{lst:vm_run_instr_meth}.
 
-\Lirsting[ranges={181-184,191-194,261-263,272-276,357-360}, caption={Parts of the \qVerb{run_instruction} Method of the rush VM}, label={lst:vm_run_instr_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={181-184,191-194,261-263,272-276,357-360}, caption={Parts of the \qVerb{run_instruction} method of the rush VM.}, label={lst:vm_run_instr_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 The code in Listing~\ref{lst:vm_run_instr_meth} displays parts of the \qVerb{run_instruction} method.
 This method mainly consists of a match-expression which determines which code to run depending on the current instruction.
@@ -362,7 +361,7 @@ Since the function only contains a single expression, the if-expression node is 
 The only direct child of the root node is the single if-expression present in the function's body.
 The if-expression contains a condition, an if-branch, and an else-branch.
 
-\Lirsting[raw=true, wrap=l, wrap width={.32\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
+\Lirsting[raw=true, wrap=l, wrap width={.32\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
 
 Since the function should not call itself again if \qVerb{n} is equal to 0, the if-branch returns 0.
 In the else-branch, the \texttt{rec} function calls itself recursively.
@@ -399,7 +398,7 @@ However, the initial delay caused by compilation was not considered in this benc
 				};
 		\end{tikzpicture}
 	\end{adjustbox}
-	\caption{Abstract Syntax Tree and VM Instructions of a Recursive rush Program}\label{fig:tree_vs_vm_tree}
+	\caption{Abstract syntax tree and VM instructions of a recursive rush program.}\label{fig:tree_vs_vm_tree}
 \end{wrapfigure}
 
 As a conclusion, a VM is often a reasonable approach if an interpreted programming language is to be implemented.

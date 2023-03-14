@@ -13,7 +13,7 @@ Why the \qVerb{Value} is wrapped inside an \qVerb{Rc<RefCell<Value>>} here is ex
 Additionally, a map of function names to their tree node is saved.
 The \qVerb{Rc<_>} here is only necessary to conform to Rust's borrowing rules without unnecessarily cloning.
 
-\Lirsting[ranges={8-16}, float=htb, label={lst:tree_struct}, caption={Tree-Walking Interpreter: Type Definitions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
+\Lirsting[ranges={8-16}, float=htb, label={lst:tree_struct}, caption={Tree-walking interpreter: type definitions.}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}
 
 In addition to the struct itself, result types for expressions and statements are defined.
 Statements either return \qVerb{()}\footnote{Rust's `unit' type, a type containing no data, comparable to `void' in other languages. Its notation describes an empty tuple.} on success or an \qVerb{InterruptKind} on failure.
@@ -56,7 +56,7 @@ The other two fatal interrupt kinds are simply passed along when encountered.
 
 \subsection{Example}
 
-\Lirsting[float=ht, label={lst:tree_example}, caption={Example rush Program}]{listings/tree_example.rush}
+\Lirsting[float=ht, label={lst:tree_example}, caption={Example rush program.}]{listings/tree_example.rush}
 
 To provide a basic overview of a program's execution without too many implementation details, the evaluation of the rush program found in Listing~\ref{lst:tree_example} is presented in the following.
 
@@ -78,7 +78,7 @@ To provide a basic overview of a program's execution without too many implementa
         };
         \draw[arrow] ([xshift=3.5cm]stack.north) -- ([xshift=3.5cm]stack.south);
 	\end{tikzpicture}
-	\caption{Call Stack at the Point of Processing the Return Statement}\label{fig:tree_call_stack}
+    \caption{Call stack at the point of processing the \qVerb{return} statement.}\label{fig:tree_call_stack}
 \end{wrapfigure}
 
 First, the main function gets called by the interpreter's entry point as discussed before.

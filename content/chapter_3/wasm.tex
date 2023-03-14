@@ -17,8 +17,8 @@ Most often these binary modules are constructed from a text module by using a to
 However, the rush WebAssembly compiler instead opts to target the binary format directly, highlighting a few reasons for why most compilers should not do this.
 Listing~\ref{lst:wat_demo_wat} and Listing~\ref{lst:wat_demo_hex} on page~\pageref{lst:wat_demo_wat} show the same basic WebAssembly module once as WAT and once as a commented hex dump of the same module in its binary representation as produced by \url{https://webassembly.github.io/wabt/demo/wat2wasm/}.
 
-\Lirsting[float=p, label={lst:wat_demo_wat}, caption={Simple WebAssembly Module in Text Representation}]{listings/wat_demo.wat}
-\Lirsting[float=p, label={lst:wat_demo_hex}, caption={Simple WebAssembly Module in Binary Representation}]{listings/wat_demo.hexdump}
+\Lirsting[float=p, label={lst:wat_demo_wat}, caption={Simple WebAssembly module in text representation.}]{listings/wat_demo.wat}
+\Lirsting[float=p, label={lst:wat_demo_hex}, caption={Simple WebAssembly module in binary representation.}]{listings/wat_demo.hexdump}
 
 Focusing on the text representation first, the shown module contains one function that takes two \qVerb{i32}s as parameters and returns a single \qVerb{i32}.
 An \qVerb{i32} in WebAssembly represents an uninterpreted 32-Bit integer, that is, it is not clear whether the integer is signed or unsigned from the type itself.
@@ -85,7 +85,7 @@ The rush WebAssembly compiler only ever imports WASI's \qVerb{proc_exit} functio
 
 \subsection{Implementation}
 
-\Lirsting[ranges={324-328}, wrap=R, fancyvrb={numbers=right}, label={lst:wasm_instructions}, caption={Definition of Instruction Opcodes}]{deps/rush/crates/rush-compiler-wasm/src/instructions.rs}
+\Lirsting[ranges={324-328}, wrap=R, fancyvrb={numbers=right}, label={lst:wasm_instructions}, caption={Definition of instruction opcodes.}]{deps/rush/crates/rush-compiler-wasm/src/instructions.rs}
 
 The rush WebAssembly compiler directly targets the binary format.
 This complicates compilation in a few ways, but removes the need for any external dependencies.
@@ -105,14 +105,14 @@ Each index itself is stored as a vector of bytes, as it uses the aforementioned 
 Finally, one field for every supported section is defined.
 They are of type \qVerb{Vec<Vec<u8>>} for the same reason as \qVerb{locals}.
 
-\Lirsting[ranges={11-15, 26-31, 37-39, 58-58}, float=h, label={lst:wasm_compiler}, caption={\qVerb{Compiler} Struct Definition of the WebAssembly Compiler}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
+\Lirsting[ranges={11-15, 26-31, 37-39, 58-58}, float=h, label={lst:wasm_compiler}, caption={The \qVerb{Compiler} struct definition of the WebAssembly compiler.}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
 
 Listing~\ref{lst:wasm_compiler_entry} contains the compiler's entry point function.
 Some details are left out, but essentially it simply calls another method to compile the program itself and then concatenates all sections together to form the final binary.
 It also already imports all required functions from WASI and exports blank linear memory as required by WASI.
 The \qVerb{Self::section} helper function is used to add the section identifier, byte length, and element count in front of each section's contents.
 
-\Lirsting[ranges={70-70, 81-81, 104-109, 124-126}, float=h, label={lst:wasm_compiler_entry}, caption={Entry Point of the WASM Compiler}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
+\Lirsting[ranges={70-70, 81-81, 104-109, 124-126}, float=h, label={lst:wasm_compiler_entry}, caption={Entry point of the WASM compiler.}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
 
 Inside the \qVerb{self.program} method, the global variables are defined and initialized, and all function signatures are added to the `Type' and `Function' sections and the \qVerb{self.functions} map.
 Afterwards, it calls \qVerb{self.function_definition} for every defined function.
@@ -133,7 +133,7 @@ Calling a declared function is as simple as compiling all argument expressions i
 
 \subsubsection{Logical Operators}
 
-\Lirsting[ranges={758-779, _796-798, 864-864}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, label={lst:wasm_logical_infix}, caption={Compilation of logical operators.}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
+\Lirsting[ranges={758-779, _796-798, 864-864}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, label={lst:wasm_logical_infix}, caption={Compilation of logical operators in WASM.}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
 
 One interesting special case to highlight is the compilation of logical operators\footnote{Operators that only operate on boolean values, typically \qVerb{&&} and \qVerb{||}.} in infix expressions.
 This comes down to the fact that in many programming languages, and likewise in rush, these operators evaluate \emph{lazily}, that is, they only evaluate their right-hand side if the result is not already clear by the left-hand side.

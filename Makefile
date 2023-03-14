@@ -20,15 +20,16 @@ listings/generated: rush_build.py deps/rush listings/fib.rush listings/simple.ru
 	mkdir -p ./listings/generated/
 	python3 rush_build.py build
 
-# Ensures that all `.rush` are semantically valid
-# Checks compatibility between `.rush` code and rush source
-check_rush: rush_build.py listings deps
+check: rush_build.py listings deps
 	mkdir -p ./listings/generated/
 	python3 rush_build.py check
+	python3 rush_build.py used
 
 clean:
 	eztex c
 	rm -f lirstings.cache.json
+	rm -f tokei.cache.json
+	rm -f CONTRIBUTORS.pdf
 
 contributors: CONTRIBUTORS.tex
 	latexmk -lualatex -g CONTRIBUTORS.tex

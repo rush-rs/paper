@@ -71,7 +71,4 @@ if __name__ == '__main__':
         exit(1)
 
     cache = read_json()
-    sys.stdout.buffer.write(bytes(str(count(sys.argv[1], cache)), 'utf-8'))
-
-#
-#
+    print(count(sys.argv[1], cache), end='')

@@ -3,6 +3,52 @@ import os
 import sys
 import subprocess
 from pathlib import Path
+from enum import Enum
+
+
+class Backend(Enum):
+    llvm = 0
+    riscv = 1
+    c = 2
+
+
+JOBS = [
+    {
+        'in': './listings/fib.rush',
+        'out': './listings/generated/fib.ll',
+        'backend': Backend.llvm,
+    },
+    {
+        'in': './listings/simple.rush',
+        'out': './listings/generated/simple.ll',
+        'backend': Backend.llvm,
+    },
+    {
+        'in': './listings/simple_scope.rush',
+        'out': './listings/generated/rush_simple_scope.c',
+        'backend': Backend.c,
+    },
+    {
+        'in': './listings/riscv_simple.rush',
+        'out': './listings/generated/riscv_simple.s',
+        'backend': Backend.riscv,
+    },
+    {
+        'in': './listings/rush_simple_pointer.rush',
+        'out': './listings/generated/riscv_rush_simple_pointer.s',
+        'backend': Backend.riscv,
+    },
+    {
+        'in': './listings/simple_add.rush',
+        'out': './listings/generated/rush_simple_add.s',
+        'backend': Backend.riscv,
+    },
+    {
+        'in': './listings/while_loop.rush',
+        'out': './listings/generated/rush_while_loop.s',
+        'backend': Backend.riscv,
+    },
+]
 
 
 def llvm_gen_ir(source: str, output: str):
@@ -104,7 +150,7 @@ def assure_used_listings():
     if unused:
         print('\x1b[1;31m=== CHECK FAILURE: NOT ALL USED ===\x1b[1;m')
         for f_path in unused:
-            print(f"UNUSED: {f_path}")
+            print(f'UNUSED: {f_path}')
         exit(1)
     print('\x1b[1;32m=== CHECK SUCCESS ===\x1b[1;m')
 
@@ -119,32 +165,15 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'used':
         assure_used_listings()
     elif sys.argv[1] == 'build':
-        llvm_gen_ir('./listings/fib.rush', './listings/generated/fib.ll')
-        llvm_gen_ir('./listings/simple.rush', './listings/generated/simple.ll')
-        transpile(
-            './listings/simple_scope.rush',
-            './listings/generated/rush_simple_scope.c',
-        )
-        riscv_asm(
-            './listings/riscv_simple.rush',
-            './listings/generated/riscv_simple.s',
-            32,
-        )
-        riscv_asm(
-            './listings/rush_simple_pointer.rush',
-            './listings/generated/riscv_rush_simple_pointer.s',
-            17,
-        )
-        riscv_asm(
-            './listings/simple_add.rush',
-            './listings/generated/rush_simple_add.s',
-            17,
-        )
-        riscv_asm(
-            './listings/while_loop.rush',
-            './listings/generated/rush_while_loop.s',
-            17,
-        )
+        for job in JOBS:
+            if job['backend'] == Backend.riscv:
+                riscv_asm(job['in'], job['out'], 17)
+            elif job['backend'] == Backend.llvm:
+                llvm_gen_ir(job['in'], job['out'])
+            elif job['backend'] == Backend.c:
+                transpile(job['in'], job['out'])
+            else:
+                raise Exception('Invalid enum in job')
     else:
         print(f'Invalid command-line argument: {sys.argv[1]}')
         exit(1)

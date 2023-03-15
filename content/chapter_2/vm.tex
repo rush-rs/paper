@@ -90,13 +90,13 @@ Programs for the rush VM are always partitioned into functions which each repres
 Since function and variable names are replaced by indices, human-readable names causing inefficiencies can be omitted entirely.
 For better understanding, the individual functions have been manually annotated with their human-readable names.
 
-\begin{wrapfigure}{L}{0.58\textwidth}
-	\begin{NiceTabular}{>{\scriptsize}rc}[name=Left]
+\begin{wrapfigure}{L}{0.54\textwidth}
+	\begin{NiceTabular}{>{\scriptsize}c}[name=Left]
 		\\
 		\\
 		\\
-		\\
-		num & \Block[draw]{} 9 \\
+		num              \\
+		\Block[draw]{} 9 \\
 	\end{NiceTabular}\hspace{1cm}
 	\begin{NiceTabular}
 		[
@@ -119,9 +119,9 @@ For better understanding, the individual functions have been manually annotated 
 
 	\begin{tikzpicture}[overlay,remember picture]
 		\draw [->] (Left-5.5-|Left-last) to [bend left] (Right-5.5-|Right-1);
-		\draw [thick, dashed] (Right-3.5-|Right-4) --  node[anchor=west, xshift=0cm, align=center] {\scriptsize memory\\ \scriptsize pointer $= 3$} ([xshift=4cm]Right-3.5-|Right-3);
+		\draw [thick, dashed] (Right-4.5-|Right-5) --  node[anchor=west, xshift=-1cm, align=center] {\scriptsize memory\\ \scriptsize pointer $= 3$} ([xshift=2.5cm]Right-4.5-|Right-4);
 	\end{tikzpicture}
-    \caption{Linear memory of the rush VM \TODO{Is this correct?}.}\label{fig:rush_vm_linmem}
+	\caption{Linear memory of the rush VM.}\label{fig:rush_vm_linmem}
 \end{wrapfigure}
 
 The first block of instructions is called `\emph{prelude}' since its only task is to declare global variables and call the `\texttt{main}' function.
@@ -218,6 +218,23 @@ It specifies the \emph{function pointer}, which saves the index of the current f
 Therefore, the combination of the instruction- and function pointer specifies the instruction to be executed.
 After the function call, `\texttt{fp}' is set to 1 since \qVerb{ip} should now refer to the instructions inside the \qVerb{main} function.
 
+\begin{wrapfigure}{o}{.4\textwidth}
+	\centering
+	\begin{tikzpicture}
+		\node[
+			stack=3,
+			rectangle split part align=center,
+			text width=10ex, text centered, inner xsep=0,
+			rectangle split part fill={none, gray!10, none},
+		]{
+			\shortstack{prelude\\$fp=0$\\$ip=1$}
+			\nodepart{two}{\shortstack{main\\$fp=1$\\$ip=0$}}
+			\nodepart{three}{\ldots}
+		};
+	\end{tikzpicture}
+	\caption{Example call stack of the rush VM.}\label{fig:rush_vm_call_stack}
+\end{wrapfigure}
+
 Function calls are managed in a stack in order to allow early returns from functions.
 If the VM encounters a `\texttt{ret}'\footnote{Short for \enquote{return}} instruction, it should leave the current function immediately.
 However, it should also know where to resume its fetch-decode-execute cycle.
@@ -227,23 +244,6 @@ In this call frame, `\texttt{ip}' still points to the `\texttt{call}' instructio
 Since `\texttt{ip}' is incremented automatically after most instructions, the VM resumes instruction execution at the first instruction after the call-instruction.
 Therefore, the call frame of the caller function stays unaffected as long as the called function is executed.
 This way, function calls are implemented in a simple but robust manner.
-
-\begin{wrapfigure}{L}{.4\textwidth}
-	\centering
-	\begin{tikzpicture}
-		\node[
-            stack=3,
-            rectangle split part align=center,
-            text width=10ex, text centered, inner xsep=0,
-			rectangle split part fill={none, gray!10, none},
-        ]{
-			\shortstack{prelude\\$fp=0$\\$ip=1$}
-			\nodepart{two}{\shortstack{main\\$fp=1$\\$ip=0$}}
-			\nodepart{three}{\ldots}
-		};
-	\end{tikzpicture}
-	\caption{Example call stack of the rush VM.}\label{fig:rush_vm_call_stack}
-\end{wrapfigure}
 
 Now that the \qVerb{call} instruction has been interpreted, the VM begins executing the first instruction of the \qVerb{main} function.
 Since the main-function only calls the \qVerb{rec} function with the argument 1000, there are no new concepts to consider in this function.
@@ -259,6 +259,8 @@ It is then consumed by the \qVerb{gvar} instruction in line 13.
 Therefore, the instruction first pops the top element from the stack in order to
 retrieve the value of the variable at the specified location and to push its value on the stack.
 In this case, the value of the popped element is the relative address 0, meaning that the instruction retrieves the value of first parameter.
+
+\Lirsting[raw=true, wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width={.33\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
 
 In line 14, the constant value 0 is pushed onto the stack.
 Next, the \qVerb{eq} instruction pops two elements from the stack in order to test them for equality.
@@ -297,46 +299,43 @@ The code in Listing~\ref{lst:vm_run_meth} displays the `\texttt{run}' method of 
 
 This method manages the entire fetch-decode-execute cycle of the VM\@.
 It is immediately apparent that this method looks relatively simple considering that it plays such of a vital role in the VM\@.
-Since the fetch-decode-execute cycle executes instructions repeatedly, the main construct in the function is a while-loop beginning in line 169.
+Since the fetch-decode-execute cycle executes instructions repeatedly, the method's main construct is the while-loop beginning in line 169.
 The condition of the loop checks that the current instruction pointer refers to a legal instruction inside the current function.
-This way, the VM comes to a halt if it reaches the end of an instruction sequence.
-In line 170, the next instruction to be interpreted is saved in the `\texttt{instruction}' variable.
-This line represents the \emph{fetch} step since the next instruction is fetched from memory and placed in a spot where it can be used by the following steps.
+This way, the VM comes to a halt as soon as it reaches the end of an instruction sequence.
+In line 170, the next instruction to be interpreted is saved in the \qVerb{instruction} variable.
+This line represents the \emph{fetch} step because the next instruction is fetched from memory and placed in a spot where it is accessible to the later steps of the cycle.
 
-In the body of the loop, the current instruction is executed using the `\texttt{self.run\_instruction}' method.
+In the body of the loop, the current instruction is executed using the \qVerb{self.run_instruction} method.
 This method is responsible for executing the previously fetched instruction.
 If execution of the instruction fails, the method returns a runtime error, such as an \emph{integer-overflow} fault.
-Furthermore, this method may return an optional integer representing the exit code of the program.
-If the method returns such a code, instruction execution comes to a halt instantly and the VM exists using the retrieved code.
-However, if the method returns none of these two possible types, the fetch-decode-execute cycle continues.
-What might seem odd is that in this code, one cannot observe the instruction pointer being incremented.
-Therefore, one might think that the VM stays in an endless loop without ever progressing to the next instruction.
+Furthermore, this method may return an optional integer, representing the exit code of the program.
+If such an integer is returned, instruction execution comes to a halt instantly and the VM exists using it as the exit code.
+In case the method returns none of these two possible enum variants, the fetch-decode-execute cycle continues as usual.
+However, one cannot observe how the instruction pointer is incremented, therefore suggesting that the VM stays in an endless loop without ever progressing to the next instruction.
 In order to answer the final question of how the current instruction is executed, and the instruction pointer is incremented, we will now examine the code in Listing~\ref{lst:vm_run_instr_meth}.
 
 \Lirsting[ranges={181-184,191-194,261-263,272-276,357-360}, caption={Parts of the \qVerb{run_instruction} method of the rush VM.}, label={lst:vm_run_instr_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 The code in Listing~\ref{lst:vm_run_instr_meth} displays parts of the \qVerb{run_instruction} method.
-This method mainly consists of a match-expression which determines which code to run depending on the current instruction.
-In this example, the implementation of several instructions are visible.
+This method mainly consists of a match-expression that determines which code to run, depending on the current instruction.
+Here, the implementation of several instructions is visible.
 In line 183, the `\texttt{Nop}' instruction is matched.
 It is apparent that there is no instruction-specific code executed in this case since \enquote{nop} stands for \enquote{no operation}.
 Therefore, the VM will ignore any `\texttt{Nop}' instructions it encounters.
-In line 184, the code for the `\texttt{Push}' instruction is displayed.
-Since this instruction should push the operand onto the stack at runtime, the helper method `\texttt{self.push}' is invoked.
-This method pushes the provided parameter onto the `\texttt{stack}' field of the VM\@.
-However, the function first validates that the stack will not exceed its maximum capacity.
-If push operation would cause the capacity of the stack to be exceeded, the method returns a runtime error describing the issue.
-In line 261, the code for executing the `\texttt{Exit}' instruction can be seen.
-Since the instruction is inserted by the compiler if it encounters a call to the `\texttt{exit}' function,
-it should terminate the fetch-decode-execute cycle immediately.
-
-In line 191, the code responsible for executing the jumping instruction `\texttt{Jmp}' can be seen.
-This instruction only sets the instruction pointer to the target index specified in the instruction operand.
+Next, in line 184, the code for the `\texttt{Push}' instruction is displayed.
+This instruction pushes its first operand on the stack at runtime by calling the internal helper method `\texttt{self.push}'.
+Therefore, this method pushes the provided parameter on the `\texttt{stack}' field of the VM,
+first validating that the stack will not exceed its maximum capacity.
+If the push operation causes the capacity of the stack to be exceeded, the method returns a runtime error describing the issue.
+In line 191, the code responsible for executing the `\texttt{Jmp}' instruction can be seen.
+This instruction only sets the instruction pointer to the target index specified in the first operand.
 Therefore, a jump involves very little overhead and is implemented using very little effort.
-It is to be noted that this instruction does not perform any bound checks.
-For some special instructions, such as the jump-instructions, the instruction pointer should not be incremented since it would interfere with the jump.
-Since the instruction pointer is incremented at the end of the method, the return-statement in line 193 is used to terminate this method prematurely, preventing the increase of \qVerb{ip} at the end.
+It is to be noted that this instruction does not perform any bound checks, therefore allowing illegal addresses.
+For some special instructions, such as this one, the instruction pointer should not be incremented since it would interfere with the jump.
+Since the instruction pointer is incremented at the end of the method, the return-statement in line 193 is used to terminate this method early, preventing the increase of \qVerb{ip} at the end.
 
+Line 261 contains the implementation of the `\texttt{Exit}' instruction, which is inserted by the compiler if it encounters a call to the `\texttt{exit}' function.
+In this case, the instruction leads to the termination of the fetch-decode-execute cycle immediately.
 In line 272, the code responsible for executing the `\texttt{Add}' instruction can be observed.
 This instruction first pops two elements from the stack since they represent the operands of the underlying mathematical computation.
 Then, the `\texttt{add}' helper function is called on the left-hand side of the computation.
@@ -361,8 +360,6 @@ The root node of the tree represents the \qVerb{rec} function.
 Since the function only contains a single expression, the if-expression node is the only child of the root node.
 The only direct child of the root node is the single if-expression present in the function's body.
 The if-expression contains a condition, an if-branch, and an else-branch.
-
-\Lirsting[raw=true, wrap=l, wrap width={.32\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
 
 Since the function should not call itself again if \qVerb{n} is equal to 0, the if-branch returns 0.
 In the else-branch, the \texttt{rec} function calls itself recursively.

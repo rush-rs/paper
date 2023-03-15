@@ -300,12 +300,12 @@ It is immediately apparent that this method looks relatively simple considering 
 Since the fetch-decode-execute cycle executes instructions repeatedly, the main construct in the function is a while-loop beginning in line 169.
 The condition of the loop checks that the current instruction pointer refers to a legal instruction inside the current function.
 This way, the VM comes to a halt if it reaches the end of an instruction sequence.
-In line 179, the next instruction to be interpreted is saved as the variable `\texttt{instruction}'.
+In line 170, the next instruction to be interpreted is saved in the `\texttt{instruction}' variable.
 This line represents the \emph{fetch} step since the next instruction is fetched from memory and placed in a spot where it can be used by the following steps.
 
 In the body of the loop, the current instruction is executed using the `\texttt{self.run\_instruction}' method.
 This method is responsible for executing the previously fetched instruction.
-If execution of the instruction fails, the method returns a runtime error, such as an \emph{integer-overflow} error.
+If execution of the instruction fails, the method returns a runtime error, such as an \emph{integer-overflow} fault.
 Furthermore, this method may return an optional integer representing the exit code of the program.
 If the method returns such a code, instruction execution comes to a halt instantly and the VM exists using the retrieved code.
 However, if the method returns none of these two possible types, the fetch-decode-execute cycle continues.
@@ -317,38 +317,39 @@ In order to answer the final question of how the current instruction is executed
 
 The code in Listing~\ref{lst:vm_run_instr_meth} displays parts of the \qVerb{run_instruction} method.
 This method mainly consists of a match-expression which determines which code to run depending on the current instruction.
-In this example, the implementations of several instructions are visible.
+In this example, the implementation of several instructions are visible.
 In line 183, the `\texttt{Nop}' instruction is matched.
 It is apparent that there is no instruction-specific code executed in this case since \enquote{nop} stands for \enquote{no operation}.
 Therefore, the VM will ignore any `\texttt{Nop}' instructions it encounters.
-In line 184, the code for the `\texttt{Nop}' instruction is displayed.
+In line 184, the code for the `\texttt{Push}' instruction is displayed.
 Since this instruction should push the operand onto the stack at runtime, the helper method `\texttt{self.push}' is invoked.
 This method pushes the provided parameter onto the `\texttt{stack}' field of the VM\@.
 However, the function first validates that the stack will not exceed its maximum capacity.
-If the call to push would cause the capacity of the stack to be exceeded, the method returns a runtime error describing the issue.
+If push operation would cause the capacity of the stack to be exceeded, the method returns a runtime error describing the issue.
 In line 261, the code for executing the `\texttt{Exit}' instruction can be seen.
-This instruction can be used to terminate the execution of the program prematurely.
-It is inserted by the compiler if it encounters a call to the `\texttt{exit}' function.
+Since the instruction is inserted by the compiler if it encounters a call to the `\texttt{exit}' function,
+it should terminate the fetch-decode-execute cycle immediately.
 
 In line 191, the code responsible for executing the jumping instruction `\texttt{Jmp}' can be seen.
 This instruction only sets the instruction pointer to the target index specified in the instruction operand.
 Therefore, a jump involves very little overhead and is implemented using very little effort.
+It is to be noted that this instruction does not perform any bound checks.
 For some special instructions, such as the jump-instructions, the instruction pointer should not be incremented since it would interfere with the jump.
-Since the instruction pointer is incremented at the end of the method, the return-statement in line 193 is used to terminate this method prematurely.
+Since the instruction pointer is incremented at the end of the method, the return-statement in line 193 is used to terminate this method prematurely, preventing the increase of \qVerb{ip} at the end.
 
 In line 272, the code responsible for executing the `\texttt{Add}' instruction can be observed.
 This instruction first pops two elements from the stack since they represent the operands of the underlying mathematical computation.
 Then, the `\texttt{add}' helper function is called on the left-hand side of the computation.
 This helper function then performs the actual addition computation.
-This way, the \texttt{run\_instruction} method stays organized and simple.
-Although just the code for addition is shown, most of the other infix-expressions are later executed similarly.
-It is apparent that the execution of these instructions involves relatively little difficulty.
-After the instruction has been executed, the instruction pointer is finally incremented in line 358.
+This way, the \qVerb{run_instruction} method stays organized and simple.
+Although just the code for addition is shown, most of the other infix-expressions are implemented similarly.
+It is apparent that the execution of these instructions involves relatively little effort.
+Like hinted previously, after an instruction has been executed, \qVerb{ip} is incremented in line 358.
 If no error occurred during the execution of these instructions, nothing is returned since execution should proceed with the next instruction.
 This method represents both the \emph{decode} and \emph{execute} step since it first matches (\emph{decode}) and then interprets (\emph{execute}) the current instruction.
-Surprisingly, the parts of the method shown in this example can all be understood using relatively little effort and show that implementation of a VM is usually not that demanding.
+Surprisingly, the parts of the method shown in this example can all be understood using relatively little effort and show that the implementation of a VM is usually manageable.
 Now that we have explained how some important parts of the rush VM work, the question of how its input instructions are generated remains.
-Therefore, the compiler targeting the rush VM is presented in the following chapter.
+Therefore, the compiler targeting the rush VM is presented in Section~\ref{sec:vm_compiler} on page \pageref{sec:vm_compiler}.
 
 \subsection{Comparing the VM to the Tree-Walking Interpreter}
 

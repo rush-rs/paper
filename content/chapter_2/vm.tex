@@ -121,7 +121,7 @@ For better understanding, the individual functions have been manually annotated 
 		\draw [->] (Left-5.5-|Left-last) to [bend left] (Right-5.5-|Right-1);
 		\draw [thick, dashed] (Right-3.5-|Right-4) --  node[anchor=west, xshift=0cm, align=center] {\scriptsize memory\\ \scriptsize pointer $= 3$} ([xshift=4cm]Right-3.5-|Right-3);
 	\end{tikzpicture}
-    \caption{Linear memory of the rush VM \TODO{Is this correct?}.}\label{fig:rush_vm_linmem}
+	\caption{Linear memory of the rush VM \TODO{Is this correct?}.}\label{fig:rush_vm_linmem}
 \end{wrapfigure}
 
 The first block of instructions is called `\emph{prelude}' since its only task is to declare global variables and call the `\texttt{main}' function.
@@ -232,11 +232,11 @@ This way, function calls are implemented in a simple but robust manner.
 	\centering
 	\begin{tikzpicture}
 		\node[
-            stack=3,
-            rectangle split part align=center,
-            text width=10ex, text centered, inner xsep=0,
+			stack=3,
+			rectangle split part align=center,
+			text width=10ex, text centered, inner xsep=0,
 			rectangle split part fill={none, gray!10, none},
-        ]{
+		]{
 			\shortstack{prelude\\$fp=0$\\$ip=1$}
 			\nodepart{two}{\shortstack{main\\$fp=1$\\$ip=0$}}
 			\nodepart{three}{\ldots}
@@ -335,7 +335,7 @@ This instruction only sets the instruction pointer to the target index specified
 Therefore, a jump involves very little overhead and is implemented using very little effort.
 It is to be noted that this instruction does not perform any bound checks.
 For some special instructions, such as the jump-instructions, the instruction pointer should not be incremented since it would interfere with the jump.
-Since the instruction pointer is incremented at the end of the method, the return-statement in line 193 is used to terminate this method prematurely, preventing the increase of \qVerb{ip} at the end.
+Since the instruction pointer is incremented at the end of the method, the \qVerb{return} statement in line 193 is used to terminate this method prematurely, preventing the increase of \qVerb{ip} at the end.
 
 In line 272, the code responsible for executing the `\texttt{Add}' instruction can be observed.
 This instruction first pops two elements from the stack since they represent the operands of the underlying mathematical computation.

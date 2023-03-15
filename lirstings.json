@@ -78,8 +78,8 @@
     "string.regex": "$orange",
     "string.escape": "$red",
     "symbol": "$cyan",
-    "tag": "$red",
-    "tag.delimiter": "$red",
+    "tag": "$purple",
+    "tag.delimiter": "$purple",
     "text": "$fg",
     "text.strong": {
       "link": "fg",
@@ -119,6 +119,7 @@
     "danger": "$fg",
     "type": "$yellow",
     "type.builtin": "$orange",
+    "type.qualifier": "$purple",
     "variable": "$fg",
     "variable.builtin": "$red",
     "string.special.grammar": "$orange",
@@ -127,7 +128,11 @@
     "symbol.grammar.upper": "$orange",
     "symbol.grammar.lower": "$red",
     "storageclass.lifetime": "$red",
-    "storageclass": "$yellow"
+    "tag.attribute": "$yellow",
+    "text.environment": "$fg",
+    "text.environment.name": "$fg",
+    "text.diff.add": "$green",
+    "text.diff.delete": "$red"
   },
   "ansi_colors": [
     "000000",

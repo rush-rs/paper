@@ -207,17 +207,6 @@ Listing~\ref{lst:call_frame_struct} shows how the \qVerb{CallFrame} struct is im
 
 \Lirsting[ranges={29-34}, caption={Struct definition of a \qVerb{CallFrame}.}, label={lst:call_frame_struct}, float=H]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
-In this implementation, each call frame holds two important pieces of information.
-In line 31 of Listing~\ref{lst:call_frame_struct}, the `\texttt{ip}' field is declared.
-It specifies the \emph{instruction pointer}, which saves the index of the current instruction.
-This index is relative for each function, meaning that the instruction pointer 0 can refer to multiple instructions,
-each in another function.
-Since the `\texttt{call}' instruction was interpreted previously, the instruction pointer of the new call frame is set to 0 as execution should continue at the first instruction of the called function.
-The second important field, `\texttt{fp}', is declared in line 33.
-It specifies the \emph{function pointer}, which saves the index of the current function.
-Therefore, the combination of the instruction- and function pointer specifies the instruction to be executed.
-After the function call, `\texttt{fp}' is set to 1 since \qVerb{ip} should now refer to the instructions inside the \qVerb{main} function.
-
 \begin{wrapfigure}{o}{.4\textwidth}
 	\centering
 	\begin{tikzpicture}
@@ -235,6 +224,17 @@ After the function call, `\texttt{fp}' is set to 1 since \qVerb{ip} should now r
 	\caption{Example call stack of the rush VM.}\label{fig:rush_vm_call_stack}
 \end{wrapfigure}
 
+In this implementation, each call frame holds two important pieces of information.
+In line 31 of Listing~\ref{lst:call_frame_struct}, the `\texttt{ip}' field is declared.
+It specifies the \emph{instruction pointer}, which saves the index of the current instruction.
+This index is relative for each function, meaning that the instruction pointer 0 can refer to multiple instructions,
+each in another function.
+Since the `\texttt{call}' instruction was interpreted previously, the instruction pointer of the new call frame is set to 0 as execution should continue at the first instruction of the called function.
+The second important field, `\texttt{fp}', is declared in line 33.
+It specifies the \emph{function pointer}, which saves the index of the current function.
+Therefore, the combination of the instruction- and function pointer specifies the instruction to be executed.
+After the function call, `\texttt{fp}' is set to 1 since \qVerb{ip} should now refer to the instructions inside the \qVerb{main} function.
+
 Function calls are managed in a stack in order to allow early returns from functions.
 If the VM encounters a `\texttt{ret}'\footnote{Short for \enquote{return}} instruction, it should leave the current function immediately.
 However, it should also know where to resume its fetch-decode-execute cycle.
@@ -244,6 +244,8 @@ In this call frame, `\texttt{ip}' still points to the `\texttt{call}' instructio
 Since `\texttt{ip}' is incremented automatically after most instructions, the VM resumes instruction execution at the first instruction after the call-instruction.
 Therefore, the call frame of the caller function stays unaffected as long as the called function is executed.
 This way, function calls are implemented in a simple but robust manner.
+
+\Lirsting[raw=true, wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width={.33\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
 
 Now that the \qVerb{call} instruction has been interpreted, the VM begins executing the first instruction of the \qVerb{main} function.
 Since the main-function only calls the \qVerb{rec} function with the argument 1000, there are no new concepts to consider in this function.
@@ -259,8 +261,6 @@ It is then consumed by the \qVerb{gvar} instruction in line 13.
 Therefore, the instruction first pops the top element from the stack in order to
 retrieve the value of the variable at the specified location and to push its value on the stack.
 In this case, the value of the popped element is the relative address 0, meaning that the instruction retrieves the value of first parameter.
-
-\Lirsting[raw=true, wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width={.33\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
 
 In line 14, the constant value 0 is pushed onto the stack.
 Next, the \qVerb{eq} instruction pops two elements from the stack in order to test them for equality.
@@ -332,7 +332,7 @@ This instruction only sets the instruction pointer to the target index specified
 Therefore, a jump involves very little overhead and is implemented using very little effort.
 It is to be noted that this instruction does not perform any bound checks, therefore allowing illegal addresses.
 For some special instructions, such as this one, the instruction pointer should not be incremented since it would interfere with the jump.
-Since the instruction pointer is incremented at the end of the method, the return-statement in line 193 is used to terminate this method early, preventing the increase of \qVerb{ip} at the end.
+Since the instruction pointer is incremented at the end of the method, the \qVerb{return} statement in line 193 is used to terminate this method early, preventing the increase of \qVerb{ip} at the end.
 
 Line 261 contains the implementation of the `\texttt{Exit}' instruction, which is inserted by the compiler if it encounters a call to the `\texttt{exit}' function.
 In this case, the instruction leads to the termination of the fetch-decode-execute cycle immediately.

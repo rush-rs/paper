@@ -323,7 +323,7 @@ The Listing~\ref{lst:riscv_simple} shows a rush program containing two functions
 In line 1 of the rush program, the mutable global variable \qVerb{m} is defined with the initial value 42.
 In line 4 of the main-function, \qVerb{m} is incremented by 1.
 Next, in line 5, the \qVerb{foo} function is called using \qVerb{m} as the only call argument.
-In line 6, a return-statement is used to terminate the main-function explicitly.
+In line 6, a \qVerb{return} statement is used to terminate the main-function explicitly.
 The body of the \qVerb{foo} function only contains a call to the \qVerb{exit} function.
 Therefore, the \qVerb{foo} function only exits using the specified parameter \qVerb{n} as the exit code.
 In this case, the exit code of the displayed program will be 43.
@@ -579,7 +579,7 @@ The for-loop in line 176 is used to itrate through the entire \qVerb{INT_REGISTE
 This array is constant and therefore represents the pool containing integer registers.
 In the lines 177--180, the if-expression checks if the current register (\qVerb{reg}) is not found in the \qVerb{used_registers} vector.
 If this was the case, the current register would be unused and could therefore be returned.
-Since the return-statement in line 182 returns the current register if it is unused, the loop only runs until a free register has been found.
+Since the \qVerb{return} statement in line 182 returns the current register if it is unused, the loop only runs until a free register has been found.
 Due to the passive nature of the register allocation algorithm used in this compiler, the unreachable-macro in line 185 should never be called since the compiler should not run out of registers.
 However, one can see that this method does not mark the newly returned register as used.
 This is because marking a register as used is only required in some sections of the compiler where overwriting a register would introduce a bug in the output program.
@@ -930,7 +930,7 @@ Now it has become apparent how function calls are implemented in the rush \riscv
 However, the question of how a called function returns a value still remains.
 In the previous sections, we have covered that every generated function contains an \qVerb{epilogue_x}.
 Every time the \qVerb{return} keyword is used in rush, the compiler generates an instruction which jumps to the epilogue label of the function being compiled.
-If the function should a value, meaning that the return-statement contains an expression,
+If the function should a value, meaning that the \qVerb{return} statement contains an expression,
 it is first compiled in order to observe its output register.
 If the output register is already the desired register, like \qVerb{a0} for integer values, the compiler can carry on.
 However, if the output register of the compiled expression deviates from the register in which return values shall be passed,

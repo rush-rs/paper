@@ -218,7 +218,7 @@ The third layout inverts the order, which causes all three values to be correctl
 \TODO{cite?}
 
 \begin{figure}[htb]
-    \centering
+	\centering
 
 	\newcounter{aligncol}
 	\setcounter{aligncol}{0}
@@ -226,27 +226,27 @@ The third layout inverts the order, which causes all three values to be correctl
 	\setcounter{alignrow}{0}
 	\newcommand{\AlignedCell}[3][freecell]{%
 		\draw[#1] (\value{aligncol},1.2*\value{alignrow}) +(0,-.5) rectangle +(#2,.5);
-        \draw (\value{aligncol}+#2/2,1.2*\value{alignrow}) node {\strut #3};
+		\draw (\value{aligncol}+#2/2,1.2*\value{alignrow}) node {\strut #3};
 		\addtocounter{aligncol}{#2}
 	}
 	\newcommand{\AlignNextRow}{\addtocounter{alignrow}{-1}\setcounter{aligncol}{0}}
 	\begin{tikzpicture}[xscale=0.95, yscale=0.7]
 		\footnotesize
-        \AlignedCell{1}{\Verb{u8}}
-        \AlignedCell[occupiedcell]{2}{\Verb{u16}}
-        \AlignedCell[occupiedcell]{8}{\Verb{i64}}
+		\AlignedCell{1}{\Verb{u8}}
+		\AlignedCell[occupiedcell]{2}{\Verb{u16}}
+		\AlignedCell[occupiedcell]{8}{\Verb{i64}}
 		\AlignNextRow
-        \AlignedCell{1}{\Verb{u8}}
+		\AlignedCell{1}{\Verb{u8}}
 		\AlignedCell[padding]{1}{}
-        \AlignedCell{2}{\Verb{u16}}
+		\AlignedCell{2}{\Verb{u16}}
 		\AlignedCell[padding]{4}{}
-        \AlignedCell{8}{\Verb{i64}}
+		\AlignedCell{8}{\Verb{i64}}
 		\AlignNextRow
-        \AlignedCell{8}{\Verb{i64}}
-        \AlignedCell{2}{\Verb{u16}}
-        \AlignedCell{1}{\Verb{u8}}
+		\AlignedCell{8}{\Verb{i64}}
+		\AlignedCell{2}{\Verb{u16}}
+		\AlignedCell{1}{\Verb{u8}}
 	\end{tikzpicture}
-    \caption{Examples of memory alignment.}\label{fig:alignment}
+	\caption{Examples of memory alignment.}\label{fig:alignment}
 \end{figure}
 
 Listing~\ref{lst:x64_align} shows the implementation of the rush x64 compiler for aligning a pointer to a given size.
@@ -314,7 +314,7 @@ Apart from allocating stack space, the prologue is also often used for storing s
 The epilogue however is required for deallocating all resources which were previously allocated by the function's prologue.
 For instance, the stack-related pointers are modified to reflect their state before the function call.
 Furthermore, any special registers previously saved on the stack are now restored.
-Obviously, a return-statement should always jump to the function's epilogue instead of terminating the function directly.
+Obviously, a \qVerb{return} statement should always jump to the function's epilogue instead of terminating the function directly.
 At the end of most epilogues, a return-instruction jumping back to the caller location is often found.
 Therefore, the prologue is executed as the first code when calling the function and the epilogue is called as the last code before this function terminates.
 

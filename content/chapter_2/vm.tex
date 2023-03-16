@@ -167,7 +167,7 @@ This instruction calculates the absolute address of its operand and pushes the r
 Here, the operand is the relative address of the variable to be referenced.
 Listing~\ref{lst:rush_pointer_simple_vm_instructions} shows the VM instructions generated from the rush program in Listing~\ref{lst:rush_pointer_simple}.
 
-\Lirsting[raw=true, caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, fancyvrb={numbers=right}, wrap=R, wrap width={.27\textwidth}]{listings/vm_instructions_simple_pointer.txt}
+\Lirsting[caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, fancyvrb={numbers=right}, wrap=R, wrap width={.27\textwidth}]{listings/vm_instructions_simple_pointer.s}
 
 The first instruction \qVerb{setmp} (\emph{set memory pointer}) increases the memory pointer by two since the operand is a positive number.
 This is because the \qVerb{main} function contains two local variables whose space is to be allocated at the start of the function.
@@ -245,7 +245,7 @@ Since `\texttt{ip}' is incremented automatically after most instructions, the VM
 Therefore, the call frame of the caller function stays unaffected as long as the called function is executed.
 This way, function calls are implemented in a simple but robust manner.
 
-\Lirsting[raw=true, wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width={.33\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.txt}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width={.33\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.s}
 
 Now that the \qVerb{call} instruction has been interpreted, the VM begins executing the first instruction of the \qVerb{main} function.
 Since the main-function only calls the \qVerb{rec} function with the argument 1000, there are no new concepts to consider in this function.

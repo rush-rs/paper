@@ -1,36 +1,36 @@
 \newpage %TODO: remove this force newpage?
 \section{The rush Programming Language}
 
-For this paper, we have developed and implemented a simple programming language called rush\footnote{Capitalization of the name is intentionally omitted}.
-The language features a \emph{static type system}, \emph{arithmetic operators}, \emph{logical operators}, \emph{local and global variables}, \emph{pointers}, \emph{if-else expressions}, \emph{loops}, and \emph{functions}.
+For this paper, we have developed and implemented a simple programming language called \emph{rush}\footnote{Capitalization of the name is omitted intentionally.}.
+The language features a \emph{static type system}, six different data types\footnote{Including the \qVerb{int}, \qVerb{float}, \qVerb{bool}, \qVerb{char}, \emph{unit}, and \emph{never} type.}, \emph{arithmetic operators}, \emph{logical operators}, \emph{local and global variables}, \emph{pointers}, \emph{if-else expressions}, \emph{loops}, and \emph{functions}.
 In order to introduce the language, we will now consider the code in Listing~\ref{lst:rush_fib}.
 
 \Lirsting[caption={Generating Fibonacci numbers using rush.}, label={lst:rush_fib}, float=H]{listings/fib.rush}
 
 This rush program can be used to generate numbers included in the Fibonacci sequence.
 In the code, a function named \qVerb{fib} is defined using the \qVerb{fn} keyword.
-This function accepts the parameter \qVerb{n}, it denotes the position of the number to be calculated.
+This function accepts the parameter \qVerb{n} which denotes the position in the Fibonacci sequence of the number to be calculated.
 Since \qVerb{int} is specified as the type of the parameter, the function may be called using any integer value as its argument.
 However, the constraint $n \in \mathbb{N}_0$ must be valid in order for this function to return the correct result\footnote{Assuming the function should comply with the original Fibonacci definition}.
-In this example, the \qVerb{main} function calls the \qVerb{fib} function using the natural number 10.
-In rush, every valid program must contain exactly one \qVerb{main} function since program execution will start there.
+In this example, the \qVerb{main} function calls the \qVerb{fib} function using the natural number `10'.
+In rush, every valid program must contain exactly one \qVerb{main} function since that is where program execution will start.
 Even though rush has a \qVerb{return} statement, the body of the \qVerb{fib} function contains no such statement.
 This is because blocks like the one of the function \qVerb{fib} return the result of their last expression.
-The if-else construct must therefore also be an expression since it represents the last entity in the block, and it is not followed by a semicolon.
-In this example, if the input parameter \qVerb{n} is less than 2, it is returned without modification.
-Otherwise, the function calls itself recursively in order to calculate the sum of the preceding Fibonacci numbers $n - 2$ and $n - 1$.
-Therefore, the result value of the entire if-expression is calculated by using one of the two branches.
-Since the if-else construct is also an expression, there is no need for redundant \qVerb{return} statements.
+The if-else construct is also an expression since it represents the last entity in the block, and it is not followed by a semicolon.
+If the input parameter \qVerb{n} is less than `2', it is returned without modification.
+Otherwise, the function calls itself recursively in order to calculate the sum of the preceding Fibonacci numbers `$n - 2$' and `$n - 1$'.
+The result value of the entire if-expression is calculated by using one of the two branches.
+Since the if-else construct is also an expression, there is no need for a redundant \qVerb{return} statement.
 In line 2, the \qVerb{exit} function is called.
 Even though this function is not defined anywhere, the code still executes without any errors.
-This is due to the fact that the \qVerb{exit} function is a \emph{built-in} function as it is used to exit a program using the specified exit code.
+This is due to the fact that the \qVerb{exit} function is a \emph{built-in} function that is used to exit a program using the specified exit code.
 
 \subsection{Features}
 
 As hinted previously, rush implements various features which are also found in most other relevant programming languages today.
-Generally, rush is a \emph{procedural} programming language, meaning that code is partitioned into functions.
-This paradigm has been selected as it is also common across most of today's popular programming languages.
-In order to provide abstractions, rush provides many components or features which allow code to be developed more rapidly.
+Generally, rush is a \emph{procedural} programming language, meaning that code is partitioned into \emph{procedures}, which are commonly referred to as `functions'.
+This paradigm has been selected as it is also common across most of today's popular programming languages~\cite[p.~278]{Tucker2007-qr}.
+In order to provide abstractions, rush provides many features which are meant to increase developer productivity.
 For instance, a program might use a \qVerb{loop} to implement code repetition easily.
 For reference, Table~\ref{tbl:rush_features} shows some features of the rush programming language.
 
@@ -38,22 +38,22 @@ For reference, Table~\ref{tbl:rush_features} shows some features of the rush pro
 	\caption{Most important features of the rush programming language.}\label{tbl:rush_features}
 	\rowcolors{2}{gray!15}{}
 	\begin{tabularx}{0.95\textwidth}{lLl}
-		\rowcolor{gray!25} Name & Functionality                                                           & rush code                                         \\
+		\rowcolor{gray!25} Name & Description                                                             & Example                                          \\
 		\hline
-		Loop                    & Executes code repeatedly.                                               & \LirstInline{rush}{loop {  }}                     \\
-		While                   & Like \qVerb{loop}, checks a condition before each iteration.            & \LirstInline{rush}{while x < 5 {  }}              \\
-		For                     & Like \qVerb{while}, executes an update-expression after each iteration. & \LirstInline{rush}{for i = 0; i < 5; i += 1 {  }} \\
-		If                      & Executes different code based on a condition.                           & \LirstInline{rush}{if true { /* */ } else {  }}   \\
-		Fn                      & Defines a function which can be called later.                           & \LirstInline{rush}{fn foo(n: int) {  }}           \\
-		Infix Expr              & Performs mathematical and logical operations.                           & \LirstInline{rush}{1 + n; 5 ** 2}                 \\
-		Prefix Expr             & Performs mathematical and logical operations.                           & \LirstInline{rush}{!false; -n}                    \\
-		Variables               & Defines a variable with an initial value.                               & \LirstInline{rush}{let mut answer = 42}           \\
-		Cast Expr               & Converts a value into a different type.                                 & \LirstInline{rush}{42 as char}                    \\
+		unconditional loop      & Executes code repeatedly.                                               & \LirstInline{rush}{loop { }}                     \\
+		while-loop              & Like \qVerb{loop}, checks a condition before each iteration.            & \LirstInline{rush}{while x < 5 { }}              \\
+		for-loop                & Like \qVerb{while}, executes an update-expression after each iteration. & \LirstInline{rush}{for i = 0; i < 5; i += 1 { }} \\
+		if-expression           & Executes different code based on a condition.                           & \LirstInline{rush}{if true { } else { }}         \\
+		function definition     & Defines a function which can be called later.                           & \LirstInline{rush}{fn foo(n: int) { }}           \\
+		infix-expression        & Performs mathematical and logical operations.                           & \LirstInline{rush}{1 + n; 5 ** 2}                \\
+		prefix-expression       & Performs mathematical and logical operations.                           & \LirstInline{rush}{!false; -n}                   \\
+		let-statement           & Defines a variable with an initial value.                               & \LirstInline{rush}{let mut answer = 42}          \\
+		cast-expression         & Converts a value into a different type.                                 & \LirstInline{rush}{42 as float}                  \\
 	\end{tabularx}
 \end{table}
 
 Just like most other compiled languages, rush also includes a \emph{static type system},
-meaning that every value has a type which cannot change during runtime.
+meaning that every variable has a type which cannot change during runtime.
 For instance, after a new variable which can hold integers was defined,
 only integer values may be assigned to it. This way, the compiler can validate the semantic
 correctness of the program, showing error messages if an erroneous program is provided.
@@ -65,58 +65,55 @@ Table~\ref{tbl:rush_types} provides an overview about all the types which are pr
 	\caption{Data types in the rush programming language.}\label{tbl:rush_types}
 	\rowcolors{2}{gray!15}{}
 	\begin{tabularx}{0.95\textwidth}{llL}
-		\rowcolor{gray!25} Notation & Example Data                             & Description                                                                                                                                                                                       \\
+		\rowcolor{gray!25} Notation & Example                                  & Description                                                                                                                                                                                       \\
 		\hline
-		\qVerb{int}                 & \LirstInline{rush}{let a: int = 0;}      & Values of the \emph{integer} type can represent 64-bit signed integers.                                                                                                                           \\
-		\qVerb{float}               & \LirstInline{rush}{let b: float = 3.14;} & Values of the \emph{floating-point} type can represent 64-bit floating-point numbers.                                                                                                             \\
-		\qVerb{bool}                & \LirstInline{rush}{let c: bool = true;}  & This type can represent the \emph{boolean} values \qVerb{true} and \qVerb{false}.                                                                                                                 \\
+        \qVerb{int}                 & \LirstInline{rush}{let a: int = 0;}      & Values of the \emph{integer} type can represent 64-bit signed integers, meaning $\left[-2^{63};\ 2^{63}-1\right]$.                                                                                                                           \\
+		\qVerb{float}               & \LirstInline{rush}{let b: float = 3.14;} & Values of the \emph{floating-point} type can represent 64-bit double precision floating-point numbers.                                                                                                             \\
+		\qVerb{bool}                & \LirstInline{rush}{let c: bool = true;}  & Values of the \emph{boolean} type can represent either \qVerb{true} or \qVerb{false}.                                                                                                                 \\
 		\qVerb{char}                & \LirstInline{rush}{let d: char = 'a';}   & Values of the \emph{character} type can represent any ASCII character in the range $0 \le x \le 127$.                                                                                             \\
-		\qVerb{()}                  & \LirstInline{rush}{let e: () = main();}  & The \emph{unit} type is an empty tuple representing nothing, comparable to \emph{void} in other languages. It is also commonly used in functional languages like Haskell~\cite[p.~208]{Mena2019}. \\
-		\qVerb{!}                   & \LirstInline{rush}{let f = exit(42);}    & The \emph{never} type can never be materialized, it exists to express that an expression terminates the program.                                                                                  \\
+		\qVerb{()}                  & \LirstInline{rush}{let e: () = main();}  & The \emph{unit} type is an empty tuple representing nothing, comparable to \emph{void} in other languages. It is the implicit return type of functions and is also commonly used in functional languages like Haskell~\cite[p.~208]{Mena2019}. \\
+		\qVerb{!}                   & \LirstInline{rush}{let f = exit(42);}    & The \emph{never} type can never be materialized, it exists to express that an expression diverges and therefore yields no value.                                                                                  \\
 	\end{tabularx}
 \end{table}
 
 \begin{wraptable}{r}{.4\textwidth}
 	\centering
-    \caption{Lines of code of the project's components in commit \protect\rushCommit{}.}\label{tbl:rush_loc_components}
+	\caption{Lines of code of the project's components in commit \protect\rushCommit{}.}\label{tbl:rush_loc_components}
 	\begin{tabularx}{\linewidth}{|L|l|}
 		\hline
-		\rowcolor{gray!20} Component & LoC\footnotemark                                 \\ \hline
+		\rowcolor{gray!20} Component & LoC\\ \hline
 		Lexer / Parser               & \tokei{./deps/rush/crates/rush-parser}           \\ \hline
 		Tree-walking interpreter     & \tokei{./deps/rush/crates/rush-interpreter-tree} \\ \hline
 		VM compiler / runtime        & \tokei{./deps/rush/crates/rush-interpreter-vm}   \\ \hline
 		WASM compiler                & \tokei{./deps/rush/crates/rush-compiler-wasm}    \\ \hline
 		LLVM compiler                & \tokei{./deps/rush/crates/rush-compiler-llvm}    \\ \hline
-        \riscv{} compiler              & \tokei{./deps/rush/crates/rush-compiler-risc-v}  \\ \hline
+		\riscv{} compiler            & \tokei{./deps/rush/crates/rush-compiler-risc-v}  \\ \hline
 		x86 compiler                 & \tokei{./deps/rush/crates/rush-compiler-x86-64}  \\ \hline
 	\end{tabularx}
 \end{wraptable}
-\footnotetext{Short for \enquote{lines of code}}
 
-Even though the first four types are self-explanatory, the last two types demand special explanation.
+While the first four types are self-explanatory, the last two types demand special explanation.
 The \emph{unit} type is used in order to denote that a function returns no value.
 This concept is comparable to \emph{void} in other languages, like C or Java.
 In rush however, the unit type is treated like a value at runtime.
 Even though the unit type can be saved inside a variable or used as a function parameter, all rush compilers simply ignore it since it holds no value.
 In the rush code in Listing~\ref{lst:rush_fib}, the \qVerb{main} function also returns the unit type.
 For instance, a function \qVerb{foo} can be defined like `\LirstInline{rush}{fn foo() -> () {}}', as well as `\LirstInline{rush}{fn foo() {}}'.
-Therefore, manually specifying that a function returns the unit type is redundant and is considered bad practice.
-The \emph{never} type is used in order to denote that an expression or statement never finishes until the point where the never type would be materialized\footnote{Here, \emph{materialization} means that a value of the never type is instantiated}.
-Since the type is called \enquote{never}, such a value will never be instantiated.
+Therefore, manually specifying that a function returns the unit type is redundant.
+The \emph{never} type is used in order to denote that an expression or statement interrupts the normal control flow, so that the construct never yields a value.
 Because the built-in \qVerb{exit} function terminates a program, its result will never be of relevance.
+However, the fact that the never type is returned is relevant as this information is valuable for the semantic analysis and the compilers.
 Furthermore, \qVerb{break}, \qVerb{continue}, and \qVerb{return} also result in the never type.
-As the explained exaples illustrate, the never type is mainly being used to mark diverging expressions.
-Therefore, through the never type, rush's type system is able to convey a lot of semantic meaning which is helpful during later stages of compilation.
 It is to be noted that the type cannot be used explicitly, meaning syntax like `\LirstInline{rush}{let a: ! = exit(0)}' is illegal as it would not create any practical benefits.
 
 In the rush project, most of the previously presented stages of compilation are implemented as their own individual code modules.
 This way, each component of the programming language can be developed, tested, and maintained separately.
-In the git commit \rushCommit{}, the entire rush project includes
-\tokei{./deps/rush} lines of source code\footnote{Blank lines and comments are not counted}.
+In the git commit \rushCommit{}, the entire rush project consisted of
+\tokei{./deps/rush}lines of source code\footnote{Every specification of line count does not count blank lines and comments.}.
 On the first sight, this might seem like a large number for a simple programming language.
-However, the rush project includes a lexer, a parser, a semantic analyzer, five compilers, one interpreter, and several other tools like a language server for IDE support.
+However, the rush project includes a lexer, a parser, a semantic analyzer, five compilers, one interpreter, and several other tools like a language server for editor support.
 Table~\ref{tbl:rush_loc_components} shows the lines of code of the project's individual components.
 Here, it becomes apparent that the tree-walking interpreter contains the least amount of code, as it is the simplest.
 The compilers targeting high level targets both require around 1,500 lines.
-As for the low-level compilers, they both require over 2000 lines of code, with x86 requiring around 500 lines more than \riscv{}.
+As for the low-level compilers, they both require over 2000 lines of code, with x64 requiring around 500 lines more than \riscv{}.
 By considering this table, the complexity of the individual components become apparent.

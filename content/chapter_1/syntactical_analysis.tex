@@ -12,7 +12,7 @@ The \emph{lexical analysis}, performed by a \emph{lexer}, and the \emph{syntacti
 Just like every natural language, most programming languages also conform to a grammar.
 However, grammars for programming languages are most often of type 2 or 3 in the Chomsky hierarchy, that is \emph{context-free} and \emph{regular} languages, whereas natural languages often are type 1 or 0~\cite[p.~24]{Watson2017}.
 Additionally, it is not uncommon for parser writers to formally define the grammar using some notation.
-Popular options include \emph{BNF}\footnote{``Backus-Naur Form'', named after the two main inventors~\cite{Backus1960}} and \emph{EBNF}\footnote{``Extended Backus-Naur Form'', an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, the latter of which we use here.
+Popular options include \emph{BNF}\footnote{\enquote{Backus-Naur Form}, named after the two main inventors~\cite{Backus1960}} and \emph{EBNF}\footnote{\enquote{Extended Backus-Naur Form}, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, the latter of which we use here.
 Although this paper does not fully explain these notations, Listing~\ref{lst:ebnf_reference_grammar} shows a short example grammar notated using EBNF.
 For reference, Appendix~\ref{apx:grammar} contains the full grammar of rush.
 \TODO{example for type 1 language \qVerb{([)]}?}

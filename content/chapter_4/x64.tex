@@ -115,8 +115,8 @@ Nevertheless, it is sometimes accessed manually, as seen in lines 15 and 17.
 These read and write to the global \qVerb{a} variable, defined at the \qVerb{main..a} symbol.
 Accesses like this simply require the offset by the instruction pointer in x64 Assembly.
 
-In addition to these general purpose registers, x64 also defines 16 registers for floating point number calculations, each 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}.
-For the purposes of rush, only the lower 64 bits are ever used, since this is enough for double precision floating point numbers.
+In addition to these general purpose registers, x64 also defines 16 registers for floating-point number calculations, each 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}.
+For the purposes of rush, only the lower 64 bits are ever used, since this is enough for double precision floating-point numbers.
 The additional 64 bits are provided for \emph{single instruction multiple data} (\emph{SIMD}) instructions.
 They can be used by more optimized compilers to operate on multiple values at a time.
 Any single one of these registers would then for instance hold two 64-bit values or four 32-bit values.
@@ -361,8 +361,8 @@ The division result, either \qreg{rax} or \qreg{rdx} depending on the operator, 
 To finish up, possibly spilled registers are reloaded, and the register is returned as the expression's result.
 The resulting assembly of this can be seen in lines~43--45 in Listing~\ref{lst:x64_control_flow_asm}.
 
-The second unexpected hurdle were floating point number comparisons.
-Floating point numbers as defined by the IEEE standard have the special property of not forming a total order \TODO{cite}.
+The second unexpected hurdle were floating-point number comparisons.
+Floating-point numbers as defined by the IEEE standard have the special property of not forming a total order \TODO{cite}.
 That means, not any two arbitrary values are comparable.
 For instance, the float standard defines a `NaN'\footnote{short for ``not a number''} value, which cannot be compared to itself.
 In rush an expression comparing two incomparable float values should result in `false'.

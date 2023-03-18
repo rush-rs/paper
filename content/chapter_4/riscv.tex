@@ -327,7 +327,7 @@ In line 6, a \qVerb{return} statement is used to terminate the main-function exp
 The body of the \qVerb{foo} function only contains a call to the \qVerb{exit} function.
 Therefore, the \qVerb{foo} function only exits using the specified parameter \qVerb{n} as the exit code.
 In this case, the exit code of the displayed program will be 43.
-The code in Listing~\ref{lst:riscv_simple_asm} on page~\pageref{lst:riscv_simple_asm} shows the output assembly generated from this program by the rush \riscv{} compiler\footnote{Generated in Git commit \rushCommit{}, automatically built with this document}.
+The code in Listing~\ref{lst:riscv_simple_asm} on page~\pageref{lst:riscv_simple_asm} shows the output assembly generated from this program by the rush \riscv{} compiler\footnote{Generated using Git commit \rushCommit{}.}.
 Because the assembler code of the \qVerb{foo} function would take up too much space in the assembler program, it is intentionally omitted from this listing.
 Since the excluded function does not introduce any new concepts anyway, omitting it will not lead to a loss of explained concepts.
 
@@ -436,7 +436,7 @@ Next, in line 3, the variable is referenced in order to use the resulting addres
 In line 4, the \qVerb{to_a} pointer variable is dereferenced in order to use the value of \qVerb{a} as the exit code of the program.
 
 
-Listing~\ref{lst:rush_simple_pointer_asm} includes the most significant part of the compiler output which represents this rush program\footnote{Generated in Git commit \rushCommit{}, automatically built with this document}.
+Listing~\ref{lst:rush_simple_pointer_asm} includes the most significant part of the compiler output which represents this rush program\footnote{Generated using Git commit \rushCommit{}.}.
 In line 18 of this listing, the integer value 42 is placed in the register \qVerb{a0}.
 Next, \qVerb{a0} is saved on the stack at \qVerb{-24(fp)} using the \qVerb{sd} instruction.
 Like the comment suggests, the instruction in line 20 is used in order to reference a.

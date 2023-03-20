@@ -23,7 +23,7 @@ Because rush shares its semantic rules across all backends,
 it would be cumbersome to implement semantic validation in each
 backend individually. Therefore, it is rational to implement a separate
 compilation step which is responsible for validating the source program's semantics.
-Among other checks, the so-called \emph{semantic analyzer}\footnote{Later referred to as `analyzer'} validates types
+Among other checks, the so-called \emph{semantic analyzer}\footnote{Later referred to as \enquote{analyzer}.} validates types
 and variable references while adding type annotations to the AST. The last aspect is
 of particular importance since all compiler backends rely on type information at
 compile time. For obtaining type information, the abstract syntax

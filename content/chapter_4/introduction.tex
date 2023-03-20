@@ -28,16 +28,16 @@ Therefore, ELF describes the format of a class of files and not just of an indiv
 Even though a processor only has access to one physical memory unit for both instructions and program data,
 most assembly programs like to separate these types of memory into their separate components.
 Therefore, an object file and assembly program is divided into so-called \emph{sections}~\cite[p.~19]{Zhirkov2017-wk}.
-Some of the important ELF sections are displayed below.
+Some of the important ELF sections are displayed below~\cite[p.~76]{Zhirkov2017-wk}:
 
 \begin{itemize}
-	\item \texttt{.text} stores the logic of the program represented using CPU instructions
-	\item \texttt{.rodata} stores read-only global data, it is often used for global constants.
-	\item \texttt{.data} stores mutable global data, such as mutable global variables
+	\item \qVerb{.text} stores the logic of the program represented using CPU instructions
+	\item \qVerb{.rodata} stores read-only global data, it is often used for global constants.
+	\item \qVerb{.data} stores mutable global data, such as mutable global variables
 \end{itemize}
 
 Even though a typical ELF file also contains other sections,
-this list only includes entries which are of importance later in later sections of the paper~\cite[p.~76]{Zhirkov2017-wk}.
+this list only includes entries which are of importance later in later sections of the paper.
 
 \subsection{Assemblers and Assembly Language}
 

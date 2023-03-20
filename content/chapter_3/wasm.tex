@@ -66,10 +66,9 @@ These must be initialized with a constant value and can either be mutable or imm
 One may have already noticed that except for the version number at the start, all sizes, indices, lengths, and so on, have been stored using just a single byte.
 But, this is not because those can only reach a maximum of 255, but instead WebAssembly uses the LEB128 encoding for integer literals in binary modules.
 It is a space efficient way to store integers by only ever needing as many bytes as necessary for a number~\cite[Section~5.2.2]{WasmSpec}.
-The encoding details are not explained here however, and our implementation for this rush compiler simply uses a pre-existing crate\footnote{A crate is a library in Rust terms} called `leb128'.
+The encoding details are not explained here however, and our implementation for this rush compiler simply uses a pre-existing crate\footnote{A crate is a software library in Rust terms.} called \enquote{leb128}.
 
 \subsection{The WebAssembly System Interface}
-
 Since WebAssembly itself does not provide any guarantees about the runtime environment, it does not provide ways to interact with the environment, except for module imports and exports.
 That is why an additional specification called the \emph{WebAssembly System Interface}, short \emph{WASI}, was created for WebAssembly modules that need to communicate with an operating system for instance.
 Any runtime supporting WASI must provide a set of functions comparable to \emph{system calls} on Linux or Windows.
@@ -99,7 +98,7 @@ Since the compiler cannot know the count of local variables before compiling the
 This way, in the end, it can first append the vector's length to the final output and then concatenate the vector's contents.
 The three following fields all map names to indices.
 One for local variable scopes, one for the global scope, and one for function names.
-Each index itself is stored as a vector of bytes, as it uses the aforementioned LEB128 encoding which can vary in length.
+Each index itself is stored as a vector of bytes, as it uses the aforementioned \TODO{capitalization} LEB128 encoding which can vary in length.
 Finally, one field for every supported section is defined.
 These are of the type \qVerb{Vec<Vec<u8>>} for the same reason as \qVerb{locals}.
 
@@ -160,7 +159,7 @@ Below the `main' function is the definition and export of blank memory in line~2
 The `main' function is also exported as \qVerb{_start} in line~22 and also separately declared as the module's entry point in line~24, both two have this function be the one to start execution.
 Line~21 declares the global \qVerb{a} as a mutable \emph{i64} and sets the initial value of `2'.
 
-\Lirsting[float=htb, label={lst:wasm_example_wat}, caption={Commented compiler output for the rush program in Listing~\ref{lst:wasm_example}.}]{listings/x64_simple.wat}
+\Lirsting[float=htb, label={lst:wasm_example_wat}, caption={Commented compiler output of the rush program in Listing~\ref{lst:wasm_example}.}]{listings/x64_simple.wat}
 
 Inside the `main' function, the first thing is the declaration of the local variable \qVerb{b} with the type \qVerb{i32} in line~6.
 The type is \qVerb{i32}, even though a boolean would really only need one bit, because WebAssembly only defines this and \qVerb{i64} as integer types, and therefore uses the smaller of the two for booleans.

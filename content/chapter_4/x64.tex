@@ -67,7 +67,7 @@ The norm in x64 instead is using just two operands where the first doubles as bo
 
 \begin{table}[h]
 	\centering
-	\caption[x64 Integer Registers]{x64 integer registers~\cite[pp.~20,26]{Lu2022}.}\label{tbl:x64_registers}
+	\caption[x64 Integer Registers]{Integer registers on the x64 architecture~\cite[pp.~20,26]{Lu2022}.}\label{tbl:x64_registers}
 	\rowcolors{2}{gray!15}{}
 	\begin{tabular}{c|ccc|c|l}
 		\rowcolor{gray!25} 64-bit & 32-bit     & 16-bit     & 8-bit      & Caller-Saved & Purpose                                    \\
@@ -172,7 +172,7 @@ At the moment of calling a function, the stack frame's size must be aligned to a
 The unspecified space between \qVerbCmd{\%rbp-8} and \qreg{rsp} can be freely used by the current function to save local variables.
 Its internal layout may differ between programming languages~\cite[p.~21]{Lu2022}.
 
-\subsection{Implementation}
+\subsection{Implementation: The rush compiler targeting x\_64}
 
 \Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=o, fancyvrb={numbers=\OuterEdge}, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
 
@@ -276,7 +276,7 @@ Each function that takes parameters should move all passed arguments from their 
 In Listing~\ref{lst:x64_functions_asm} this happens in line~23 for the one parameter called \qVerb{n}.
 More optimized compilers can of course try to keep the arguments in the registers for as long as they are not specifically needed elsewhere, but as the rush compilers only serve educational purposes this is not done.
 
-\subsubsection{Corelib?}
+\subsubsection{\TODO{Write something one Corelib?}}
 
 \subsubsection{Control Flow}
 
@@ -290,7 +290,7 @@ The way x64 handles conditions again differs from \riscv{}.
 It provides a set of flags indicating various relations between two values, which are set by dedicated compare instructions like \qVerb{cmp} for integers, \qVerb{test} for booleans, and \qVerb{ucomisd} for floats.
 A conditional jump instruction like \qVerb{je} (\textbf{j}ump if \textbf{e}qual) then only has to query the flag that indicates equality, and optionally performs a jump based on its value.
 
-\Lirsting[ranges={17-56}, float=htb, caption={Trimmed compiler output for the rush function in Listing~\ref{lst:x64_control_flow_rush}}, label={lst:x64_control_flow_asm}]{listings/x64_control_flow.s}
+\Lirsting[ranges={17-56}, float=htb, caption={Trimmed compiler output for the rush function in Listing~\ref{lst:x64_control_flow_rush}.}, label={lst:x64_control_flow_asm}]{listings/x64_control_flow.s}
 
 Listing~\ref{lst:x64_control_flow_rush} shows one last example rush function with the produced assembly code in Listing~\ref{lst:x64_control_flow_asm}, this time containing if-expressions and a loop with one \qVerb{break} and one \qVerb{continue} statement.
 The purpose of this function is nonexistent, and the semantic analyzer rightfully complains about unreachable statements and unused variables, but it still serves to show translation of these constructs to assembly.
@@ -364,7 +364,7 @@ The resulting assembly of this can be seen in lines~43--45 in Listing~\ref{lst:x
 The second unexpected hurdle were floating-point number comparisons.
 Floating-point numbers as defined by the IEEE standard have the special property of not forming a total order \TODO{cite}.
 That means, not any two arbitrary values are comparable.
-For instance, the float standard defines a `NaN'\footnote{short for ``not a number''} value, which cannot be compared to itself.
+For instance, the float standard defines a `NaN'\footnote{Short for ``not a number''.} value, which cannot be compared to itself.
 In rush an expression comparing two incomparable float values should result in `false'.
 This is the reason for the additional \qVerb{jp} instruction in line~32 of Listing~\ref{lst:x64_control_flow_asm} that was previously hinted at on page~\pageref{x64_ucomisd}.
 When comparing two floats with the \qVerb{ucomisd} instruction and there is no clear order defined, the \emph{parity} flag is set to `1'.

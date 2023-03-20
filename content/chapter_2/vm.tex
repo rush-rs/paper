@@ -142,14 +142,14 @@ For example, in a recursive function, each recursion adds another scope containi
 However, the rush VM also implements a \emph{relative addressing} mode which can be used without knowledge about the absolute position of the memory cell.
 For instance, the same variable can be addressed through index 1 using the relative addressing mode.
 The mode is called \emph{relative} because all addresses are specified relative to the memory pointer.
-In Figure~\ref{fig:rush_vm_linmem}, the memory pointer (shortened to \qVerb{mp}) is set to 3.
+In Figure~\ref{fig:rush_vm_linmem}, the memory pointer (shortened to \qVerb{mp}) is set to `3`.
 Considering the value of the memory pointer, the absolute address of any relative address can be calculated at runtime.
 Here, the absolute address is the sum of the relative index $rel$ and the runtime memory pointer $mp$.
 By also implementing this relative addressing mode,
 compilers targeting the rush VM can generate code without knowing the runtime behavior of a program.
 For better understanding, Figure~\ref{fig:rush_vm_linmem} can be considered more closely.
 Here, the first column contains a character which represents the cell.
-The second column specifies the relative address of the cell, assuming that \qVerb{mp} is set to 3.
+The second column specifies the relative address of the cell, assuming that \qVerb{mp} is set to `3'.
 Lastly, the third column contains the absolute address of the cell, calculated through \qVerb{mp} and the relative address.
 
 In order to get a deeper understanding of the addressing modes, a practical example can be considered.
@@ -190,7 +190,7 @@ Therefore, each addressing mode serves a separate and important purpose.
 
 \subsection{How the Virtual Machine Executes A rush Program}
 
-\Lirsting[ranges={5-11}, caption={A Recursive rush Program}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
+\Lirsting[ranges={5-11}, caption={A recursive rush program.}, label={lst:rush_vm_faster}, float=H]{listings/vm_faster.rush}
 
 By considering the previous pointer example, one now has a rough idea of how the VM executes a program.
 In order to get a better understanding, the execution of the program in Listing~\ref{lst:rush_vm_faster} will now be explained.
@@ -377,7 +377,7 @@ The instructions in Listing~\ref{lst:tree_vs_vm_vm} represent the program in Lis
 Every time the \qVerb{call} instruction in line 23 is executed, the VM only needs to jump to the instruction in line 10 in order to execute the \qVerb{rec} function recursively.
 Since repeated traversal of the syntax tree is omitted, rush programs will run significantly faster using the VM compared to the tree-walking interpreter.
 Using the VM, executing the \qVerb{rec} function using an input of $n = 1000$ took around 160 $\mu$s.
-However, executing the identical code using the tree-walking interpreter took around 427 $\mu$s\footnote{Average from 10000 iterations. OS: Arch Linux, CPU: Ryzen 5 1500, RAM: 16 GB}.
+However, executing the identical code using the tree-walking interpreter took around 427 $\mu$s\footnote{Average from 10000 iterations. OS: Arch Linux, CPU: Ryzen 5 1500, RAM: 16 GB.}.
 The rush VM executed the identical code roughly 2.6 times faster than the tree-walking interpreter.
 However, the initial delay caused by compilation was not considered in this benchmark.
 

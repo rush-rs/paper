@@ -12,7 +12,7 @@ The \emph{lexical analysis}, performed by a \emph{lexer}, and the \emph{syntacti
 Just like every natural language, most programming languages also conform to a grammar.
 However, grammars for programming languages are most often of type 2 or 3 in the Chomsky hierarchy, that is \emph{context-free} and \emph{regular} languages, whereas natural languages often are type 1 or 0~\cite[p.~24]{Watson2017}.
 Additionally, it is not uncommon for parser writers to formally define the grammar using some notation.
-Popular options include \emph{BNF}\footnote{\enquote{Backus-Naur Form}, named after the two main inventors~\cite{Backus1960}} and \emph{EBNF}\footnote{\enquote{Extended Backus-Naur Form}, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, the latter of which we use here.
+Popular options include \emph{BNF}\footnote{\enquote{Backus-Naur Form}, named after the two main inventors~\cite{Backus1960}.} and \emph{EBNF}\footnote{\enquote{Extended Backus-Naur Form}, an extended version of \emph{BNF} with added support for repetitions and options without relying on recursion, first proposed by Niklaus Wirth in 1977~\cite{Wirth1977} followed by many slight alterations. The version used in this paper is defined by the ISO/IEC 14977 standard.}, the latter of which we use here.
 Although this paper does not fully explain these notations, Listing~\ref{lst:ebnf_reference_grammar} shows a short example grammar notated using EBNF.
 For reference, Appendix~\ref{apx:grammar} contains the full grammar of rush.
 \TODO{example for type 1 language \qVerb{([)]}?}
@@ -191,7 +191,7 @@ Listing~\ref{lst:ebnf_reference_pratt} does not indicate the order of evaluation
 
 Additionally, a precedence may be either left- or right-associative.
 The input \qVerb{1*2*3} should be evaluated from left to right, so first \qVerb{1*2}, and then the result times `3'.
-Now consider \qVerb{1**2**3}\footnote{\qVerb{**} is the power operator here, so the input would be written as $1^{2^3}$ using mathematical notation}.
+Now consider \qVerb{1**2**3}\footnote{\qVerb{**} is the power operator here, so the input would be written as $1^{2^3}$ using mathematical notation.}.
 Here, the \qVerb{2**3} should be evaluated first, and afterwards `1' should be raised to the result.
 That means while most operators are evaluated from left to right, that is, they are left-associative, some operators, like the power operator, are evaluated from right to left and are therefore right-associative.
 In Listing~\ref{lst:ebnf_reference_grammar}, left-associativity is achieved by allowing simple repetition of the operator for an indefinite amount of times.
@@ -234,7 +234,7 @@ All unrelated tokens are simply assigned a precedence of `0' for left and right.
 \Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token precedences in rush.}]{deps/rush/crates/rush-parser/src/token.rs}
 
 The \qVerb{expression} method on the \qVerb{Parser} struct is then modified to take a parameter for the current precedence as seen in Listing~\ref{lst:pratt_expr}.
-It then first matches on the current token kind to decide which expression to parse and stores the result in the \qVerb{lhs}\footnote{Short for `left-hand side'} variable.
+It then first matches on the current token kind to decide which expression to parse and stores the result in the \qVerb{lhs}\footnote{Short for \enquote{left-hand side}.} variable.
 Afterwards it checks whether the left precedence of the now current token is bigger than the \qVerb{prec} argument.
 When called from elsewhere, like in the condition of a while-loop or in a grouped expression, the \qVerb{prec} argument has its minimum value of `0', as shown in Listing~\ref{lst:pratt_grouped_expr}.
 In that case, this check will only fail when the whole expression is over, as every non-operator token is assigned a precedence higher than 0.

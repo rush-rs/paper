@@ -186,12 +186,12 @@ If the variable is referenced at a later point, the compiler performs a simple l
 			rectangle split part fill={none, none, gray!20, gray!20, none, none},
 			rectangle split part align=left,
 		]{
-			\nodepart{one}{{\texttt{\tiny 24(sp\textsubscript{0})}} fp$_0$}
-			\nodepart{two}{{\texttt{\tiny 16(sp\textsubscript{0})}} ra$_0$}
-			\nodepart{three}{{\texttt{\tiny 08(sp\textsubscript{0})}} argument 2}
-			\nodepart{four}{{\texttt{\tiny 0(sp\textsubscript{0})}} argument 1}
-			\nodepart{five}{{\texttt{\tiny 8(sp\textsubscript{1})}} fp$_1$}
-			\nodepart{six}{{\texttt{\tiny 0(sp\textsubscript{1})}} ra$_1$}
+			\nodepart{one}{{\texttt{\footnotesize 24(sp\textsubscript{0})}} fp$_0$}
+			\nodepart{two}{{\texttt{\footnotesize 16(sp\textsubscript{0})}} ra$_0$}
+			\nodepart{three}{{\texttt{\footnotesize 08(sp\textsubscript{0})}} argument 2}
+			\nodepart{four}{{\texttt{\footnotesize ~0(sp\textsubscript{0})}} argument 1}
+			\nodepart{five}{{\texttt{\footnotesize ~8(sp\textsubscript{1})}} fp$_1$}
+			\nodepart{six}{{\texttt{\footnotesize ~0(sp\textsubscript{1})}} ra$_1$}
 		};
 		\draw [thick, dashed] ([xshift=-.5cm, yshift=-.33cm]stack.four west) --  node[anchor=west, xshift=2cm, align=center] {\scriptsize function\\ \scriptsize boundary} ([xshift=.5cm, yshift=-.33cm]stack.four east);
 
@@ -459,7 +459,7 @@ In this case, \qVerb{0(a0)} means that the instruction should load its value fro
 Since an offset of 0 is used, the practical description of the instruction is that it loads a value saved at the memory address specified in \qVerb{a0}.
 Because \qVerb{a0} contains the memory address of the \qVerb{a} variable, the instruction loads 42 into the \qVerb{a0} register.
 
-\subsection{The rush Compiler Targeting \riscv{} Assembly}
+\subsection{Implementation: The rush compiler targeting \riscv{} assembly}
 
 Just like the other compilers presented in this paper, this one also traverses the annotated AST using the postorder technique.
 Unlike the LLVM or WASM compiler, this compiler emits \riscv{} assembly files which are later assembled by the assembler.
@@ -605,7 +605,7 @@ Just like the previous method, its implementation is so simple that a code listi
 			\nodepart{five}{\shortstack{unused\\\\\texttt{a7}}}
 			\nodepart{six}{\ldots}
 		};
-		\node(ff)[below of=stack, yshift=-.5cm] {\scriptsize first free};
+		\node(ff)[below of=stack, yshift=-.5cm] {\scriptsize first free cell};
 		\draw[arrow, shorten >= 4pt](ff) -- (stack.three south);
 	\end{tikzpicture}
 	\caption{Integer register pool of the \riscv{} rush compiler.}\label{fig:riscv_iregister_pool}
@@ -668,7 +668,7 @@ Next, we will consider the implementation of the \qVerb{infix_helper} helper met
 This method exists since translation of infix operators is required during compilation of both normal infix-expressions and assign-expressions with additional operations, \qVerb{a += 1} for instance.
 The rust code in Listing~\ref{lst:riscv_infix_helper} shows parts of this method.
 
-\Lirsting[float=h, ranges={871-871,874-881,987-991,1000-1001}, caption={Parts of the \qVerb{infix_helper} method in the \riscv{} rush compiler.}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={871-871,874-881,987-991,1000-1001}, caption={Parts of the \qVerb{infix_helper} method of the \riscv{} rush compiler.}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 As the method's signature suggests, the left-hand and right-hand side's registers and a type are used its parameters.
 Since this register abstraction does not contain type information, as registers are usually untyped, the type information conveys the type of either the left-hand or right-hand side expression.
@@ -805,7 +805,7 @@ Even though the presented \qVerb{exit} function is special, the rush \riscv{} co
 The rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of the \qVerb{call_expr} method in the \riscv{} rush compiler.
 This listing only shows the first part of the method since it is too large to be included in a single-page listing.
 
-\Lirsting[float=h, ranges={92-120,127-128,235-235}, caption={The \qVerb{call_expr} Method in the \riscv{} rush compiler}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=h, ranges={92-120,127-128,235-235}, caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 Since this method is responsible for translating function calls, its implementation has proven to be very complex and demanding.
 As the method's signature suggests, it consumes an analyzed call-expression in order to return an optional register.
@@ -948,12 +948,12 @@ On the right side, Listing~\ref{lst:asm_riscv_while_loop} shows parts of the ass
 
 \begin{minipage}{.32\textwidth}
 	\center
-	\Lirsting[caption={A rush Program Containing a While-Loop}, label={lst:rush_while_loop}, float=H]{listings/while_loop.rush}
+	\Lirsting[caption={A rush program containing a while-loop.}, label={lst:rush_while_loop}, float=H]{listings/while_loop.rush}
 \end{minipage}%
 \hspace{2.5cm}
 \begin{minipage}{.47\textwidth}
 	\center
-	\Lirsting[ranges={21-36},caption={Assembly Output of Rush Program in Listing~\ref{lst:rush_while_loop}}, label={lst:asm_riscv_while_loop}, float=H]{listings/generated/rush_while_loop.s}
+	\Lirsting[ranges={21-36},caption={Assembly output of rush program in Listing~\ref{lst:rush_while_loop}.}, label={lst:asm_riscv_while_loop}, float=H]{listings/generated/rush_while_loop.s}
 \end{minipage}
 
 The rush program in Listing~\ref{lst:rush_while_loop} contains a while loop which will iterate ten times.

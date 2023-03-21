@@ -319,7 +319,7 @@ At the end of most epilogues, a return-instruction jumping back to the caller lo
 Therefore, the prologue is executed as the first code when calling the function and the epilogue is called as the last code before this function terminates.
 
 It is to be mentioned that implementing a compiler which respects the calling convention of its target architecture is not required.
-However, following the convention is often reasonable in order to preserve \emph{ABI}\footnote{Short for \enquote{application binary interface}, allows calling foreign functions from another program} compatibility of the compiled program.
+However, following the convention is often reasonable in order to preserve \emph{ABI}\footnote{Short for \enquote{application binary interface}, allows calling foreign functions from another program.} compatibility of the compiled program.
 
 \subsection{Referencing Variables Using Pointers}\label{sec:pointers}
 
@@ -338,8 +338,7 @@ In the signature of the \qVerb{modify} function, the \qVerb{n} parameter is decl
 Next, in line 8 of this function, the value of the parameter is incremented by 1.
 One might expect that the function call in line 3 causes the variable \qVerb{answer} to be incremented by 1.
 This seems likely since both the parameter and the variable are declared as mutable using the \qVerb{mut} keyword.
-However, since rush passes function arguments by value and not by reference, the called function has no direct way of altering the variable behind the passed parameter
-\footnote{Passing by value means that the value of the argument is copied for the function call}.
+However, since rush passes function arguments by value and not by reference, the called function has no direct way of altering the variable behind the passed parameter\footnote{Passing by value means that the value of the argument is copied for the function call.}.
 In order to solve this problem, pointers are required.
 The code in Listing~\ref{lst:rush_increment_by_reference} displays a rush program which is able to solve this problem.
 

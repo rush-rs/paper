@@ -140,7 +140,7 @@ Any single one of these registers would then for instance hold two 64-bit values
 		+(-2,.5) -- +(-2,-.5) -- +(2,-.5) -- +(2,.5);
 		\draw (0,\value{cellnb}) node{...};
 
-		\cell{n\textsuperscript{th} stack argument} \cellcom{\VerbCmd{\%rbp+}$(16+8n)$}
+		\cell{$n$\textsuperscript{th} stack argument} \cellcom{\VerbCmd{\%rbp+}$(16+8n)$}
 		\cell[padding]{...}
 		% custom draw instead of `\cellcom` for yshift
 		\draw (2.4,\value{cellnb}) node[anchor=west, yshift=3.5pt] {\vdots};

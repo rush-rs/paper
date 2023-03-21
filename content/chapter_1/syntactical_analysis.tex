@@ -2,7 +2,7 @@
 \section{Lexical and Syntactical Analysis}
 
 As previously mentioned, the first step during compilation or program execution consists of the \emph{lexical} and \emph{syntactical analysis}.
-Program source text is, without previous processing, just \emph{text} i.e., a sequence of characters.
+Program source text is, without previous processing, just \emph{text}, i.e., a sequence of characters.
 Before the computer can even begin to analyze the semantics and meaning of a program, it has to first \emph{parse} the program source text into an appropriate data structure.
 This is done in two steps that are closely related and often combined.
 The \emph{lexical analysis}, performed by a \emph{lexer}, and the \emph{syntactical analysis}, performed by a \emph{parser}.
@@ -38,7 +38,7 @@ For the language defined in Listing~\ref{lst:ebnf_reference_grammar} these are t
 The specifics of implementing a lexer are not explored in this paper, but a basic overview is still provided.
 The base principle of a lexer is to iterate over the characters of the input to produce tokens.
 Depending on the target language, it might be required to scan the input using an $n$-sized window, i.e., observing $n$ characters at a time.
-In the case of rush, this $n$ is 2, resulting in the \qVerb{Lexer} struct not only storing the current character, but also the next character, as seen in Listing~\ref{lst:lexer}.
+In the case of rush, this $n$ is `2', resulting in the \qVerb{Lexer} struct not only storing the current character, but also the next character, as seen in Listing~\ref{lst:lexer}.
 For clarity, Table~\ref{tbl:lexer} shows the values of \qVerb{curr_char} and \qVerb{next_char} during processing of the input \qVerb{1+2**3}.
 Here every row in the table represents one point in time displaying the lexer's current state.
 

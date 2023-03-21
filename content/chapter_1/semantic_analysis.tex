@@ -148,7 +148,7 @@ According to the method's signature, it cannot return any errors.
 Instead, the \qVerb{self.error} method is invoked in line 406.
 This method uses information about the error to be generated in order to push a new \qVerb{Diagnostic} into the \qVerb{diagnostics} vector.
 
-Secondly, in rush, the main-function's return-type always has to be the unit type.
+Secondly, in rush, the main-function's return type always has to be the unit type.
 The analyzer validates this constraint in the lines 422 and 423.
 The first if-clause checks whether the function contains a manually defined result-type.
 In rush, every function definition without an explicitly defined result type defaults to the unit type.
@@ -162,7 +162,7 @@ The second argument specifies that the method should not push another scope onto
 The return-value of this method-call is bound to a variable called \qVerb{block}.
 This variable represents the completely analyzed and annotated function body.
 Lastly, in the lines 535--541, an \qVerb{AnalyzedFunctionDefinition} is returned.
-Here, the function's attributes, like its analyzed parameters, return-type, name, and body are specified.
+Here, the function's attributes, like its analyzed parameters, return type, name, and body are specified.
 The other variables, like \qVerb{params}, have been defined in the parts of the code which have been commented for better overview.
 
 During the traversal of the main function's body, the analyzer encounters two \qVerb{let} statements in line 2 and 3.

@@ -240,69 +240,50 @@ However, we cannot understand how results of expressions are handled in this com
 
 The code in Listing~\ref{lst:llvm_exprs} shows parts of the \qVerb{expression} method of this compiler.
 When considering the method's signature, it becomes apparent that it uses an `\texttt{AnalyzedExpression}' in order to generate a `\texttt{BasicValueEnum}'.
-The return type of the function is of particular importance.
-Using Inkwell, most inserted instructions yield a symbolical value at compile time.
-This value represents a virtual register which will contain a real \emph{value} at runtime of the program.
-Therefore, the `\texttt{BasicValueEnum}' returned by the function represents the virtual register which will hold the result of the expression at runtime.
-This way, symbolical values can be used at compile time, thus presenting a high-level abstraction for generating the IR\@.
-The lines 875--879, show how a constant integer expression is compiled.
-Here, a constant int value of the `\texttt{i64}' type is created and transformed into a `\texttt{BasicValueEnum}' which is then used as the method's return value.
-For more complex expressions, the `\texttt{expression}' method invokes other methods which are specialized on this type of expression.
-For instance, if an infix-expression like `\texttt{3 * n}' is compiled, this method calls the `\Verb{infix_expr}' method in line 910.
+This type represents a virtual register which will contain the expression's result at runtime.
+When using Inkwell, most inserted instructions yield such a value.
+The lines 875--879 show how a constant integer expression is compiled.
+Here, a constant int value of the `\texttt{i64}' type is created and transformed into a `\texttt{BasicValueEnum}' which is then returned.
+For more complex expressions, the `\texttt{expression}' method invokes other methods which are specialized on certain types of expressions.
+For instance, if an infix-expression like `\texttt{3 * n}' is compiled, this method calls the `\Verb{infix_expr}' method in line~910.
 Here, the current AST node is passed to the specialized function as a call argument.
 
-\Lirsting[ranges={1021-1024}, caption={Compilation of integer infix-expressions using LLVM.}, label={lst:llvm_infix}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
+\Lirsting[ranges={960-960,_966-967,999-1002,1021-1024,1050-1050,1059-1060}, caption={Compilation of integer infix-expressions using LLVM.}, label={lst:llvm_infix}, float=H]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
-The code in Listing~\ref{lst:llvm_infix} shows a part of the `\Verb|infix_helper|' method which is responsible for compiling parts of infix-expression.
-Line 1021 contains the code for inserting the `\texttt{mul}' multiplication instruction.
-Here, the variables `\texttt{lhs}' and `\texttt{rhs}' are used as arguments for the `\Verb|build_int_sub|' method call.
-They, too, represent virtual registers which will contain the value of the left- and right-hand side at runtime.
-Furthermore, the string containing `\Verb|i_prod|' specifies the name of the virtual register containing the product of the multiplication performed by the instruction.
-In this example, compiling basic integer multiplication has proven to be really simple since only one instruction needs to be inserted.
+The code in Listing~\ref{lst:llvm_infix} shows a part of the `\Verb|infix_helper|' method which is responsible for compiling parts of infix-expressions.
+Line~1021 contains the code for inserting the `\texttt{mul}' instruction.
+Here, the variables `\texttt{lhs}' and `\texttt{rhs}' are used as arguments for the \qVerb{build_int_mul} method call.
+They, too, represent virtual registers which will contain the values of the left- and right-hand side at runtime.
+Furthermore, the string containing `\Verb|i_prod|' specifies the name of the virtual register that will contain the resulting product.
+Compiling basic integer multiplication has proven to be really simple since only one instruction needs to be inserted.
 This simplicity applies to most infix operations performed on integers.
-However, compiling mathematical power operations has proven to be more demanding since LLVM does not provide an instruction for performing these operations.
+However, compiling mathematical powers has proven to be more demanding since LLVM does not provide an instruction for performing these operations.
 Line 1024 is executed if the method needs to compile such an integer power operation.
 In order to mitigate this issue, the `\Verb|__rush_internal_pow|' method is called instead of a method provided by Inkwell.
-This method first declares the `\Verb|core::pow|' function in order to call it directly after.
-This function implements an algorithm for power operations given an integer base and exponent.
-However, this function is implemented in IR directly by hardcoding the required calls to Inkwell into this function.
-Therefore, even complex calculations like this one can be implemented even though LLVM does not provide a straight-forward way to accomplish them directly.
+This method first declares the `\Verb|core::pow|' function which implements an algorithm for calculating powers given an integer base and exponent.
+It was manually written in IR by using the appropriate calls to the Inkwell builder.
+This way, even complex calculations can be implemented, even though LLVM does not provide an existing solution.
+Although it might seem odd to implement IR functions manually, this approach is used to maintain target independence.
 
-In line 6 of the source program, a let-statement is used to declare the mutable variable `\texttt{m}' with the initial value 3.
-However, there is never a value assigned to this variable.
-This variable is only mutable so that the compiler has to use stack memory for it.
-Non-mutable variables are inlined by the compiler in order to save resources during runtime.
-In order to understand how the compiler translates let-statements, we will now consider Listing~\ref{lst:llvm_let}.
+In line 6 of the source program, a let-statement is used to define the mutable variable `\texttt{m}' with the initial value `3`.
+For demonstration purposes, this variable is marked as mutable so that the compiler uses stack memory for it.
+In order to understand how the compiler translates let-statements, Listing~\ref{lst:llvm_let} should be considered.
 
 \Lirsting[ranges={609-624,629-630}, caption={Compilation of let-statements using LLVM.}, label={lst:llvm_let}, float=h]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
 
-The code in Listing~\ref{lst:llvm_let} displays parts of the `\Verb{let_stmt}' method of this compiler.
-This method is responsible for compiling let-statements.
-In line 610, the initializer expression of the statement is compiled.
-The `\texttt{rhs}' variable then specifies the virtual register which contains the result of the expression at runtime.
-
-The code in the block after line 614 is only executed if the variable was declared as mutable.
+The code displays parts of the `\Verb{let_stmt}' method of this compiler.
+In line~610, the initializing expression of the statement is compiled.
+The `\texttt{rhs}' variable then specifies the virtual register which contains the result of this expression.
+The code in the lines 614--624 is only executed if the variable was declared as mutable.
 Otherwise, the variable would be constant and therefore require no space in memory.
 Therefore, in order to present relevant code in this example, the `\texttt{m}' variable in the source program had to be declared as mutable.
-In line 616, the `\Verb{alloc_ptr}' method is used in order to create a new Inkwell pointer value.
+In line~616, the `\Verb{alloc_ptr}' method is used in order to create a new Inkwell pointer value that is declared in the \qVerb{entry} block.
 The first argument of the call specifies that the name of the pointer should be identical to the name of the variable.
 The second argument passes the type of the initializer expression to the method.
-The statement in line 619 is used in order to insert a store instruction.
-Here, the instruction should store the value of the initializer expression in the newly created pointer.
-Since pointers present a way to use stack memory, also non-pointer variables in the source program are internally compiled to an IR program using pointers.
-Finally, in line 622, the newly defined variable is inserted into the current scope of the compiler.
-Every variable inside the scope saves its Inkwell value and its type since these fields are required when the variable is used later.
-The code in Listing~\ref{lst:llvm_ptr_alloc} shows the `\Verb{alloc_ptr}' method of the compiler.
-
-\Lirsting[ranges={635-649}, caption={Pointer allocation in the LLVM compiler.}, label={lst:llvm_ptr_alloc}, float=h]{deps/rush/crates/rush-compiler-llvm/src/compiler.rs}
-
-This method exists in order to create a new Inkwell pointer value.
-Like hinted previously, pointers are declared in the `\texttt{entry}' block of each function in order to allow for more aggressive optimizations.
-In line 640, this method places the builder cursor at the end of the entry-block of the current function.
-Next, in line 643, an `\texttt{alloca}' LLVM instruction is inserted.
-This instruction is responsible for allocating a new pointer which points to stack memory.
-After the instruction has been inserted, the builder position is reset to where it was before the method was called.
-Finally, the pointer is returned so that it is usable for other parts of the compiler.
+In line~619, the expression's result is then stored in the newly created pointer.
+Since pointers present a way to use stack memory, also non-pointer variables in the source program are internally compiled to pointers.
+Finally, in line~622, the newly defined variable is inserted into the current scope of the compiler.
+Every variable inside the scope saves its Inkwell value and its type since these properties are required when the variable is used later.
 
 \subsection{Final Code Generation: The Linker}\label{sec:linker}
 
@@ -342,36 +323,32 @@ However, we will not explain these concepts further since they are not of partic
 		\node(exe)[entity, below of=linker] {Executable \\ file};
 		\draw [relation] (linker) -- node[anchor=west] {} (exe);
 	\end{tikzpicture}
-	\caption{How a linker works.}{\cite[p.~7]{Levine2000}}\label{fig:linker}
+	\caption[The linking process.]{The linking process~\cite[p.~7]{Levine2000}.}\label{fig:linker}
 \end{wrapfigure}
 
 The shell command in Listing~\ref{lst:ld_llvm} presents an example liker invocation.
 In this example, the LLVM compiler has generated an object file named \texttt{input.o}.
-The flag \texttt{-dynamic-linker} is used in order to tell the linker which dynamic linker should be used.
-Next, some library files in the directory `\texttt{/usr/lib/}' are included.
+The flag \texttt{-dynamic-linker} is specified in order to tell the linker which dynamic linker to use.
+Next, some library files in the directory `\texttt{/usr/lib/}' are included by using the \qVerb{-lc} flag.
 These files belong to an implementation of the C standard library and are required so that the `\texttt{exit}' function works properly.
-Furthermore, the `\texttt{input.o}' file is specified so that the linker includes it.
-
-\Lirsting[caption={Using LD to link the LLVM output.}, label={lst:ld_llvm}, float=H]{listings/invoke_ld.sh}
-
-This way, the shell command would generate an executable program named `\texttt{output}' from an object file named `\texttt{input.o}'.
-Therefore, a linker often presents the final step of translating a source program into an executable which the computer can understand.
+Next, the `\texttt{input.o}' file is specified so that the linker includes it.
+Lastly, the \qVerb{-o} flag is used to specify the output file.
+This way, the shell command would generate an executable file named `\texttt{output}' from an object file named `\texttt{input.o}'.
+Therefore, a linker often presents the final step of translating a source program into an executable file which the computer can understand.
 However, the linker is completely independent of the previous stages of compilation and is therefore not displayed in the figures.
-Even though the linker program \emph{LD} is used in this example, the choice of the linker is completely irrelevant as long as the linker supports the program generated by the compiler.
+Even though the linker program \emph{LD} is used in this example,
+the choice of the linker is completely irrelevant as long as the linker supports the required input and output formats.
+
+\Lirsting[caption={Invoking LD to link an LLVM output.}, label={lst:ld_llvm}, float=H]{listings/invoke_ld.sh}
 
 \subsection{Conclusions}
 
-As a conclusion, implementing a compiler which leverages LLVM presents a lot of advantages.
-For instance, the language will be able to support many backend architectures.
-Most of the demanding work is being done by LLVM, therefore implementing the compiler will proof to be less difficult and error-prone.
-Moreover, LLVM performs a lot of very effective optimizations which would otherwise have to be implemented by the compiler designer.
-However, these optimizations often involve a lot of work and are therefore unpractical to implement for simpler languages.
-Therefore, LLVM presents a robust, production-ready, and scalable backend which is even used in real-world compilers.
-However, by depending on LLVM, the resulting compiler will often be less portable since cross-compilation still presents an issue if used across programming language boundaries.
-
-Finally, in order to understand how LLVM's optimizations can positively impact application performance at runtime, we will consider the Fibonacci benchmark again.
-In this benchmark, the 42nd Fibonacci number is calculated using the program displayed in Listing~\ref{lst:rush_fib} on page~\pageref{lst:rush_fib}.
-However, the 10 in line 2 was replaced by a 42.
-Running a binary compiled using the rush LLVM compiler took around 1.3 seconds.
+To conclude, implementing a compiler which leverages LLVM presents a lot of advantages,
+like support for many target architectures and aggressive optimizations.
+Most of the demanding work, like optimizations, is being handled by LLVM, therefore implementing the compiler will prove to be less difficult and error-prone.
+LLVM presents a robust, production-ready, and scalable backend which is even used by very popular compilers.
+Finally, in order to give an example for how LLVM's optimizations can positively impact performance at runtime, the Fibonacci benchmark should be considered again.
+In this benchmark, the \nth{42} Fibonacci number is calculated using the algorithm displayed in Listing~\ref{lst:rush_fib} on page~\pageref{lst:rush_fib}.
+Running the program compiled using the rush LLVM compiler took around 1.3 seconds.
 However, executing the binary generated using the rush x86\_64 compiler took around 2.17 seconds\footnote{Average from 100 iterations. OS: Arch Linux, CPU: Ryzen 5 1500, RAM: 16 GB.}.
-Therefore, the program compiled using LLVM ran roughly 1.66 times faster.
+This means that the program compiled using LLVM ran roughly 1.66 times faster.

@@ -1,384 +1,275 @@
 % chktex-file -2
 \newpage
-
 \section{\riscv{}: Compiling to a Modern RISC Architecture}
 
-The \emph{\riscv{}} \emph{ISA}\footnote{Short for: \enquote{instruction set architecture}} is a new and modern \emph{reduced instruction set} architecture focussing on simplicity and expandability.
+The \emph{\riscv{}} \emph{ISA}\footnote{Short for: \enquote{instruction set architecture}, it specifies an abstract model of a CPU.} is a new and modern \emph{reduced instruction set} architecture focussing on simplicity and expandability.
 The initial version was developed at \emph{UC Berkely} in the context of another related research project.
-Since its introduction in 2011, the architecture has been rapidly growing in popularity.
-Since the beginning, the project has been managed and led by the \emph{\riscv{} foundation}, consisting of many individuals contributing to the project.
+Since its introduction in 2011, the architecture has been rapidly growing in popularity while being managed and led by the \emph{\riscv{} foundation}.
 Today, corporate members of the \riscv{} foundation include companies like \emph{Google}, \emph{Microsoft}, \emph{Samsung}, and \emph{IBM}.
 Therefore, the general popularity and commercial attraction of the technology is apparent.
-However, unlike most previous ISAs, the \riscv{} architecture is a completely \emph{open-source} project and is therefore not controlled by a single large corporate entity.
+However, unlike most previous ISAs, the \riscv{} architecture is a completely \emph{open source} project and is therefore not controlled by a single large corporate entity.
 This can be regarded as a large competitive advantage over other popular RISC architectures like \emph{ARM}.
 In the past, many ISAs have failed due to them being too restrictive with their licensing, thus preventing widespread commercial adoption.
-However, \riscv{} is completely open and free to use, so that many companies like \emph{Google} can leverage the technology commercially while contributing to the project.
-Unlike most of the previous ISAs, which were developed during the 1970s or 80s, \riscv{} is one of the few which were developed this decade.
+However, \riscv{} is completely open and free to use, so that many companies can leverage the technology commercially while contributing to the project.
+Unlike most of the previous ISAs, which were developed during the 1970s and 80s, \riscv{} is one of the few which were developed in the last decade.
 Therefore, it seems like \riscv{} could be a significant architecture to be used in all sorts of devices in the near future~\cite[preface]{Patterson2017}.
 
 \subsection{Register Layout}
 
 \begin{wraptable}{r}{.4\textwidth}
 	\centering
-	\caption{Common registers of the \riscv{} architecture.}{\cite[p.~155]{Waterman2019}}\label{tbl:riscv_regs}
+	\caption[Common registers of the \riscv{} architecture.]{Common registers of the \riscv{} architecture~\cite[p.~155]{Waterman2019}.}\label{tbl:riscv_regs}
 	\begin{tabularx}{\linewidth}{l|L}
-		\rowcolor{gray!10} Register   & Purpose                         \\ \hline
-		\texttt{zero}                 & Hardwired zero                  \\ \hline
-		\texttt{ra}                   & Return address                  \\ \hline
-		\texttt{sp}                   & Stack pointer                   \\ \hline
-		\texttt{t0} —  \texttt{t6}    & Temporary                       \\ \hline
-		\texttt{fp}                   & Frame Pointer                   \\ \hline
-		\texttt{a0}, \texttt{a1}      & Function argument, return value \\ \hline
-		\texttt{a2} — \texttt{a7}     & Function argument               \\ \hline
-		\texttt{s1} — \texttt{s11}    & Saved register                  \\ \hline
-		\texttt{fa0}, \texttt{fa1}    & FP args, return value           \\ \hline
-		\texttt{fa2} — \texttt{fa7}   & FP args                         \\ \hline
-		\texttt{fs0} — \texttt{fs11}  & FP saved registers              \\ \hline
-		\texttt{ft0} —  \texttt{ft11} & FP temporaries                  \\
+		\rowcolor{gray!10} Register(s) & Purpose                           \\ \hline
+		\texttt{zero}                  & hardwired zero                    \\ \hline
+		\texttt{ra}                    & return address                    \\ \hline
+		\texttt{sp}                    & stack pointer                     \\ \hline
+		\texttt{t0}--\texttt{t6}       & temporary storage                 \\ \hline
+		\texttt{fp}                    & frame Pointer                     \\ \hline
+		\texttt{a0}, \texttt{a1}       & function arguments, return values \\ \hline
+		\texttt{a2}--\texttt{a7}       & function arguments                \\ \hline
+		\texttt{s1}--\texttt{s11}      & saved register                    \\ \hline
+		\texttt{fa0}, \texttt{fa1}     & float arguments, return values    \\ \hline
+		\texttt{fa2}--\texttt{fa7}     & float arguments                   \\ \hline
+		\texttt{fs0}--\texttt{fs11}    & float saved registers             \\ \hline
+		\texttt{ft0}--\texttt{ft11}    & float temporaries                 \\
 	\end{tabularx}
 \end{wraptable}
 
-Most RISC architectures typically have a large count of registers~\cite[Chapter~2]{Dandamudi2005}.
-When compared to other popular architectures, the truth of this statement becomes clear.
-For instance, the \emph{x86\_32} architecture has 8 registers.
-The popular RISC architecture \emph{ARM-32} provides twice that amount, meaning 16 registers.
-However, a \riscv{} CPU includes 32 registers, which is drastically more than the previously mentioned architectures.
-Moreover, these 32 registers only include registers holding integer values.
-Just for floating-point numbers, the ISA even provides another 32 registers.
-Like previously explained, using more registers usually leads to increased efficiency of the output program.
-Therefore, a register allocation algorithm targeting the \riscv{} architecture could be more aggressive compared to one targeting x\_86 for instance~\cite[p.~10]{Patterson2017}.
+Compared to popular CISC architectures, RISC architectures typically have a large count of registers~\cite[Chapter~2]{Dandamudi2005}.
+For instance, while the 32-bit variant of the x86 architecture has 8 registers,
+the popular RISC architecture \emph{ARM-32} provides twice that amount, meaning 16 registers.
+However, a \riscv{} CPU includes 32 registers, which is drastically more than the aforementioned architectures.
+Moreover, these 32 registers only include the general purpose ones.
+Just for floating-point numbers, the ISA provides another 32 registers.
+Due to this difference, a register allocator targeting the \riscv{} architecture could be more aggressive compared to one targeting a CISC architecture~\cite[p.~10]{Patterson2017}.
 
-The Table~\ref{tbl:riscv_regs} shows most of the registers which the \riscv{} architecture provides.
-For this table, the official ABI names of the registers have been used in order to make this section easier to read.
-The first column of the table contains a register's name while the second column describes its purpose.
-
-The first row of the table contains the \qVerb{zero} register.
-On \riscv{}, this register is special.
-Like its name suggests, it holds the value of a constant 0.
-Unlike other registers, it is read-only, meaning that it can never be overwritten, therefore preventing accidental writes.
-In the next row, the \qVerb{ra} register is shown.
-It saves the \emph{return address} of a function or subroutine.
-If a return-instructions is used, the value in \qVerb{ra} is read as it is used to jump to a specific instruction.
-The purpose of this register is elaborated further in Subsection~\ref{sec:riscv_calling_conv} about \riscv{}'s calling convention.
+The Table~\ref{tbl:riscv_regs} shows most of the registers provided by the \riscv{} architecture.
+For this table, the official ABI names of the registers have been used.
+The special \qVerb{zero} register always holds a constant `0'
+Unlike other registers, it is read-only, meaning that it can never be overwritten.
+The \qVerb{ra} register saves the \emph{return address} of a procedure.
+If a return instruction is used, the value in \qVerb{ra} is used as the address to jump back to.
 The \qVerb{sp} and \qVerb{fp} registers are used for managing stack memory.
-Their purpose is explained in Subsection~\ref{sec:riscv_stack} about stack memory.
-In the fourth row, the \qVerb{t0} — \qVerb{t6} are displayed.
-These registers are often used to store temporary values used in larger computations.
-In row six, the registers \qVerb{a0} and \qVerb{a1} can be seen.
-These both serve as call arguments and return values of functions.
-The remaining a-registers \qVerb{a2} — \qVerb{a7} can only be used as function call arguments.
+The registers \qVerb{a0} and \qVerb{a1} both serve as call arguments and return values of functions.
+The remaining \qVerb{an}-registers (\qVerb{a2}--\qVerb{a7}) should be primarely used as function call arguments.
 How functions are called using registers will be explained in Subsection~\ref{sec:riscv_calling_conv}.
 The next row contains the \emph{saved} registers \qVerb{s1} — \qVerb{s11}.
-These registers are typically preserved across function calls, meaning a called function must not overwrite them.
+These registers are meant to be preserved across function calls, meaning a called function must not overwrite them.
 What the previously explained registers have in common is that they all hold integer values.
-Depending on the exact \riscv{} architecture, all registers, including floating-point registers, either hold 32 or 64 bits of information.
-For floating-point number values, \riscv{} provides other registers.
-These registers are able to hold floating-point numbers according to the \emph{IEEE 754--2008} standard~\cite[Chapter~11]{Waterman2019}.
+Depending on the used \riscv{} extensions, all registers, including floating-point registers, either hold 32 or 64 bits of information.
+The float registers are able to hold floating-point numbers according to the \emph{IEEE 754--2008} standard~\cite[Chapter~11]{Waterman2019}.
 Just like their integer counterparts, the floating-point registers \qVerb{fa0} and \qVerb{fa1} are used as function call arguments and as return values.
-However, the other fa-registers \qVerb{fa2} — \qVerb{fa7} can only be used as function arguments holding floating-point numbers.
-Just like the \qVerb{sx} registers, the \qVerb{fs0} — \qVerb{fs11} registers are usually preserved across function calls.
-Last, the \qVerb{ft0} — \qVerb{ft11} registers can be used as temporary registers for floating-point numbers.
+However, the other \qVerb{fan}-registers (\qVerb{fa2}--\qVerb{fa7}) are meant to be used as float function arguments.
+Just like the \qVerb{sn} registers, the \qVerb{fs0}--\qVerb{fs11} registers are usually preserved across function calls.
+Lastly, the \qVerb{ft0}--\qVerb{ft11} registers can be used as temporary registers for floating-point numbers.
 It is apparent that the floating-point registers are provisioned very similarly to the integer registers.
-Therefore, a programmer or compiler targeting the architecture can utilize roughly the same principles,
-regardless of the data-type stored in each register~\cite[pp.~18f,p.~34]{Patterson2017},~\cite[p.~155]{Waterman2019}.
+Therefore, a compiler targeting the architecture can utilize roughly the same principles,
+regardless of the data-type~\cite[pp.~18f,p.~34]{Patterson2017},~\cite[p.~155]{Waterman2019}.
 
-Now, it has become apparent that \riscv{} includes many registers which are grouped into semantic categories.
+Now, it has become apparent that \riscv{} includes many registers grouped into semantic categories.
 Every category is meant to be used in the specified manner, however, these groups are mostly only a suggestion of how each register should be used.
-Although this subsection provides a good overview over the registers of the architecture, the purpose of some special registers is still not known.
-These special registers, like \qVerb{sp}, \qVerb{fp}, and \qVerb{ra}, are thoroughly explained in the next sections.
 
 \subsection{Memory Access Through the Stack}\label{sec:riscv_stack}
+%
+% \begin{wrapfigure}{L}{0.39\textwidth}
+% 	\hspace{-3.25cm}
+% 	\begin{tikzpicture}[scale=.9]
+% 		\small
+% 		% TODO: also use longer arrow in top `fp_main`?
+% 		\stackTopFixed{...} \cellcom{\scriptsize 24(sp\textsubscript{main})} \cellptr{\scriptsize \tt fp\,$_\text{main}$}
+% 		\startframe
+% 		\cell{fp} \cellcom{\scriptsize 16(sp\textsubscript{main})}
+% 		\cell{ra} \cellcom{\scriptsize 8(sp\textsubscript{main})}
+% 		\cell{a: int} \cellcom{\scriptsize -24(fp\textsubscript{main})} \cellptrA{\scriptsize \texttt{sp\,$_\text{main}$}}
+% 		\cell{b: char} \cellcom{\scriptsize -25(fp\textsubscript{main})} \cellptrA{\scriptsize \texttt{fp\,$_\text{foo}$}}
+% 		\finishframe{\tt main}
+% 		\startframe
+% 		\cell{fp} \cellcom{\scriptsize 8(sp\textsubscript{foo})}
+% 		\cell{ra} \cellcom{\scriptsize 0(sp\textsubscript{foo})} \cellptrA{\scriptsize \texttt{sp\,$_\text{foo}$}}
+% 		\finishframe{\tt foo}
+% 		% TODO: uncomment the line below?
+% 		%\stackbottom
+% 	\end{tikzpicture}
+% 	\caption{Example stack layout in \riscv{}.}\label{fig:riscv_basic_stack}
+% \end{wrapfigure}
 
-\begin{wrapfigure}{L}{0.39\textwidth}
-	\hspace{-3.25cm}
-	\begin{tikzpicture}[scale=.9]
-		\small
-		% TODO: also use longer arrow in top `fp_main`?
-		\stackTopFixed{...} \cellcom{\scriptsize 24(sp\textsubscript{main})} \cellptr{\scriptsize \tt fp\,$_\text{main}$}
+\begin{wrapfigure}{O}{0.39\textwidth}
+	\hspace{-1.75cm}
+	\begin{tikzpicture}[xscale=0.9, yscale=0.7]
+		\footnotesize
+
+		% manually set counter to allow stack frame including the start dots
+		\setcounter{cellnb}{0}
 		\startframe
-		\cell{fp} \cellcom{\scriptsize 16(sp\textsubscript{main})}
-		\cell{ra} \cellcom{\scriptsize 8(sp\textsubscript{main})}
-		\cell{a: int} \cellcom{\scriptsize -24(fp\textsubscript{main})} \cellptrA{\scriptsize \texttt{sp\,$_\text{main}$}}
-		\cell{b: char} \cellcom{\scriptsize -25(fp\textsubscript{main})} \cellptrA{\scriptsize \texttt{fp\,$_\text{foo}$}}
-		\finishframe{\tt main}
+		\addtocounter{cellnb}{-1}
+
+		% copied code from `\stacktop{}` to not reset counter to in turn allow `\startframe` above this
+		\draw[padding] (0,\value{cellnb})
+		+(-2,.5) -- +(-2,-.5) -- +(2,-.5) -- +(2,.5);
+		\draw (0,\value{cellnb}) node{...};
+
+		\cell{$n$\textsuperscript{th} stack argument} \cellcom{\texttt{8$n$(fp)}}
+		\cell[padding]{...}
+		% custom draw instead of `\cellcom` for yshift
+		\draw (2.4,\value{cellnb}) node[anchor=west, yshift=3.5pt] {\vdots};
+		\cell{\nth{1} stack argument} \cellcom{\texttt{0(fp)}}
+		\finishframe{previous}
+
+		\cell{previous \qVerb{fp} value} \cellcom{\texttt{-8(fp)}}
+		\cell{return address} \cellcom{\texttt{-16(fp)}}
+
 		\startframe
-		\cell{fp} \cellcom{\scriptsize 8(sp\textsubscript{foo})}
-		\cell{ra} \cellcom{\scriptsize 0(sp\textsubscript{foo})} \cellptrA{\scriptsize \texttt{sp\,$_\text{foo}$}}
-		\finishframe{\tt foo}
-		% TODO: uncomment the line below?
-		%\stackbottom
+		\padding{3}{\makecell{unspecified\\variable size}} \cellcom{\texttt{0(sp)}}
+		% custom draws instead of `\cellcom` for yshift and padding cell offset
+		\draw (2.4,\value{cellnb}+1) node[anchor=west, yshift=3.5pt] {\vdots};
+		\draw (2.4,\value{cellnb}+2) node[anchor=west] {\texttt{-24(fp)}};
+		\stackbottom[padding]
+		\finishframe{current}
 	\end{tikzpicture}
-	\caption{Example stack layout in \riscv{}.}\label{fig:riscv_basic_stack}
+	\caption[Stack layout of the \riscv{} architecture.]{Stack layout of the \riscv{} architecture\TODO{cite}.}\label{fig:riscv_stack}
 \end{wrapfigure}
 
-As mentioned in the dedicated subsection about the stack, it presents a way to save data outside of registers.
-This subsection explains special conventions followed when using stack memory on \riscv{}.
-Just like previously explained, most stacks are accessed through the specialized pointers.
-On \riscv{}, there is a \emph{stack pointer} which is saved in the \qVerb{sp} register.
-Furthermore, the \qVerb{fp} register contains the \emph{frame pointer}.
 
-Like most memory stacks, the \riscv{} stack grows downwards, meaning it progresses into lower memory regions.
-In the current implementation of the rush \riscv{} compiler, the stack pointer points to the last legal memory cell of the current stack frame.
-Therefore, \qVerb{sp} points on the cell with the lowest address of the current stack frame.
-On the other hand, the frame pointer \qVerb{fp} points to the cell above the end of the current stack frame.
-Therefore, the frame pointer always points to a memory cell which is illegal to use by the current function.
-Thus, a stack frame is defined by its upper and lower bounds, represented by \qVerb{fp} and \qVerb{sp}, respectively.
-
-In order to understand how the above behavior is used in practice, Figure~\ref{fig:riscv_basic_stack} is to be considered.
-Furthermore, the rush program in Listing~\ref{lst:rush_riscv_stack} should be considered.
-
-\Lirsting[caption={A rush program containing two variables.}, label={lst:rush_riscv_stack}, float=H]{listings/riscv_stack.rush}
-
-This snipped shows a rush program which contains two functions.
-In the \qVerb{main} function of this program, two variables are defined.
-The \qVerb{a} variable holds the integer value 42 while the \qVerb{b} variable contains the char value \qVerb{z}.
-In line 4, the \qVerb{foo} function is called.
-Figure~\ref{fig:riscv_basic_stack} shows the state of the stack at the point when this function was called.
-The braces on the left side of the stack group the stack into frames.
-On the right side of each stack cell, its relative address can be observed.
-As explained previously, each stack cell is accessible either by offsetting \qVerb{sp}
-or \qVerb{fp}. The stack pointers of each stack frame can are displayed by the arrows on the right side of the stack.
-
-The stack shown in this figure contains two frames, one for each function involved in the call.
-Since the \qVerb{main} function is called first, it is displayed at the top of the figure.
-Normally, the last pushed element of a stack is located at the top, however, just as described,
-this stack progresses towards lower memory, meaning that it grows downwards.
-Since the \qVerb{main} function calls the \qVerb{foo} function, the stack frame for the \qVerb{foo} function is located at the bottom of the stack.
-
-It is apparent that every stack frame saves the \qVerb{fp} and \qVerb{ra} registers at its top position.
-These two special registers are saved at the two top positions of each call before any of the code in the function's body is executed.
-Why these registers are saved on the stack is explained in Subsection~\ref{sec:riscv_stack} about the calling convention.
-Since every stack frame contains these two elements,
-the minimum size $s$ of a \riscv{} stack frame in bytes must be $s = \frac{2 \times \text{Size}\,_\text{int}}{8}$.
-Since $s$ is dependent on the integer-size of the \riscv{} architecture, the minimum required memory differs per \riscv{} architecture.
-For instance, if the 64-bit version of \riscv{} was used, the minimum size would be 16 bytes ($s = \frac{2 \times 64}{8} = 16$).
-However, if the 32-bit version of the architecture was used, $s$ would be only 8 bytes ($s = \frac{2 \times 32}{8} = 8$).
-
-Additionally, one can observe that the \qVerb{main} function's
-stack frame contains cells which save the two variables which are defined in the body of the function.
-Since the code in the function's body (where the variables are defined) is executed after \qVerb{fp} and \qVerb{ra} have been saved on the stack,
-the cells containing these variables appear lower in the stack.
-Another interesting observation is that the more recently declared variables are also saved in lower cells of the stack frame.
-Therefore, the order in which variables are saved in the stack follows the \emph{LIFO} principle which is common in stacks.
-
-In this example, in the stack frame of the function \qVerb{main}, the registers \qVerb{fp} and \qVerb{ra} require 16 bytes of memory together.
-Therefore, the variable \qVerb{a} can be saved at the next 8 bytes of memory, meaning -24(fp).
-This way, the variable is saved at the memory region from -24(fp) until the start of -16(fp) or 16(sp) in this example.
-Therefore, each stack cell requires exactly as much memory as shown in the figure.
-Just like described earlier, different rush types require different quantities of memory.
-A character for instance only uses 1 byte of memory.
-Thus, the entire variable \qVerb{b} is saved at -25(fp), meaning one byte below the end of the variable \qVerb{a}.
-This way, each variable only uses as much memory as it actually requires.
-
-However, the question of how the compiler is able to keep track of saved variables remains.
-For this, the compiler maps a variable's name to a memory location.
-To be precise, the compiler contains a \emph{HashMap} which associates a variable's name with its \qVerb{fp} offset.
-In case of the program in Listing~\ref{lst:rush_riscv_stack}, the variable \qVerb{a} is associated with a \qVerb{fp} offset of -24.
-If the variable is referenced at a later point, the compiler performs a simple lookup of the variable's memory address.
+Figure~\ref{fig:riscv_stack} shows the stack layout used by \riscv{}.
+Stack frames are enclosed by the \qVerb{fp} and \qVerb{sp} registers.
+Here, \qVerb{sp} always points to the lowest address inside of the current stack frame while
+\qVerb{fp} points to 16 bytes\footnote{Assuming the \TODO{RV64I} extension is used.} above the top of the current frame.
+The available space for functions therefore ranges from \qVerb{-24(fp)} to \qVerb{0(sp)}.
+It is used for storing variables, following the alignment rules that were explained in Subsection~\ref{sec:alignment}.
+In the space between \qVerb{0(fp)} and \qVerb{-24(fp)}, the frame pointer of the previous stack frame and the return address are saved at the positions \qVerb{-8(fp)} and \qVerb{-16(fp)}, respectively.
+If stack arguments were present, the would be placed upwards from \qVerb{fp}.
+Each stack argument \emph{always} uses eight bytes of memory, regardless of the actual size of its content.
+Thus, the $n$\textsuperscript{th} stack argument would be placed at the position \texttt{$8n$(fp)}.
+To keep track of variable locations on the stack, the compiler maps a variable's name to a memory location.
+To be precise, the compiler contains a \qVerb{HashMap} which associates a variable's name with its \qVerb{fp} offset.
+When the variable is referenced at a later point, the compiler performs a simple lookup of the variable's memory address.
 
 \subsection{Calling Convention}\label{sec:riscv_calling_conv}
 
-\begin{wrapfigure}{R}{0.42\textwidth}
-	\centering
-	\begin{tikzpicture}[node distance=5mm]
-		\node(stack)[
-			vstack=6,
-			rectangle split part fill={none, none, gray!20, gray!20, none, none},
-			rectangle split part align=left,
-		]{
-			\nodepart{one}{{\texttt{\footnotesize 24(sp\textsubscript{0})}} fp$_0$}
-			\nodepart{two}{{\texttt{\footnotesize 16(sp\textsubscript{0})}} ra$_0$}
-			\nodepart{three}{{\texttt{\footnotesize 08(sp\textsubscript{0})}} argument 2}
-			\nodepart{four}{{\texttt{\footnotesize ~0(sp\textsubscript{0})}} argument 1}
-			\nodepart{five}{{\texttt{\footnotesize ~8(sp\textsubscript{1})}} fp$_1$}
-			\nodepart{six}{{\texttt{\footnotesize ~0(sp\textsubscript{1})}} ra$_1$}
-		};
-		\draw [thick, dashed] ([xshift=-.5cm, yshift=-.33cm]stack.four west) --  node[anchor=west, xshift=2cm, align=center] {\scriptsize function\\ \scriptsize boundary} ([xshift=.5cm, yshift=-.33cm]stack.four east);
-
-		\node(sp)[left of=stack, xshift=-2.2cm, yshift=-0.32cm, align=left] {\scriptsize SP$_0$ \\ \scriptsize FP$_1$};
-		\draw[arrow, shorten >= 2pt](sp) -- (stack.four west);
-
-		\node(fp)[left of=stack, xshift=-2.2cm, yshift=2.26cm] {\scriptsize FP$_0$};
-		\draw[arrow, shorten >= 2pt](fp) -- ([yshift=.74cm]stack.one west);
-
-		\node(sp)[left of=stack, xshift=-2.2cm, yshift=-1.6cm] {\scriptsize SP$_1$};
-		\draw[arrow, shorten >= 2pt](sp) -- (stack.six west);
-	\end{tikzpicture}
-	\caption{Spilled registers during a \riscv{} function call.}\label{fig:riscv_call_spill}
-\end{wrapfigure}
-
 Just like previously explained, most architectures provide a calling convention which dictates how low-level function calls should be managed.
 For most architectures, the calling convention is part of the ISA's official specification.
-In the case of \riscv{}, the calling convention is specified in a separate document~\cite{RiscvABI2022}.
+In the case of \riscv{}, the calling convention consists of three main steps and is specified in a separate document~\cite{RiscvABI2022}.
 
 The first step of calling a function involves placing the arguments in a place where the function can access them.
-For \riscv{}, this involves placing the arguments into specialized registers.
-Like described in the Table~\ref{tbl:riscv_regs}, only special classes of registers can be used as call arguments.
-For integer arguments, the first arguments are placed in the registers \qVerb{a0}--\qVerb{a7}
+For \riscv{}, this involves placing the arguments into certain registers.
+Like described in Table~\ref{tbl:riscv_regs}, only some registers are used for call arguments.
+For integer arguments, the first eight arguments are placed in the registers \qVerb{a0}--\qVerb{a7}
 For instance, the first two arguments of the rush function call
-\qVerb{foo(40, 2, 3.14)} would be placed in the registers \qVerb{a0} and \qVerb{a1}.
+\qVerb{foo(40, 2, 3.14)} would be placed in the registers \qVerb{a0} and \qVerb{a1}, respectively.
 However, the third argument is a floating-point number and can therefore not be placed inside an integer register.
-Therefore, the first floating-point argument register \qVerb{fa0} contains the argument \qVerb{3.14}.
-In this case, all arguments can be held in regisers and spilling would not be required.
+Instead, the first floating-point argument register \qVerb{fa0} is used.
+In this case, all arguments can be held in registers and spilling would not be required.
 
 In case the function accepted nine or more integer arguments,
-all further integer arguments upward of the ninth position would have to be spilled on the stack.
+all further integer arguments starting with the ninth one would have to be spilled onto the stack.
 Here, the successive registers \qVerb{a0}--\qVerb{a7} would contain the first eight integer arguments of the called function.
-The argument at position 9 however is then spilled on the stack since there are no registers left which could contain the additional argument~\cite[p.~8]{RiscvABI2022}.
+However, the argument at position nine is spilled onto the stack since there are no registers left which could contain the additional argument~\cite[p.~8]{RiscvABI2022}.
 
-The Figure~\ref{fig:riscv_call_spill} displays a possible state of the call stack during a function call which uses ten integer arguments.
-If ten integer arguments are used, two arguments would have to be spilled on the stack.
-In the figure, the spilled registers are placed in the stack cells \enquote{argument 1} and \enquote{argument 2}.
-Here, the cell \enquote{argument 1} would hold the ninth argument while \enquote{argument 2} holds the tenth argument.
-Therefore, all spilled argument registers will be placed in the stack frame of the caller function.
-Normally, variables saved on the stack are aligned to reflect their sizes.
-In case of spilled argument registers however, every argument will occupy exactly 8 bytes on the stack, even if the data type itself requires less space.
-
-Now that the first step of a procedure call is explained, the question of how the second step works in \riscv{} remains.
 In the second step, the underlying procedure call is made using a specialized instruction.
-In \riscv{} assembly, one typically uses the call \emph{pseudoinstruction}\footnote{A macro generating multiple instructions from one pseudoinstruction. Therefore, the actual count of ISA instructions remains low while convenience features can be used in assembly~\cite[p.~68]{Dandamudi2005}.}.
-Due to a lack of functions in assembly, the call-instruction uses the name of its target label as one operand.
-Therefore, labels can be called as if they were functions.
-This instruction will jump to the first instruction of the specified target label while saving the address of the next instruction after the \qVerb{call} instruction in the register \qVerb{ra}~\cite[p.~22]{Patterson2017}.
-As hinted previously, the \qVerb{ra} register saves the \emph{return address}.
-Therefore, the return address is set every time a function call is performed.
+In \riscv{} assembly, one typically uses the \qVerb{call} \emph{pseudoinstruction}\footnote{A macro generating one or more instructions from one pseudoinstruction. This way, the actual count of ISA instructions remains low while convenience features can be used in assembly~\cite[p.~68]{Dandamudi2005}.}.
+The instruction uses the name of its target label as its operand, resulting in labels being callable, just like functions.
+Internally, the instruction first saves the address of the following instruction in the \qVerb{ra} register, and then performs an unconditional jump~\cite[p.~22]{Patterson2017}.
 
-During the third step of the function call, the called function acquires local storage resources.
-To be precise, the function decrements the stack pointer by the amount required by the stack frame.
-Therefore, the function allocates as much stack space as required for storing local variables and other data.
-Additionally, the frame pointer and return address are saved on the stack so that nested function calls do not cause issues.
-For instance, if the return address was not saved on the stack, a nested function call would overwrite its stored value.
-In this case, the parent function could no longer return since the return address now holds an incorrect value.
-In order to mitigate issues like this, the return address and frame pointer are saved on the stack.
-Figure~\ref{fig:riscv_call_spill} shows that the two registers are saved at the two positions on the top of the new stack frame.
-This part of the function is often called the \emph{prologue} as it is executed before any of the function's internal code.
+The third step takes place in the function's prologue.
+Here, the previous frame pointer and return address are saved on the stack,
+and space for storing local variables is allocated by decrementing the stack pointer.
+Following the prologue, the function's body is executed.
+After it has also been evaluated, the epilogue restores the changes made by the prologue.
+The previous values for both the frame pointer and the return address registers are taken from the stack,
+and the stack pointer is incremented back to its original value.
+The \qVerb{ret} instruction, which jumps to the address stored in \qVerb{ra}, is finally used to return control back to the caller.
 
-After the code of the function has been executed, the so-called \emph{epilogue} is executed.
-Since the frame pointer and return address have been saved on the stack during the prologue,
-the epilogue restores these registers by loading their values from the stack.
-Furthermore, the amount which was subtracted from the stack pointer in the prologue is now added to the pointer in order to restore it to its original state before the function call.
-Here, incrementing the stack pointer represents deallocating the previously acquired stack space.
-However, the memory in the stack frame is not actually deleted since only the stack pointer is modified.
-Even though the used memory is not explicitly deleted, it is still freed since it will probably be overwritten by the next function call.
-If the prologue would not save the return address on the stack, a nested function call would overwrite the return address of the parent function, therefore creating a bug~\cite[p.~33]{Patterson2017}.
-By saving the return address on the stack, nested function calls do not cause difficulties.
-It is apparent that this design contains a lot of similarities to the call-stack of the rush VM\@.
-However, in the VM, the process of saving and restoring the return address was managed automatically by the VM,
-whereas, here, the programmer has to manually pay attention to saving and restoring this important piece of data.
-Therefore, implementing function calls is definitely more demanding in \riscv{} assembly than in the rush VM\@.
-
-In case a function returns a value, it must be communicated to the caller so that it can access it.
-For integer-based types, the first return value of a function is placed in the register \qVerb{a0}
+In case a function returns a value, it must be mad accessible to the caller.
+For integer types, the first return value of a function is placed in the register \qVerb{a0}
 while floating-point numbers are placed in the register \qVerb{fa0}.
 This way, the caller code can obtain a function's return value by accessing the \qVerb{a0} and \qVerb{fa0}
 registers respectively. If a function does not return a value, these steps are just omitted.
-It is to be mentioned that character and boolean values are also placed inside the \qVerb{a0} register since these types can be represented by integers.
-
-Lastly, the epilogue contains a return-instruction which should jump to the place where the function was called.
-This \emph{ret} instruction reads the value stored in \qVerb{ra} in order to jump to this address.
+It is to be mentioned that char and bool values are also placed inside the \qVerb{a0} register since these types are internally represented by integers.
 
 \subsection{The Core Library}
 
-Like hinted in the section about the linker on page~\pageref{sec:linker},
+As outlined in the section about the linker on page~\pageref{sec:linker},
 a program might use functionality provided by external libraries.
 In case of the rush \riscv{} compiler, external functions are used for character-arithmetic,
 the mathematical power operator, and the system \emph{exit} call.
+Char-arithmetic requires external functionality since the bounds of the ASCII range should be regarded while performing operations.
+For instance, in rush, calculating \qVerb{a+a} results in `66', even though `194' ($97 + 97$) would also be logical.
+If the result is larger than `127`, `128` is subtracted from the result, if the result is less than `0', `128' is added to it.
+This way, the ASCII range is always valid.
+
 Since these concepts must introduce additional logic, the compiler should not be emitted their instructions every time they are used.
 In that case, the repeated emission of redundant instructions would result in enlarged and unnecessary complex output code.
-In order to mitigate these issues, the compiler simply inserts call-instructions referencing external functions.
-External functions can be called just like any other function, however, their definition is not found in the same assembly file.
+In order to mitigate these issues, the compiler simply inserts call-instructions referencing the appropriate external function.
+External functions are called just like any other function; however, their definition is not found in the same assembly file.
 As described previously, resolving these external calls is later handled by the linker.
-For this compiler, we later refer to this target specific library code by the term \emph{corelib}.
+This target-specific libary code is later refered to by the term \emph{corelib}.
 
 For instance, a function for mathematical power operations is implemented in the corelib.
 Therefore, the compiler can emit a procedure call to this method every time rush's \qVerb{**} operator is used in the source program.
 For this project, the entire corelib is written in \riscv{} assembly.
-However, it is often rational to implement a corelib or standardlib using a high-level language like C.
+However, it is also reasonable to implement a corelib using a high-level language like C.
 Since the corelib's functions are specified in separate files, they are packaged into an \emph{archive file} which is later used by the linker.
 The assembly code in Listing~\ref{lst:riscv_exit_corelib} shows the implementation of the \qVerb{exit} subroutine in the \riscv{} corelib.
-The task of this subroutine is to invoke a specific functionality the Linux kernel by performing a \emph{system call}.
+The task of this subroutine is to invoke a specific functionality of the Linux kernel by performing a \emph{system call}.
 
 \Lirsting[float=H, ranges={8-12}, caption={The assembly implementation of the \qVerb{exit} subroutine.}, label={lst:riscv_exit_corelib}]{deps/rush/crates/rush-compiler-risc-v/corelib/src/exit.s}
 
 A \emph{system call} (often abbreviated to \emph{syscall}) is an invocation of a function of operating system's kernel.
-In Linux, more than 90 percent of the available system calls are implemented on all architectures.
-A common system call is \qVerb{exit}.
-This function terminates the current process and performs various cleanup steps.
-Its first parameter is the exit status (or code) which can be checked by the shell or other programs~\cite[p.~148]{Love2013}.
-In \riscv{} Linux, the integer representation of a call to \qVerb{exit} is 93~\cite{Torvalds1991}.
-
-In line 8 of Listing~\ref{lst:riscv_exit_corelib}, the \qVerb{exit} label is declared as global using the \qVerb{.global} directive.
-Next, the \qVerb{exit} label is declared in line 10.
-In line 11, the \qVerb{li} instruction is used in order to place 93 in the value \qVerb{a7}.
+In Linux, more than 90 percent of the available system calls are implemented on all architectures~\cite[p.~3]{Love2013}.
+One common system call is \qVerb{exit}.
+It terminates the current process and performs various cleanup steps.
+Its only parameter is the \emph{exit code} which can be checked by the shell or other programs~\cite[p.~148]{Love2013}.
+In \riscv{} Linux, the syscall id of \qVerb{exit} is `93`~\cite{Torvalds1991}.
+In line~8 of Listing~\ref{lst:riscv_exit_corelib}, the \qVerb{exit} label is declared as global using the \qVerb{.global} directive.
+Next, the \qVerb{exit} label is declared in line~10.
+In line~11, the \qVerb{li} instruction is used in order to load `93` into the register \qVerb{a7}.
 On \riscv{} Linux systems, the content of the \qVerb{a7} register specifies the type of syscall to be performed.
-Here, 93 is placed inside this register since it represents the \qVerb{exit} syscall.
-In line 12, the \qVerb{ecall} instruction is used in order to call the program's environment~\cite[p.~23]{Patterson2017}
-Here, this call invokes the Linux kernel.
-In this example, some \riscv{} assembly code was shown.
-The next subsection explains these concepts and idioms in more detail.
+In line~12, the \qVerb{ecall} instruction is then used to perform the underlying syscall~\cite[p.~23]{Patterson2017}
 
 \subsection{\riscv{} Assembly}
 
-The Listing~\ref{lst:riscv_simple} shows a rush program containing two functions and a global variable.
-In line 1 of the rush program, the mutable global variable \qVerb{m} is defined with the initial value 42.
-In line 4 of the main-function, \qVerb{m} is incremented by 1.
-Next, in line 5, the \qVerb{foo} function is called using \qVerb{m} as the only call argument.
-In line 6, a \qVerb{return} statement is used to terminate the main-function explicitly.
-The body of the \qVerb{foo} function only contains a call to the \qVerb{exit} function.
-Therefore, the \qVerb{foo} function only exits using the specified parameter \qVerb{n} as the exit code.
-In this case, the exit code of the displayed program will be 43.
-The code in Listing~\ref{lst:riscv_simple_asm} on page~\pageref{lst:riscv_simple_asm} shows the output assembly generated from this program by the rush \riscv{} compiler\footnote{Generated using Git commit \rushCommit{}.}.
-Because the assembler code of the \qVerb{foo} function would take up too much space in the assembler program, it is intentionally omitted from this listing.
-Since the excluded function does not introduce any new concepts anyway, omitting it will not lead to a loss of explained concepts.
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.35\textwidth, caption={Example rush program containing two functions.}, label={lst:riscv_simple2}]{listings/riscv_simple.rush}
 
-\Lirsting[float=H, caption={Example rush program containing two functions.}, label={lst:riscv_simple}]{listings/riscv_simple.rush}
+The Listing~\ref{lst:riscv_simple2} shows a rush program containing two functions and a global variable.
+In line~1 of the rush program, the mutable global variable \qVerb{m} is defined with an initial value of `42'.
+In line~4, in the \qVerb{main} function, \qVerb{m} is incremented by `1'.
+Next, in line~5, the \qVerb{foo} function is called using \qVerb{m} as the only call argument.
+In line~6, a \qVerb{return} statement is used to terminate the \qVerb{main} function explicitly.
+The body of the \qVerb{foo} function only contains a call to the \qVerb{exit} function and therefore causes the program to exit with the code stored in \qVerb{n}.
+When executed, the exit code of the displayed program will be `43'.
+The code in Listing~\ref{lst:riscv_simple_asm} shows the output assembly generated from this program by the rush \riscv{} compiler\footnote{Generated using rush (Git commit \rushCommit{}).}.
+The assembler code of the \qVerb{foo} function is intentionally omitted.
 
-\begin{wrapfigure}{L}{0.5\textwidth}
-	\centering
-	\Lirsting[ranges={1-31, -4 53-56}, fancyvrb={frame=none}]{listings/generated/riscv_simple.s}
-	\caption{Compiler output from the rush program in Listing~\ref{lst:riscv_simple}.}\label{lst:riscv_simple_asm}
-\end{wrapfigure}
-
-In line 1, the \qVerb{.global} assembler directive is used to declare the global symbol \qVerb{_start}~\cite[p.~36]{Patterson2017}.
-On most architectures, the \qVerb{_start} label indicates a program's entry point, therefore marking the first instruction to be executed~\cite[p.~19]{Zhirkov2017-wk}.
-In line 5, the \qVerb{_start} label is defined by placing a colon after its name.
-In line 6, the \qVerb{call} instruction is used to call the \qVerb{main..main} function.
-What strikes the eye here is that the already familiar \qVerb{main} function is prepended by the \qVerb{main..} prefix.
-Since this rush compiler implements name mangling\footnote{Compilers often \emph{mangle} names in order to create a unique name for every function~\cite[pp.~119-120]{Levine2000}},
+In line~1, the \qVerb{.global} assembler directive is used to declare the global symbol \qVerb{_start}~\cite[p.~36]{Patterson2017}.
+On most architectures, the \qVerb{_start} label indicates a program's entry point, marking the first instruction to be executed~\cite[p.~19]{Zhirkov2017-wk}.
+In line~6, the \qVerb{call} instruction is used to call the \qVerb{main..main} function.
+Here, the already familiar \qVerb{main} function is prepended by the prefix \qVerb{main..}.
+Since this rush compiler implements name mangling\footnote{Compilers often \emph{mangle} names in order to guarantee a unique name for every function~\cite[pp.~119-120]{Levine2000}.},
 every function declared in a rush program will contain this prefix.
-However, unlike high-level function calls in LLVM, this call instruction is used alongside the previously explained low-level calling conventions of \riscv{}.
 
-In the next line, the \qVerb{li} instruction is used to load the constant integer 0 into the register \qVerb{a0}~\cite[reference card]{Patterson2017}.
-Like explained in the previous section about the \riscv{} calling convention,
-the register \qVerb{a0} is used for the first integer call argument.
-In line 8, the \qVerb{exit} function is called, however, one cannot see the definition of this function in the current file.
-This is because the exit function is provided by the rush \riscv{} corelib which was explained previously.
-Since 0 was previously placed inside the register for the first integer call argument, the \qVerb{exit} function is called using 0 as the argument.
-Therefore, the instructions in the lines 7--8 are responsible for terminating the program using the exit code 0.
-These two instructions are always inserted at the end of the \qVerb{_start} label in order to terminate the program appropriately in case the rush code does not call \qVerb{exit} on its own.
-This is required in order to prevent a segmentation fault which occurs if the program is not terminated properly.
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, caption={Compiler output from the rush program in Listing~\ref{lst:riscv_simple2}.}, ranges={1-31, -4 53-56}]{listings/generated/riscv_simple.s}
 
-Due to the function call in line 6, we will now shift our focus on the \qVerb{main..main} label in line 10.
-In line 11, the first line of the \qVerb{main} function, a comment indicates the beginning of the function's prologue.
-Just like demanded by the \riscv{} calling convention, the rush compiler emits code for a \emph{prologue} and an \emph{epilogue} for each function.
+In line~7, the \qVerb{li} (\enquote{\textbf{l}oad \textbf{i}mmediate}) instruction is used to load the constant integer `0' into the register \qVerb{a0}~\cite[Reference Card]{Patterson2017}.
+As explained in the previous section, the register \qVerb{a0} is used for the first integer call argument.
+In line~8, the \qVerb{exit} function from rush's corelib is called, using `0' stored in \qVerb{a0} as the exit code.
+Therefore, the two instructions in the lines~7--8 are responsible for terminating the program with the exit code `0'.
+They are always inserted at the end of the \qVerb{_start} label in order to terminate the program appropriately in case the rush code does not call \qVerb{exit} on its own\footnote{In order to prevent runtime errors, programs should always be exited properly.}.
 
-As described in the previous sections about calling conventions, one task of the prologue is allocating stack space.
-In this prologue, the \qVerb{addi} instruction in line 12 subtracts 16 from the value stored in \qVerb{sp}.
-Since subtraction is used, the stack pointer is decremented, leading to the stack progressing into lower memory.
+Due to the function call in line~6, the \qVerb{main..main} label in line~10 should now be considered.
+In line~11, the first line of the \qVerb{main} function, a comment indicates the beginning of the function's prologue.
+The \qVerb{addi} (\enquote{\textbf{a}dd \textbf{i}mmediate}) instruction in line~12 adds `$-16$' to the value stored in \qVerb{sp}, thus allocating memory.
 Therefore, this instruction increases the size of the stack, thus allocating memory.
 Here, an addition instruction is used even though subtraction is required.
-In \riscv{}, the \qVerb{addi} instruction requires one register and one immediate value as its operands.
-Due to the third operand being an \emph{immediate} value, the trailing \qVerb{i} (\emph{immediate}) appears in the instruction's name.
-Since this immediate value can be negative, an additional instruction for immediate subtraction is redundant~\cite[reference card]{Patterson2017}.
-This example shows how the \riscv{} ISA omits redundant instructions in places where it is feasible.
-In this case, the stack pointer is decremented by 16 since two 8-byte values are stored on the stack in the lines 13 and 14.
-Just like described in the previous subsection about the stack, these registers are always saved on the stack.
+In \riscv{}, the \qVerb{addi} instruction requires one destination, one source register and one immediate value as its operands.
+Since this immediate value can be negative, an additional instruction for immediate subtraction would be redundant~\cite[Reference Card]{Patterson2017}.
+In this case, 16 bytes are allocated since two 8-byte values are stored on the stack in the lines 13--14.
 
-The comment in line 17 indicates the start of the function's body.
-First, the previously explained \qVerb{li} instruction in line 18 places a constant 1 in register \qVerb{a0}.
-Next, the \qVerb{ld} instruction in line 19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a0}~\cite[reference card]{Patterson2017}.
-Global variables, like \qVerb{m} in this example are saved under the \qVerb{.rodata}. section or under the \qVerb{.data} section if they are mutable.
-In this example, \qVerb{m} is not declared as mutable and therefore saved under the \qVerb{.rodata} section.
+The comment in line~17 indicates the start of the function's body.
+First, the previously explained \qVerb{li} instruction in line~18 places a constant `1' in register \qVerb{a0}.
+Next, the \qVerb{ld} instruction in line 19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
+Global variables, like \qVerb{m} in this example, are saved under the \qVerb{.rodata} or the \qVerb{.data} section, depending on their mutability.
+Since \qVerb{m} is declared as mutable, the compiler saves it under the \qVerb{.rodata} section.
 The start of the \qVerb{.rodata} section is represented by the \qVerb{.section} assembler directive found in line 53.
 Here, a label called \qVerb{m} is defined.
 In this label, the \qVerb{.dword} directive is used to define the global initializer value of the variable.
@@ -393,7 +284,7 @@ Now, the value saved in \qVerb{a2} would be 43.
 Next, the \qVerb{sd} instruction in line 21 saves the value of the register \qVerb{a2} at the memory location of the global variable \qVerb{m}, meaning that \qVerb{m} is updated to reflect its new value 43.
 It now becomes apparent that these instructions are responsible for the add-assign expression in line 4 of the rush program.
 Another interesting observation is that the last operand of the \qVerb{sd} instruction specifies the temporary register \qVerb{t6}.
-The instruction uses this register for saving temporary data during the process of saving data in \qVerb{m}~\cite[reference card]{Patterson2017}.
+The instruction uses this register for saving temporary data during the process of saving data in \qVerb{m}~\cite[Reference Card]{Patterson2017}.
 
 In line 22, the previously explained \qVerb{ld} instruction is used in order to load the value of the same variable into the register \qVerb{a0}.
 Then, the \qVerb{call} instruction in line 23 is used in order to call the \qVerb{foo} function using the value of m as its argument.
@@ -404,7 +295,7 @@ Therefore, the \qVerb{foo} function is called using 43 as the first argument.
 
 Since the \qVerb{foo} instruction only calls the \qVerb{exit} function, its explanation will not be beneficial for introducing new concepts.
 Therefore, we will omit the explanation of the assembler output of the \qVerb{foo} function.
-The final instruction of the main-function's body is the \qVerb{j} instruction in line 24.
+The final instruction of the \qVerb{main} function's body is the \qVerb{j} instruction in line 24.
 This instruction will cause the CPU to jump to the address of the specified label.
 In this example, the CPU will jump to the first instruction of the \qVerb{epilogue_0} label~\cite[p.~17]{Patterson2017}.
 Therefore, the rush compiler uses the \qVerb{call} instruction for jumps caused by function calls and the \qVerb{j} instruction for jumps between blocks of the current function.
@@ -436,7 +327,7 @@ Next, in line 3, the variable is referenced in order to use the resulting addres
 In line 4, the \qVerb{to_a} pointer variable is dereferenced in order to use the value of \qVerb{a} as the exit code of the program.
 
 
-Listing~\ref{lst:rush_simple_pointer_asm} includes the most significant part of the compiler output which represents this rush program\footnote{Generated using Git commit \rushCommit{}.}.
+Listing~\ref{lst:rush_simple_pointer_asm} includes the most significant part of the compiler output which represents this rush program\footnote{Generated using rush (Git commit \rushCommit{}).}.
 In line 18 of this listing, the integer value 42 is placed in the register \qVerb{a0}.
 Next, \qVerb{a0} is saved on the stack at \qVerb{-24(fp)} using the \qVerb{sd} instruction.
 Like the comment suggests, the instruction in line 20 is used in order to reference a.
@@ -733,7 +624,7 @@ In order to mitigate this issue, the code responsible for a function's prologue 
 The call to the method \qVerb{prologue} in line 148 generates the instructions which represent the prologue.
 Next, in line 149, the insertion position is moved back to the end of the \qVerb{main..main} label.
 In line 150, the instructions generated from the function's body are concatenated to the end of prologue instructions.
-This way, the variable \qVerb{prologue} now represents a vector containing the instructions of the main function's prologue followed by the ones of its body.
+This way, the variable \qVerb{prologue} now represents a vector containing the instructions of the \qVerb{main} function's prologue followed by the ones of its body.
 In line 151, the instructions of the current block, meaning the \qVerb{main..main} block, are overwritten with the contents of the variable.
 In other words, the current block now contains the function's prologue and body.
 

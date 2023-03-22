@@ -121,7 +121,8 @@ Nearly every CPU architecture will define an individual register layout,
 meaning that sizes, count, and types of its registers may vary.
 As a general rule, architectures with large number of registers usually outperform the ones that provide less registers.
 However, as a result of this, the CPU will be more expensive to manufacture.
-Since not every register is identical, there are platforms which distinguish between general-purpose, floating-point, and special-purpose registers~\cite[Chapter~2]{Dandamudi2005}.
+Since not every register is identical, there are platforms which distinguish between general-purpose, floating-point, and special-purpose registers.
+For the majority of architectures, a subset of the registers is additionally designated for use in specific operations like \emph{procedure calls}~\cite[Chapter~2]{Dandamudi2005}.
 
 \Lirsting[wrap=L, ranges={4-6}, wrap width=0.35\textwidth, caption={Example assembly program for explaining register allocation.}, label={lst:register_alloc}]{listings/register_alloc_simple.s}
 
@@ -237,118 +238,104 @@ This result is then subtracted from `8' again to result in `2', the number of by
 
 Programmers often use \emph{procedures} or \emph{functions} in order to structure their programs,
 both to make the program easier to understand and to allow shared logic to be reused.
-Therefore, procedures allow the programmer to focus on one portion of the tasks at the time.
+Procedures allow the programmer to focus on one portion of the tasks at the time,
+thus representing one way of how a high-level programming language might provide abstraction.
 Often, parameters and returned values act as the interface between the procedure and the remaining code.
-Therefore, procedures present one way of how a high-level programming language might provide abstraction.
 During a procedure call in a high-level language like rush, many individual steps need to be performed in the program's low-level representation.
 Since assembly does not support the use of high-level functions, most architectures specify their own \emph{calling convention} which describes how low-level function calls are to be performed.
-On most architectures, a low-level procedure call might take place like the following steps:
+On most architectures, a low-level procedure call follows these steps~\cite[p.~98]{Patterson2017-zq}:
 
-\begin{itemize}
+\begin{enumerate}
 	\item The caller places the call arguments in a place where the procedure can access them.
 	\item Control is transferred to the procedure, often using a jump or specialized call instruction.
-	      This specialized instruction often saves the \emph{return address}\footnote{A link to the caller site, allows the called procedure to jump back to the caller~\cite[p.~99]{Patterson2017-zq}.} in a special register so that function returns are easier.
-	\item The first task the called function performs is acquiring local storage resources needed by the procedure.
-	      Often, registers are spilled if required.
-	      Furthermore, stack memory for the procedure's local variables is often allocated in this step.
-	\item Internal code of the procedure is run by executing the function body's instructions.
+	      This specialized instruction often saves the \emph{return address}\footnote{Saves the address of the call-site,
+		      allows the called procedure to return back to the caller~\cite[p.~99]{Patterson2017-zq}.} in a special register, so that function returns are possible.
+	\item First, the procedure acquires local storage resources, like stack memory for its local variables.
+	      This step is usually referred to as the \emph{prologue}.
+	\item Internal code of the procedure is executed by evaluating the instructions in its body.
 	\item The procedure's result value is placed somewhere so that the caller can access it.
 	      Here resources allocated in step 3 are also released again.
-	\item Control is transferred back to the caller using a specialized return-instruction.
-	      A specialized instruction is often required since procedures can be called from multiple places in the program.
-	      Therefore, the return-instruction jumps back to the instruction which had initiated the function call.
-\end{itemize}
+	      This step is usually referred to as the \emph{epilogue}.
+	\item Control is transferred back to the caller using a specialized return-instruction
+	      that jumps back to the instruction which had initiated the procedure call.
+\end{enumerate}
 
-In order to leverage optimal performance during function calls, passed arguments are usually kept in registers.
-However, in the previous subsection about registers, we have learned that most architectures state that only subset of their registers are to be used as function arguments.
-Therefore, if a function is called using more than eight arguments, every remaining argument has to be spilled to memory.
-In this case, each additional parameter of the function is placed inside the stack frame of the called function so that it can access it.~\cite[p.~98]{Patterson2017-zq}.
+In order to leverage optimal performance during procedure calls, passed arguments are usually kept in registers.
+However, in the previous subsection regarding registers, it was stated that the majority of architectures only plan for a portion of their registers to be used as call arguments.
+If the number of call arguments exceeds the number of available argument registers, every remaining argument would have to be spilled to memory,
+meaning that they are placed on the stack so that the called function can access them.~\cite[p.~98]{Patterson2017-zq}.
 
-For instance, a target architecture might provide \emph{four} registers which can hold function arguments.
+For instance, a target architecture might plan for \emph{four} registers (\qVerb{r0}--\qVerb{r3}) to be used as call arguments.
 Now, a function is called using \emph{six} arguments.
-Here, register spilling is mandatory since there are two more arguments than registers.
-In that case, the registers \qVerb{r0} — \qVerb{r3} would contain the first four argument values while the fifth and sixth argument is spilled on the stack.
-
-For managing the calling convention in assembly, most functions contain a \emph{prologue} and an \emph{epilogue}.
-These blocks of the function are responsible for allocating and deallocating resources which the function might use.
-For instance, the stack- and frame-pointer is often adjusted in the prologue.
-This way, space on the stack is allocated for variable declarations found in the called function.
-However, the modification offset always depends on how much memory the called function will require during runtime.
-Therefore, a compiler would have to keep track of the count of variable declarations made by a function.
-Apart from allocating stack space, the prologue is also often used for storing special registers on the stack.
-
-The epilogue however is required for deallocating all resources which were previously allocated by the function's prologue.
-For instance, the stack-related pointers are modified to reflect their state before the function call.
-Furthermore, any special registers previously saved on the stack are now restored.
-Obviously, a \qVerb{return} statement should always jump to the function's epilogue instead of terminating the function directly.
-At the end of most epilogues, a return-instruction jumping back to the caller location is often found.
-Therefore, the prologue is executed as the first code when calling the function and the epilogue is called as the last code before this function terminates.
+Due to the fact that there are two more arguments than registers, register spilling is now required.
+In that case, the registers \qVerb{r0}--\qVerb{r3} would contain the first four argument values while the fifth and sixth argument are spilled to the stack.
+% Like hinted previously, most assembly procedures contain a \emph{prologue} and an \emph{epilogue}.
+% These blocks of the function are responsible for allocating and deallocating resources which the function might use.
+% For instance, the stack- and frame-pointer is often adjusted in the prologue.
+% This way, space on the stack is allocated for variable declarations found in the called function.
+% However, the modification offset always depends on how much memory the called function will require during runtime.
+% Therefore, a compiler would have to keep track of the count of variable declarations made by a function.
+% Apart from allocating stack space, the prologue is also often used for storing special registers on the stack.
+%
+% The epilogue however is required for deallocating all resources which were previously allocated by the function's prologue.
+% For instance, the stack-related pointers are modified to reflect their state before the function call.
+% Furthermore, any special registers previously saved on the stack are now restored.
+% Obviously, a \qVerb{return} statement should always jump to the function's epilogue instead of terminating the function directly.
+% At the end of most epilogues, a return-instruction jumping back to the caller location is often found.
+% Therefore, the prologue is executed as the first code when calling the function and the epilogue is called as the last code before this function terminates.
 
 It is to be mentioned that implementing a compiler which respects the calling convention of its target architecture is not required.
 However, following the convention is often reasonable in order to preserve \emph{ABI}\footnote{Short for \enquote{application binary interface}, allows calling foreign functions from another program.} compatibility of the compiled program.
 
 \subsection{Referencing Variables Using Pointers}\label{sec:pointers}
 
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.35\textwidth, caption={A rush program trying to alter the variable behind an argument.}, label={lst:rush_increment_by_value}]{listings/rush_increment_by_value.rush}
+
 A \emph{pointer} is a variable which contains the memory address of another variable.
-Sometimes, pointers are mandatory for solving a specific computational problem.
-Furthermore, leveraging pointers often leads to more efficient and compact code~\cite[p.~93]{Ritchie1988}.
+Leveraging pointers often leads to more efficient and compact code.
+Furthermore, pointers are sometimes mandatory for solving a specific problem~\cite[p.~93]{Ritchie1988}.
 A problem which can only be solved by using pointers is displayed in the rush program in Listing~\ref{lst:rush_increment_by_value}.
-
-\Lirsting[float=H, caption={A rush program trying to alter the variable behind an argument.}, label={lst:rush_increment_by_value}]{listings/rush_increment_by_value.rush}
-
-This rush program contains the \qVerb{main} and \qVerb{modify} functions.
-In line 2 of the \qVerb{main} function, the mutable variable \qVerb{answer} is defined with an initial value of 42.
+This program contains the \qVerb{main} and \qVerb{modify} functions.
+In line~2, in the \qVerb{main} function, the mutable variable \qVerb{answer} is defined with an initial value of `42`.
 Next, the \qVerb{modify} function is called, passing the variable as the call argument.
-In line 4, the program exits, using the value of \qVerb{answer} as its exit code.
+In line~4, the program exits with the value of \qVerb{answer}.
 In the signature of the \qVerb{modify} function, the \qVerb{n} parameter is declared as a mutable integer.
-Next, in line 8 of this function, the value of the parameter is incremented by 1.
-One might expect that the function call in line 3 causes the variable \qVerb{answer} to be incremented by 1.
+Next, in line 8 of this function, the value of the parameter is incremented by `1`.
+One might expect that the function call in line~3 causes the variable \qVerb{answer} to be incremented by `1`.
 This seems likely since both the parameter and the variable are declared as mutable using the \qVerb{mut} keyword.
 However, since rush passes function arguments by value and not by reference, the called function has no direct way of altering the variable behind the passed parameter\footnote{Passing by value means that the value of the argument is copied for the function call.}.
 In order to solve this problem, pointers are required.
-The code in Listing~\ref{lst:rush_increment_by_reference} displays a rush program which is able to solve this problem.
+The code in Listing~\ref{lst:rush_increment_by_reference} displays a rush program solving this issue.
 
-\Lirsting[float=H, caption={A rush program altering the variable behind an argument.}, label={lst:rush_increment_by_reference}]{listings/rush_increment_by_reference.rush}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.35\textwidth, caption={A rush program altering the variable behind an argument.}, label={lst:rush_increment_by_reference}]{listings/rush_increment_by_reference.rush}
 
 Most parts of this rush program look similar to the one displayed in Listing~\ref{lst:rush_increment_by_value}.
-However, some parts of the code have been adjusted so that they use pointers.
+However, some parts of the code have been adjusted so that they use a pointer.
 First, the signature of the \qVerb{modify} function looks slightly different.
 Now, the function takes a parameter of type \qVerb{*int} instead of \qVerb{int}.
 The syntax \qVerb{*type} describes a pointer to the type specified after the \qVerb{*}.
 Thus, the function now takes a parameter which is a pointer to an integer variable.
 In rush, pointers allow full read-write access to the target of the variable.
-The parameter is not declared as mutable since the target variable behind the pointer and not the pointer itself should be incremented.
+This time, the parameter itself is not declared as mutable since the target variable behind the pointer and not the pointer itself should be incremented.
 In line 8, the variable stored in the pointer is incremented.
-When assigning to the target variable behind a pointer, the pointer first needs to be dereferenced using the \qVerb{*} prefix operator.
-
+When assigning to the target variable behind a pointer, the pointer first needs to be \emph{dereferenced}.
 In rush, dereferencing a pointer is accomplished using the \qVerb{*} operator before the pointer's identifier.
-The process of \emph{dereferencing} a pointer involves accessing the value of the variable the pointer points to~\cite[p.~94]{Ritchie1988}.
-For instance, a pointer variable named \qVerb{p} would be dereferenced by using the following rush expression: `\LirstInline{rush}{*p}'.
+The process of dereferencing a pointer involves accessing the value of the variable the pointer points to~\cite[p.~94]{Ritchie1988}.
 
 In rush, only pointers targeting an existing variable can be created.
-In order to create a pointer to an existing variable, rush's \qVerb{&} prefix operator is used.
+In order to create a pointer to a variable, rush's \qVerb{&} prefix operator is used.
 This operator \emph{references} the target variable in order to return a pointer value.
-\emph{Referencing} a variable produces the memory address of that variable, often in form of an integer value~\cite[p.~95]{Ritchie1988}.
-Theoretically, since the resulting value is only a normal integer, it can also be treated similarly.
-Therefore, creating a new pointer variable involves following steps:
+Referencing a variable produces the memory address of that variable~\cite[p.~95]{Ritchie1988}.
+Since the resulting value is only a normal integer, it could also be treated similarly.
 
-\begin{enumerate}
-	\item Producing the absolute memory address of a variable
-	\item Saving the resulting integer as a variable on the stack as if it was a conventional integer
-\end{enumerate}
-
-It is apparent that implementing pointers should often be relatively straight-forward since the underlying principle consists of only these two simple steps.
 However, some target architectures of a compiler might make the implementation of pointers more difficult.
-Therefore, the statement in line 8 increments the value of the variable stored in \qVerb{n} by 1.
-Here, only the value of the pointer is copied when being used as an argument.
-Since the pointer only saves the address of its target, the copy does not affect the target variable by any means.
-Because rush pointers allow write-access, \qVerb{answer} can be incremented by using a pointer.
-
-Due to this write-access, the analyzer only allows the referencing (\qVerb{&}) operator to be used on mutable variables.
+The statement in line 8 increments the value of the variable pointed to by \qVerb{n} by 1.
+This time, \qVerb{answer} does change since only the address, which still points to the same mutable variable, was copied during the function call.
+Due to this write-access, the analyzer only allows the referencing (\qVerb{&}) operator to be used on \emph{mutable} variables.
 As seen in the updated program, there is no need for the resulting pointer to be mutable since it only stores a read-only address.
 
-A special trait of pointers in rush is that they are able to introduce \emph{undefined behavior}\footnote{The runtime behavior of such scenarios is undefined and might vary on every architecture} into a program.
-This however only occurs if the pointer is used as a return value of a function in which it references a local variable.
-This problem occurs because the memory used by that function is often freed after the function has executed.
-Therefore, pointers should be used with caution since the semantic analyzer cannot guarantee that they are used correctly.
+A special trait of pointers in rush is that they are able to introduce \emph{undefined behavior}\footnote{The runtime behavior of such scenarios is undefined and might vary per architecture} into a program.
+However, this only occurs if the pointer is used as a return value of a function in which it references a local variable.
+This problem occurs because the memory used by that function is freed after the function has executed, resulting in the pointer referencing uninitialized memory.
+Therefore, pointers should be used with caution since the semantic analyzer cannot guarantee that they are used correctly\footnote{If additional constraints for pointers are introduced, the analyzer could also validate their usage.}.
 

@@ -172,7 +172,7 @@ It is typical for compiled procedures to \emph{allocate} and entire region of th
 These regions are called \emph{stack frames}, and some architectures, including both \riscv{} and x64, define an additional register for pointing to the other end of a stack frame.
 This pointer is usually called \emph{frame pointer} or \emph{base pointer}~\cite[p.~94]{Waldron1998}.
 
-\subsubsection{Alignment}
+\subsubsection{Alignment}\label{sec:alignment}
 
 In order to save space, one might want to save variables of different sizes, say a boolean and an integer, directly next to each other on the stack.
 However, most architectures require values to be aligned to a multiple of their size.

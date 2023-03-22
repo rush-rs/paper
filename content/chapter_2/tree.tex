@@ -39,7 +39,7 @@ The rush interpreter only makes use of the analyzer's guarantees of result types
 Listing~\ref{lst:tree_run_method} displays the public \qVerb{run} method of the interpreter that serves as its entry point.
 Since the order of functions in rush does not matter and a function can be called before its definition, the interpreter must first populate its \qVerb{functions} map, before any function code is run.
 Afterwards, the global variables are assigned their initial values.
-Only then, the code inside the main function is called via the \qVerb{call_func} method.
+Only then, the code inside the \qVerb{main} function is called via the \qVerb{call_func} method.
 After it returns, the entire interpreter either returns a produced runtime error, an exit code caused by a rush call to \qVerb{exit}, or the exit code `0' indicating success.
 
 \Lirsting[ranges={81-97}, float=htb, label={lst:tree_call_func}, caption={Tree-Walking Interpreter: Calling of Functions}]{deps/rush/crates/rush-interpreter-tree/src/interpreter.rs}

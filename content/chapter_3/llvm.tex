@@ -220,7 +220,7 @@ For that reason, the position of the instruction builder is changed to the newly
 so that the following call to \qVerb{block} in line~351 adds instructions to it.
 The \qVerb{block} method first creates a new scope and then compiles all the block's statements and its optional trailing expression.
 Lastly, the method attempts to compile the block's optional expression.
-If the content of the body of the main-function does not lead to the insertion of more basic blocks,
+If the content of the body of the \qVerb{main} function does not lead to the insertion of more basic blocks,
 the `\texttt{body}' block will contain the entire contents of the function after the method call.
 
 In line 2 of the example rush program, the `\texttt{main}' function calls the \texttt{foo} function using the argument value `2`.

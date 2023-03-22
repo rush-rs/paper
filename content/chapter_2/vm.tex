@@ -127,7 +127,7 @@ For better understanding, the individual functions have been manually annotated 
 The first block of instructions is called `\emph{prelude}' since its only task is to declare global variables and call the `\texttt{main}' function.
 Global variables need to be initialized at the beginning of a program so that they can be accessed later in the program.
 If global variables were present in the example, the prelude would contain the instructions used for initializing them.
-If the prelude was omitted, the main function would instead contain these instructions since it is executed at program start.
+If the prelude was omitted, the \qVerb{main} function would instead contain these instructions since it is executed at program start.
 However, recursion of the \qVerb{main} function is legal in rush.
 Therefore, each time the \qVerb{main} function recurses, all global variables would be restored to their initial values.
 In order to prevent this bug, the rush VM uses a prelude function which is guaranteed to run only once.
@@ -248,7 +248,7 @@ This way, function calls are implemented in a simple but robust manner.
 \Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width={.33\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.s}
 
 Now that the \qVerb{call} instruction has been interpreted, the VM begins executing the first instruction of the \qVerb{main} function.
-Since the main-function only calls the \qVerb{rec} function with the argument 1000, there are no new concepts to consider in this function.
+Since the \qVerb{main} function only calls the \qVerb{rec} function with the argument `1000', there are no new concepts to consider in this function.
 When the VM encounters the call instruction in line 7, execution continues with the instructions of the \qVerb{rec} function.
 At the beginning of the \qVerb{rec} function, the memory pointer is incremented by 1.
 This might seem erroneous since the \qVerb{rec} function contains no visible variable declarations in its body.

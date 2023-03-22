@@ -157,30 +157,29 @@ Since register allocation represents a complex topic, it will not be explained a
 However, there are also heavily simplified approaches to register allocation,
 such as the ones used by the compilers presented in later sections of this chapter.
 
-\subsection{Using Memory: The Stack and the Heap}
+\subsection{Using Memory: The Stack}
 
-As registers are limited in both size and count, additional storage for long-term memory is required.
-This is what the \emph{stack} is for.
-A stack in general is a last-in-first-out data structure, meaning the element that was last added via a \emph{push} operation is the first to be removed by a \emph{pop} operation.
-In computer hardware the stack is usually separate from the CPU and therefore much slower to access.
-It is usually implemented as a linear memory that can be freely accessed and modified, where a \emph{stack pointer}, which is usually stored in a special register, saves the address of the `top' of the stack.
-Thus, the principal of this memory being a stack data structure is merely a convention.
-A stack typically grows towards lower addresses, so that to push values the stack pointer must be decreased~\cite[pp.~68,99,100]{Patterson2017-zq}.
-\TODO{ugly line wrap}
+As registers are limited in both size and count, additional storage, for example for variables is required.
+For this, most architectures provide a \emph{stack}.
+In general, a stack is a last-in-first-out data structure, meaning the element that was last added via a \emph{push} operation is the first to be removed by a \emph{pop} operation.
+In computer hardware, the stack is usually physically separate from the CPU and therefore much slower to access.
+It is typically implemented as linear memory that can be accessed and modified freely.
+A so-called \emph{stack pointer}, which is normally stored in a special register, saves the address of the top-most element of the stack.
+Thus, the principle of this memory being a stack data structure is merely a convention.
+A stack typically grows towards lower addresses, so that in order to push values, the stack pointer must be decreased~\cite[pp.~68,99,100]{Patterson2017-zq}.
 
-It is typical for compiled procedures to \emph{allocate} and entire region of the stack for themselves in a procedure's \emph{prologue} by subtracting the amount of needed bytes from the stack pointer, and freeing it in batch in a procedure's \emph{epilogue}.
-These regions are called \emph{stack frames}, and some architectures, including both \riscv{} and x64, define an additional register for pointing to the other end of a stack frame.
-This pointer is usually called \emph{frame pointer} or \emph{base pointer}~\cite[p.~94]{Waldron1998}.
+It is typical for compiled procedures to \emph{allocate} an entire region of the stack for themselves in a procedure's \emph{prologue} by subtracting the amount of needed bytes from the stack pointer, and freeing it in batch in a procedure's \emph{epilogue}.
+These regions are called \emph{stack frames}, and some architectures, including both \riscv{} and x64, define an additional register for pointing to the other end of the current stack frame.
+This pointer is usually called the \emph{frame pointer} or \emph{base pointer}~\cite[p.~94]{Waldron1998}.
 
 \subsubsection{Alignment}
 
 In order to save space, one might want to save variables of different sizes, say a boolean and an integer, directly next to each other on the stack.
-However, most architectures require values to be aligned to a multiple of their size.
-Figure~\ref{fig:alignment} shows three example memory layouts of one \qVerb{u8}, one \qVerb{u16}, and one \qVerb{i64}, taking up one, two, and eight bytes respectively.
-\TODO{do we need to explain these Rust types?}
-The first layout has two of the integers not correctly aligned, marked in dark gray, thus being invalid.
-The second layout preserves the same order but inserts empty white areas in two places, called \emph{padding}, to correct the alignment.
-First one byte just before the \qVerb{u16} to align it to an integral multiple of two bytes, and secondly four bytes before the \qVerb{i64} to have that be aligned to eight bytes.
+However, most architectures require values to be \emph{aligned} to a multiple of their size.
+Figure~\ref{fig:alignment} shows three example memory layouts of one \qVerb{u8}, one \qVerb{u16}, and one \qVerb{i64}\footnote{These types are defined by Rust, representing unsigned (\qVerb{u}) and signed (\qVerb{i}) integers with 8, 16, and 64 bits of storage respectively.}, taking up one, two, and eight bytes respectively.
+The first layout has two of the integers misaligned, marked in dark gray, thus being invalid.
+The second layout preserves the same order but inserts empty white areas, called \emph{padding}, in two places, to correct the alignment.
+Firstly, there is one byte just before the \qVerb{u16} to align it to an integer multiple of two bytes, and secondly, there are four bytes before the \qVerb{i64} to have that be aligned to eight bytes.
 The third layout inverts the order, which causes all three values to be correctly aligned as is.
 \TODO{cite?}
 
@@ -217,22 +216,16 @@ The third layout inverts the order, which causes all three values to be correctl
 \end{figure}
 
 Listing~\ref{lst:x64_align} shows the implementation of the rush x64 compiler for aligning a pointer to a given size.
-The pointer must only be modified if it is not an integral multiple of the wanted byte count yet, hence the outer if-expression.
+The pointer must only be modified if it is not an integer multiple of the desired byte count yet, hence the outer if-expression.
 To calculate the amount of padding, the formula \qVerbCmd{size - (ptr \% size)} is used.
 For instance, say \qVerb{ptr} is `22' and \qVerb{size} is `8'.
 The stack memory is then thought of in chunks of eight bytes each, where the resulting pointer should point to the start of the next empty chunk.
 With the pointer currently being `22', there are two full chunks and one chunk with six of the eight bytes occupied.
 Hence, two bytes of padding are needed to reach the next chunk.
 The expression \qVerbCmd{22 \% 8} yields `6', which is the number of bytes that are already in use in the last chunk.
-This result is then subtracted from `8' again to result in `2', the number of bytes for padding that is then added to the pointer.
+This result is then subtracted from `8' again to result in `2', the number of bytes required for padding that is then added to the pointer.
 
 \Lirsting[ranges={184-188}, float=htb, caption={Alignment of values on the stack.}, label={lst:x64_align}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
-
-\TODO{some figure of a stack?}
-
-\TODO{example for array?}
-
-\TODO{The section title contains `Heap'. Can we just leave that out?}
 
 \subsection{Calling Conventions}
 

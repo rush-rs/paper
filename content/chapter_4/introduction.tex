@@ -100,73 +100,61 @@ Furthermore, implementing a compiler using this approach significantly increases
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
 		\node(CPU)[center] {CPU};
-		\node(registers)[entity, left of=CPU, yshift=3cm, vstack=4, rectangle split part align=left] {
-			Registers
-			\nodepart{two}{\texttt{r0}}
-			\nodepart{three}{\texttt{r1}}
-			\nodepart{four}{\ldots}
-		};
+		\node(registers)[entity, left of=CPU, yshift=3cm] {Registers};
 		\node(memory)[entity, right of=CPU, yshift=3cm] {Memory};
 
 		% TODO: Maybe use `arrow` instead of `relation` in order to remove spacing
 		\draw [darrow, very thick, double] (CPU) -- node[anchor=east, yshift=-.1cm] {fast} (registers);
 		\draw [darrow] (CPU) -- node[anchor=west] {slow} (memory);
 	\end{tikzpicture}
-	\caption[Relationship between registers, memory, and the CPU.]{Relationship between registers, memory, and the CPU~\cite[pp.~20-21]{Dandamudi2005}.}\label{fig:cpu_reg_mem}
+	\caption[Relationship between registers, memory, and the CPU.]{Relationship between registers, memory, and the CPU~\cite[pp.~20--21]{Dandamudi2005}.}\label{fig:cpu_reg_mem}
 \end{wrapfigure}
 
 Most processors contain numerous registers in order to hold data, instructions, and state information.
-
-
 Unlike external memory, they are very limited in both size and count, and must therefore be used carefully.
 Since they are a physical part of the CPU, they are much faster to access than the external memory.
-Due to these traits registers are very suitable for storing temporary values in larger computation~\cite[pp.~212-214]{Watson2017}.
+Due to these traits, registers are very suitable for storing temporary values in larger computation~\cite[pp.~212--214]{Watson2017}.
+Figure~\ref{fig:cpu_reg_mem} shows a simplified layout containing a CPU, registers, and memory.
+Here, the CPU and its registers are connected via a thick arrow, indicating a high throughput connection.
+However, the CPU and the memory are connected via a thin arrow which indicates a slower connection.
+Nearly every CPU architecture will define an individual register layout,
+meaning that sizes, count, and types of its registers may vary.
+As a general rule, architectures with large number of registers usually outperform the ones that provide less registers.
+However, as a result of this, the CPU will be more expensive to manufacture.
+Since not every register is identical, there are platforms which distinguish between general-purpose, floating-point, and special-purpose registers~\cite[Chapter~2]{Dandamudi2005}.
 
-Nearly every CPU architecture will include an individual register layout, differing in size, count, and type.
-Therefore, the exact information about registers always depends on which CPU is used.
-As a rule of thumb, having more registers in an architecture will almost always improve performance of that architecture.
-Furthermore, not every register is identical.
-There might be platforms with some general-purpose, some floating-point, and some special-purpose registers.
-For instance, there may be registers which contain information about the CPU's current instruction.
-Furthermore, common architectures also include special-purpose registers for modifying the machine's memory.
-Therefore, there is nearly always an appropriate register matching the requirement~\cite[Chapter~2]{Dandamudi2005}.
+\Lirsting[wrap=L, ranges={4-6}, wrap width=0.35\textwidth, caption={Example assembly program for explaining register allocation.}, label={lst:register_alloc}]{listings/register_alloc_simple.s}
 
-\Lirsting[wrap=L, ranges={4-6}, wrap width=0.3\textwidth, caption={Example assembly program for explaining register allocation.}, label={lst:register_alloc}]{listings/register_alloc_simple.s}
-
-For a compiler, the limited amount of registers presents a big challenge.
+For optimizing compilers, the limited number of registers presents a challenge as performance of the output program shall be maximized.
 Some architectures may require that the operands of arithmetic or logical instructions have been explicitly loaded into registers beforehand.
 In this case, registers would be required in nearly all computations.
-In order to understand how registers management can present a challenge, Listing~\ref{lst:register_alloc} should be considered.
-This snippet displays \riscv{} assembly instructions which calculate the sum of the two integers 40 and 2.
-In line 4, the integer value 40 is placed in the register \qVerb{a0}.
-In line 5, another integer, this time 2 is placed in \qVerb{a1}.
-
-Next, the \qVerb{add} instruction is used to calculate the sum of these two integers.
+In order to understand how register management can present a challenge, Listing~\ref{lst:register_alloc} should be considered.
+It displays \riscv{} assembly instructions which calculate the sum of the two integers `40' and `2'.
+In line~4, the integer value `40' is placed in the register \qVerb{a0}.
+Next, in line~5, the integer `2` is placed in \qVerb{a1}.
+In line~6, the \qVerb{add} instruction is used to calculate the sum of these two integers.
 Since the first operand of the instruction specifies the register in which the result should be placed,
-the original value of 40 in the register \qVerb{a0} would be overwritten by the instruction~\cite[reference]{Patterson2017}.
-Through this example, it becomes apparent that other instructions might use registers unexpectedly.
-Therefore, subtle bugs can be created if an instruction overwrites registers.
+the original value of `40' in the register \qVerb{a0} would be overwritten by the instruction~\cite[reference]{Patterson2017}.
+Through this example, it becomes apparent that instructions might use registers in a way that would interfere with other operations.
+Therefore, subtle bugs can emerge as soon as an instruction unintentionally overwrites a register.
 
 In compilers, the process of \emph{register allocation} is responsible for managing how registers are used.
-This process attempts to use registers in a way leading to maximized efficiency of the output program.
-Since accessing registers is often faster, a register allocator will try to use registers as often as possible.
-Production-ready compilers often try to keep as much of the frequently accessed data in registers.
-For instance, this frequently accessed data may also include variables which are normally saved in memory.
+This process attempts to use registers in a way that leads to maximized efficiency of the output program.
+Since accessing registers is faster than accessing memory, a register allocator will try to use registers as often as possible.
+Real compilers regularly follow this rule to the point at which normal variables are also kept in registers.
 It is apparent that in most programs, the number of variables will certainly exceed the capacity provided by registers.
 Therefore, register allocation has to detect when no free registers are available anymore.
 In this case, the compiler has to save data in memory instead of registers.
-This process of saving excess data in memory instead of registers is called \emph{register spilling}.
-Since register spilling introduces a performance penalty, register allocation algorithms often attempt to prevent it as much as possible.
-Therefore, sophisticated algorithms for register allocation are often mandatory as long as the factor of output code performance is non-trivial.
-
-Apart from just managing the use of registers, most allocation algorithms are responsible for many other register-related tasks.
-For instance, register allocation should detect when a variable is no longer needed so that its register can be freed.
+This process is called \emph{register spilling}.
+Since register spilling introduces a performance penalty, register allocators often attempt to use it as infrequently as possible.
+Therefore, sophisticated algorithms are mandatory if execution performance is regarded as non-trivial.
 Moreover, register allocation has to ensure that no conflicts between registers are introduced.
-Such a conflict may be that a register is accidentally overwritten by an instruction in a completely unrelated basic block.
-It is apparent that an algorithm performing all these tasks can not be implemented in an ad-hoc manner.
-Instead, this process often requires complex graph algorithms for determining which registers can be used and freed.
-Therefore, implementing register allocation in a compiler is often a very demanding task~\cite[pp.212-214]{Watson2017}.
+Such a conflict may be that a register is accidentally overwritten by an instruction in a completely unrelated block.
+It is apparent that implementation of an algorithm performing all these tasks is usually very demanding.
+For instance, register allocation often requires complex graph algorithms~\cite[pp.212-214]{Watson2017}.
 Since register allocation represents a complex topic, it will not be explained any further.
+However, there are also heavily simplified approaches to register allocation,
+such as the ones used by the compilers presented in later sections of this chapter.
 
 \subsection{Using Memory: The Stack and the Heap}
 

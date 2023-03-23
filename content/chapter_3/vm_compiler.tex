@@ -111,7 +111,7 @@ Here, the `\texttt{pos}' variable saves the index of the jump-instruction to be 
 In line 271, this index is then inserted into the list containing the placeholder indices of the current loop.
 Lastly, a `\texttt{jmp}' instruction is inserted containing a placeholder target index.
 Therefore, at the end of the compilation of a loop's body, there will be a list containing the indices of instructions whose target indices need to be adjusted.
-In line 342 of Listing~\ref{lst:rush_vm_compiler_loop}, the `\texttt{self.fill\_blank\_jmps}' method is used to set the target indices of the specified jump-instructions to `\texttt{pos}'.
+In line 342 of Listing~\ref{lst:rush_vm_compiler_loop}, the \qVerb{fill_blank_jmps} method is used to set the target indices of the specified jump-instructions to `\texttt{pos}'.
 We will omit the explanation of this method because it only iterates over the passed list of indices, replacing the target of the jump-instruction at the current index during the process.
 
 As a conclusion, design, and implementation of the compiler targeting the rush VM has presented itself as a reasonable task.

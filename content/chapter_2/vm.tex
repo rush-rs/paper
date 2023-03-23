@@ -305,7 +305,7 @@ This way, the VM comes to a halt as soon as it reaches the end of an instruction
 In line 170, the next instruction to be interpreted is saved in the \qVerb{instruction} variable.
 This line represents the \emph{fetch} step because the next instruction is fetched from memory and placed in a spot where it is accessible to the later steps of the cycle.
 
-In the body of the loop, the current instruction is executed using the \qVerb{self.run_instruction} method.
+In the body of the loop, the current instruction is executed using the \qVerb{run_instruction} method.
 This method is responsible for executing the previously fetched instruction.
 If execution of the instruction fails, the method returns a runtime error, such as an \emph{integer-overflow} fault.
 Furthermore, this method may return an optional integer, representing the exit code of the program.
@@ -323,7 +323,7 @@ In line 183, the `\texttt{Nop}' instruction is matched.
 It is apparent that there is no instruction-specific code executed in this case since \enquote{nop} stands for \enquote{no operation}.
 Therefore, the VM will ignore any `\texttt{Nop}' instructions it encounters.
 Next, in line 184, the code for the `\texttt{Push}' instruction is displayed.
-This instruction pushes its first operand on the stack at runtime by calling the internal helper method `\texttt{self.push}'.
+This instruction pushes its first operand on the stack at runtime by calling the internal helper method `\texttt{push}'.
 Therefore, this method pushes the provided parameter on the `\texttt{stack}' field of the VM,
 first validating that the stack will not exceed its maximum capacity.
 If the push operation causes the capacity of the stack to be exceeded, the method returns a runtime error describing the issue.

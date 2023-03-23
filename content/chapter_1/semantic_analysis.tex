@@ -145,7 +145,7 @@ If the vector contained any items, the \qVerb{main} function's declaration would
 If this was the case, the analyzer would generate an error message stating that the \qVerb{main} function must not take any parameters.
 However, error handling in the analyzer has not been discussed so far.
 According to the method's signature, it cannot return any errors.
-Instead, the \qVerb{self.error} method is invoked in line 406.
+Instead, the \qVerb{error} method is invoked in line 406.
 This method uses information about the error to be generated in order to push a new \qVerb{Diagnostic} into the \qVerb{diagnostics} vector.
 
 Secondly, in rush, the \qVerb{main} function's return type always has to be the unit type.
@@ -157,7 +157,7 @@ The analyzer then checks whether the manually specified type differs from the re
 In case it does, the analyzer generates another error in line 424 which describes the issue.
 
 After the signature of the \qVerb{main} function has been validated, the method begins traversal of the function's body.
-In line 490, the \qVerb{self.block} method of the analyzer is invoked using the function body as its first argument.
+In line 490, the \qVerb{block} method of the analyzer is invoked using the function body as its first argument.
 The second argument specifies that the method should not push another scope onto the stack since this is already handled by the current method.
 The return-value of this method-call is bound to a variable called \qVerb{block}.
 This variable represents the completely analyzed and annotated function body.

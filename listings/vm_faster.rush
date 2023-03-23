@@ -1,5 +1,5 @@
 fn main() {
-    exit(rec(1000))
+    exit(rec(1000));
 }
 
 fn rec(n: int) -> int {

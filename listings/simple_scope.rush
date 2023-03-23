@@ -3,5 +3,5 @@ fn main() {
         let b = 40;
         b + 2
     };
-    exit(num)
+    exit(num);
 }

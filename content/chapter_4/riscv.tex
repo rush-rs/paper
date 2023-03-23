@@ -248,7 +248,7 @@ Here, the already familiar \qVerb{main} function is prepended by the prefix \qVe
 Since this rush compiler implements name mangling\footnote{Compilers often \emph{mangle} names in order to guarantee a unique name for every function~\cite[pp.~119-120]{Levine2000}.},
 every function declared in a rush program will contain this prefix.
 
-\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, caption={Compiler output from the rush program in Listing~\ref{lst:riscv_simple2}.}, ranges={1-31, -4 53-56}]{listings/generated/riscv_simple.s}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, caption={Compiler output from the rush program in Listing~\ref{lst:riscv_simple2}.}, label={lst:riscv_simple_asm}, ranges={1-31, -4 53-56}]{listings/generated/riscv_simple.s}
 
 In line~7, the \qVerb{li} (\enquote{\textbf{l}oad \textbf{i}mmediate}) instruction is used to load the constant integer `0' into the register \qVerb{a0}~\cite[Reference Card]{Patterson2017}.
 As explained in the previous section, the register \qVerb{a0} is used for the first integer call argument.
@@ -259,56 +259,39 @@ They are always inserted at the end of the \qVerb{_start} label in order to term
 Due to the function call in line~6, the \qVerb{main..main} label in line~10 should now be considered.
 In line~11, the first line of the \qVerb{main} function, a comment indicates the beginning of the function's prologue.
 The \qVerb{addi} (\enquote{\textbf{a}dd \textbf{i}mmediate}) instruction in line~12 adds `$-16$' to the value stored in \qVerb{sp}, thus allocating memory.
-Therefore, this instruction increases the size of the stack, thus allocating memory.
 Here, an addition instruction is used even though subtraction is required.
-In \riscv{}, the \qVerb{addi} instruction requires one destination, one source register and one immediate value as its operands.
+In \riscv{}, the \qVerb{addi} instruction's operands are one destination register, one source register and one immediate value.
 Since this immediate value can be negative, an additional instruction for immediate subtraction would be redundant~\cite[Reference Card]{Patterson2017}.
 In this case, 16 bytes are allocated since two 8-byte values are stored on the stack in the lines 13--14.
 
 The comment in line~17 indicates the start of the function's body.
-First, the previously explained \qVerb{li} instruction in line~18 places a constant `1' in register \qVerb{a0}.
-Next, the \qVerb{ld} instruction in line 19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
-Global variables, like \qVerb{m} in this example, are saved under the \qVerb{.rodata} or the \qVerb{.data} section, depending on their mutability.
+First, the previously explained \qVerb{li} (\enquote{\textbf{l}oad \textbf{i}mmediate}) instruction in line~18 places a constant `1' in the register \qVerb{a0}.
+Next, the \qVerb{ld} (\enquote{\textbf{l}oad \textbf{d}oubleword}\footnote{Here, \enquote{doubleword} indicates that 64 bits of data shall be loaded.}) instruction in line 19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
+Global variables, like \qVerb{m}, are saved under the \qVerb{.rodata} or the \qVerb{.data} section, depending on their mutability.
 Since \qVerb{m} is declared as mutable, the compiler saves it under the \qVerb{.rodata} section.
-The start of the \qVerb{.rodata} section is represented by the \qVerb{.section} assembler directive found in line 53.
+The start of the \qVerb{.rodata} section is marked by the \qVerb{.section} assembler directive found in line 53.
 Here, a label called \qVerb{m} is defined.
-In this label, the \qVerb{.dword} directive is used to define the global initializer value of the variable.
-In \riscv{}, this directive stores 64 bit of information in successive memory doublewords~\cite[p.~39]{Patterson2017}.
-The initializer value of the global variable is 42 and is represented as \qVerb{0x2a} using hexadecimal in the assembly code.
-Since these data labels require their contents to be specified in hexadecimal, the trailing comment shows the base 10, human-readable version of the number.
-Because global variable are not saved on the stack, special instructions like \qVerb{ld} are required to interact with global variables stored in the program's data sections.
+In this label, the \qVerb{.dword} (\enquote{\textbf{d}ouble \textbf{word}}) directive is used to define the global initializer value of the variable.
+This directive stores 64 bits of data~\cite[p.~39]{Patterson2017}.
+The initializer value of the global variable is `42' and is represented as \qVerb{0x2a} using hexadecimal in the assembly code.
+In line~56, the trailing comment shows the decimal representation of the number.
 
-At this point, the register \qVerb{a0} would contain 1 and \qVerb{a1} would contain 42.
-In line 20, the \qVerb{add} instruction is used in order to save the sum of \qVerb{a0} and \qVerb{a1} in the register \qVerb{a2}.
-Now, the value saved in \qVerb{a2} would be 43.
-Next, the \qVerb{sd} instruction in line 21 saves the value of the register \qVerb{a2} at the memory location of the global variable \qVerb{m}, meaning that \qVerb{m} is updated to reflect its new value 43.
+At this point, the register \qVerb{a0} contains `1', while \qVerb{a1} contains `42'.
+In line~20, the \qVerb{add} instruction is used to save the sum of \qVerb{a0} and \qVerb{a1} in the register \qVerb{a2}.
+Next, in line~21, the \qVerb{sd} (\enquote{\textbf{s}tore \textbf{d}oubleword}) instruction saves the value of the register \qVerb{a2} at the memory location of the global variable \qVerb{m},
+meaning that \qVerb{m} is updated to reflect its new value `43'.
 It now becomes apparent that these instructions are responsible for the add-assign expression in line 4 of the rush program.
 Another interesting observation is that the last operand of the \qVerb{sd} instruction specifies the temporary register \qVerb{t6}.
 The instruction uses this register for saving temporary data during the process of saving data in \qVerb{m}~\cite[Reference Card]{Patterson2017}.
 
-In line 22, the previously explained \qVerb{ld} instruction is used in order to load the value of the same variable into the register \qVerb{a0}.
-Then, the \qVerb{call} instruction in line 23 is used in order to call the \qVerb{foo} function using the value of m as its argument.
-However, one cannot easily observe how call arguments are passed here.
-Like explained previously, the first integer argument of a function call must be placed in the register \qVerb{a0}.
-Since \qVerb{m} was loaded into \qVerb{a0} previously, it will be used as the call argument for \qVerb{foo} automatically.
-Therefore, the \qVerb{foo} function is called using 43 as the first argument.
-
-Since the \qVerb{foo} instruction only calls the \qVerb{exit} function, its explanation will not be beneficial for introducing new concepts.
-Therefore, we will omit the explanation of the assembler output of the \qVerb{foo} function.
-The final instruction of the \qVerb{main} function's body is the \qVerb{j} instruction in line 24.
-This instruction will cause the CPU to jump to the address of the specified label.
-In this example, the CPU will jump to the first instruction of the \qVerb{epilogue_0} label~\cite[p.~17]{Patterson2017}.
-Therefore, the rush compiler uses the \qVerb{call} instruction for jumps caused by function calls and the \qVerb{j} instruction for jumps between blocks of the current function.
-
-Like explained previously, every function has a \emph{prologue} and an \emph{epilogue}.
-Since one of the tasks handled by the epilogue is releasing resources allocated by the prologue, the function's stack pointer is incremented in line 30.
-Finally, the \qVerb{ret} instruction in line 31 is used in order to jump back to the instruction whose address is specified in the \qVerb{ra} register~\cite[reference card]{Patterson2017}.
+The final instruction of the \qVerb{main} function's body is the \qVerb{j} (\enquote{\textbf{j}ump}) instruction in line~24.
+This instruction will cause the CPU to jump to the address of the specified label,
+here \qVerb{epilogue_0} would be targeted~\cite[p.~17]{Patterson2017}.
+The rush compiler emits the \qVerb{call} and \qVerb{ret} instructions for jumps between functions,
+while the \qVerb{j} instruction is used for jumps between blocks of the current function.
+In the lines 27--31, inside the epilogue, the aforementioned task of restoring register values and returning are performed.
 
 \subsection{Supporting Pointers}
-
-In Section~\ref{sec:pointers}, we have explained how pointers can be used in rush.
-Since every rush backend should support all features of the language, pointers also need to be implemented for the \riscv{} architecture.
-In order to get a rough understanding of how pointers work in this compiler, the code in Listing~\ref{lst:rush_simple_pointer} and~\ref{lst:rush_simple_pointer_asm} are to be considered.
 
 \begin{minipage}{.34\textwidth}
 	\center
@@ -318,170 +301,146 @@ In order to get a rough understanding of how pointers work in this compiler, the
 \begin{minipage}{.45\textwidth}
 	\center
 	\Lirsting[float=H, fancyvrb={frame=none}, ranges={10-10,18-24}, caption={\riscv{} assembly output generated from Listing~\ref{lst:rush_simple_pointer}.}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
+	\vspace{.1cm}
 \end{minipage}
 
-
-The code in Listing~\ref{lst:rush_simple_pointer} shows a rush program in which a variable is referenced to create a pointer which is then dereferenced.
-In line 2, the mutable variable \qVerb{a} is defined using an initial value of 42.
-Next, in line 3, the variable is referenced in order to use the resulting address to define the variable \qVerb{to_a}.
-In line 4, the \qVerb{to_a} pointer variable is dereferenced in order to use the value of \qVerb{a} as the exit code of the program.
-
-
-Listing~\ref{lst:rush_simple_pointer_asm} includes the most significant part of the compiler output which represents this rush program\footnote{Generated using rush (Git commit \rushCommit{}).}.
-In line 18 of this listing, the integer value 42 is placed in the register \qVerb{a0}.
+Listing~\ref{lst:rush_simple_pointer} shows a rush program in which a variable is referenced to create a pointer which is then dereferenced.
+In line 3, the previously created variable \qVerb{a} is referenced in order to create the variable \qVerb{to_a} which saves a pointer to \qVerb{a}.
+Listing~\ref{lst:rush_simple_pointer_asm} includes the relevant part of the compiler output which represents this rush program\footnote{Generated using rush (Git commit \rushCommit{}).}.
+In line~18, the integer value `42' is placed in the register \qVerb{a0}.
 Next, \qVerb{a0} is saved on the stack at \qVerb{-24(fp)} using the \qVerb{sd} instruction.
-Like the comment suggests, the instruction in line 20 is used in order to reference a.
-Here, the \qVerb{addi} instruction is used to subtract 24 from the value stored in the \qVerb{fp} register.
-The result of this subtraction is saved in the register \qVerb{a0}.
-Therefore, the register now contains the absolute memory address of the \qVerb{a} variable.
-Since the syntax \qVerb{-24(fp)} means that the variable is saved at $fp - 24$, the subtraction uses the exact same information which is already known about the variable.
-Here, instead of using the saved memory location of the variable like \qVerb{x(fp)}, the information is used in order to calculate the absolute address of the target variable.
-This computation can only be performed at runtime since the value of \qVerb{fp} is not known at compile time.
-In line 21, the \qVerb{a0} register which contains the memory address is also saved on the stack.
-Therefore, the \qVerb{a} variable is saved at \qVerb{-24(fp)} while \qVerb{to_a} is saved at \qVerb{-32(fp)}.
+As the comment suggests, the instruction in line~20 is used in order to reference \qVerb{a}.
+It does so by subtracting `24' from the value stored in the \qVerb{fp} register.
+This results in the absolute address of \qVerb{a} at runtime because the syntax \qVerb{-24(fp)} describes the address stored in \qVerb{fp} offset by `-24'
+The calculation has to be performed at runtime since the value of \qVerb{fp} cannot be determined at compile time.
+In line~21, the \qVerb{a0} register, which contains this memory address, is also saved on the stack.
+Therefore, the \qVerb{a} variable is saved at \qVerb{-24(fp)} and \qVerb{to_a} is saved at \qVerb{-32(fp)}.
 
-In order to access the value of \qVerb{a}, \qVerb{to_a} is dereferenced in line 4 of the rush program.
-For this, the memory address stored in the variable \qVerb{to_a} first needs to be loaded from the stack.
-Here, the \qVerb{ld} instruction in line 22 of the assembly output is used.
-The instruction will load the memory address stored at \qVerb{-32(fp)} (in \qVerb{to_a}) into the \qVerb{a0} register.
-Next, another \qVerb{ld} instruction in line 23 is used in order to load the value of the variable saved at the previously fetched memory address.
-What strikes the eye is that \qVerb{0(a0)} instead of \qVerb{x(fp)} is used for specifying the target memory address of the load instruction.
-In this case, \qVerb{0(a0)} means that the instruction should load its value from the address saved in \qVerb{a0} with an offset of 0.
-Since an offset of 0 is used, the practical description of the instruction is that it loads a value saved at the memory address specified in \qVerb{a0}.
-Because \qVerb{a0} contains the memory address of the \qVerb{a} variable, the instruction loads 42 into the \qVerb{a0} register.
+In order to access the value of \qVerb{a}, \qVerb{to_a} is dereferenced in line~4 of the rush program.
+For this, the memory address stored in the variable \qVerb{to_a} first needs to be loaded from the stack,
+which is accomplished by the \qVerb{ld} instruction in line~22.
+Next, in line~23, another \qVerb{ld} instruction is used in order to load the value of the variable at the address stored in \qVerb{a0}.
+Here, \qVerb{0(a0)} is used instead of `$n$\Verb{(fp)}' since the address stored in \qVerb{a0} offset by `0' shall be used.
+Because \qVerb{a0} contains the memory address of the \qVerb{a} variable, the instruction loads `42' into the \qVerb{a0} register.
 
 \subsection{Implementation: The rush compiler targeting \riscv{} assembly}
 
-Just like the other compilers presented in this paper, this one also traverses the annotated AST using the postorder technique.
-Unlike the LLVM or WASM compiler, this compiler emits \riscv{} assembly files which are later assembled by the assembler.
+Just like the other compilers presented in this paper, this one also traverses the annotated AST using post-order.
+Unlike the LLVM or WASM compilers, this one emits \riscv{} assembly files which can then be assembled by an assembler supporting \riscv{}.
 
 \subsubsection{Struct Fields}
 
-Before any complex code samples can be considered, important struct fields of the compiler first need to be explained.
-The Rust code in Listing~\ref{lst:riscv_compiler_attr} shows important struct fields of the rush compiler targeting \riscv{}.
+Before any complex code samples can be considered, important struct fields of the compiler need to be explained.
+The Rust code in Listing~\ref{lst:riscv_compiler_attr} shows the \qVerb{Compiler} struct definition containing those fields.
 
 \Lirsting[ranges={11-11,15-15,19-34}, caption={Fields of the \riscv{} \qVerb{Compiler} struct.}, label={lst:riscv_compiler_attr}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
-In line 15, the field \qVerb{blocks} is declared.
-This field holds a vector containing values of the type \qVerb{Block}.
-That type provides an abstraction representing a label with its basic block in the assembly output.
-Therefore, this struct needs to contain a string field for its label and a vector for its instructions.
-The Listing~\ref{lst:riscv_instruction_enum} shows parts of the Rust code which declares the \qVerb{Instruction} enum.
+The \qVerb{blocks} field in line~15 holds a vector containing values of the type \qVerb{Block}.
+That type provides an abstraction for representing a label followed by instructions.
+The Listing~\ref{lst:riscv_instruction_enum} shows parts of the Rust code which declares the \qVerb{Instruction} enumeration.
 
-\Lirsting[ranges={62-62,74-76,114-114}, caption={The \qVerb{Instruction} enum in the \riscv{} compiler.}, label={lst:riscv_instruction_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/instruction.rs}
+\Lirsting[ranges={57-57,69-71,110-110}, caption={The \qVerb{Instruction} enum in the \riscv{} compiler.}, label={lst:riscv_instruction_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/instruction.rs}
 
-Although the listing shows only a few of the implemented instructions, this enum contains all instruction variants which the compiler might need at a later point.
-Depending on the type of instruction, the corresponding enum includes fields which define its operands.
-For instance, the \qVerb{Li} variant in line 74 represents the \qVerb{li} instruction in assembly.
-This instruction loads the immediate integer value specified in the second operand into the register specified in the first operand.
-Due to this, the enum also contains a field for a value of the type \qVerb{IntRegister} and a field for a 64-bit signed integer.
-The Rust code in Listing~\ref{lst:riscv_intregister_enum} shows parts of the declaration of the \qVerb{IntRegister} enum.
-Like the name implies, this enum holds all possible registers which the architecture provides.
+Although the listing only shows a few of the implemented instructions,
+this enumeration contains all instructions which the compiler might need at a later point.
+Depending on the type of instruction, the corresponding variant includes fields which define its operands.
+For instance, the \qVerb{Li} variant in line~70 represents the \qVerb{li} instruction in assembly.
+Since this instruction loads the integer value specified by the second operand into the register specified by the first operand,
+it contains a field for a value of the type \qVerb{IntRegister} and a field for a 64-bit signed integer.
+Listing~\ref{lst:riscv_intregister_enum} shows parts of the \qVerb{IntRegister} enumeration.
+It specifies all registers which \riscv{} provides, assuming that the required extensions are considered.
+An equivalent enumeration called \qVerb{FloatRegister} is defined for the float registers of this \riscv{} configuration.
 
-\Lirsting[ranges={107-107,137-139,145-145}, caption={The \qVerb{IntRegister} enum in the \riscv{} compiler.}, label={lst:riscv_intregister_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
+\Lirsting[ranges={98-98,130-132,136-136}, caption={The \qVerb{IntRegister} enumeration in the \riscv{} compiler.}, label={lst:riscv_intregister_enum}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
 
-Even though just the integer registers are shown in this listing, a similar enum for floating-point registers also exists in this implementation.
-Another important struct field is declared in line 19 of Listing~\ref{lst:riscv_compiler_attr}.
-The \qVerb{curr_block} field saves the index of the basic block which is currently being inserted to.
-Next, the \qVerb{data_section} and \qVerb{rodata_section} fields in line 21 and 22 are declared.
-Just like the ELF sections, these vectors contain declarations of global variables in the program.
-Here, each vector holds items of the type \qVerb{DataObj}.
-Since this type specifies data which should be saved in these sections, it contains a string field for the label and an enum field for the actual data saved in the object.
-For instance, if the compiler encounters a global variable declaration, a new data object is inserted into the correct section, depending on whether the global variable has been declared as mutable or not.
+The \qVerb{curr_block} field, defined in line~19 of Listing~\ref{lst:riscv_compiler_attr},
+saves the index of the block which is currently being inserted to.
+Next, the \qVerb{data_section} and \qVerb{rodata_section} fields are declared in the lines~21--22.
+They represent the ELF sections \qVerb{.data} and \qVerb{.rodata}, respectively.
+Here, each vector might contain global variables, which are represented by the type \qVerb{DataObj}.
+Each \qVerb{DataObj} consists of a label, saved as a string, and the initial data.
+The data itself is represented by another enumeration holding either a 64-bit float, a 64-bit integer, or an 8-bit integer.
 
-In line 25, the \qVerb{curr_fn} field is declared.
-This field saves a value of the type \qVerb{Function}.
-The \qVerb{Function} struct contains a counter of the stack allocations of the current function in bytes and the label of the epilogue block of the current function.
-The former is incremented every time a variable declaration is compiled.
+In line~25, the \qVerb{curr_fn} field is declared.
+It saves a value of the type \qVerb{Function}, which contains a counter for the bytes of stack space allocated by the current function.
+Furthermore, it contains the label of the current function's epilogue block.
+The former is incremented every time a variable declaration is encountered.
 This is required in order to allocate the correct amount of stack memory during a function's prologue.
 
-Just like in the other compilers, this one also features a \qVerb{loops} field which saves important labels of the current loop being compiled.
-This field is declared in line 27 and holds a vector of \qVerb{Loop} structs.
-Each \qVerb{Loop} struct saves the label of the loop's head and the label of the basic block which follows after the loop's body.
+Just like the other compilers, this one also features a \qVerb{loops} field which saves important labels of the current loop being compiled.
+It stores a vector of \qVerb{Loop} structs in order to support nested loops.
+Each \qVerb{Loop} struct saves the label of the loop's head and the label of the block which follows after the loop's body.
 
-Furthermore, the \qVerb{scopes} field in line 29 is managed to associate a variable to some important metadata.
-This metadata includes the variables type and its \emph{stack memory position}.
-Just like explained in the previous sections, each cell of the stack memory is accessible by specifying a unique index.
-The compiler saves this unique index in this HashMap so that it can refer back to the variable later.
-Of course, this only works for variables which are saved on the stack.
-However, these HashMaps are not used for saving global variables.
-Instead, the \qVerb{globals} field in line 31 is used.
+The \qVerb{scopes} field stores a list of nested scopes, the last element being the current one.
+Each scope is represented by a \qVerb{HashMap} associating variable names with important metadata.
+This metadata includes the variable's type and its memory offset from \qVerb{fp}.
+\TODO{is this already improved?}
+However, these \qVerb{HashMaps} are not used for saving global variables.
+Instead, the \qVerb{globals} field in line~31 is used.
 Just like the HashMaps in the \qVerb{scopes} field, this map also associates a variable's name to a value of the type \qVerb{Variable}.
 This time however, each variable contains the data label under which the global variable was declared.
-Last, the \qVerb{used_registers} field in line 33 is declared.
+Lastly, the \qVerb{used_registers} field is declared in line~33.
 It plays a vital role in the compiler's register allocation algorithm.
-
-By only considering the compiler's struct fields, it has become apparent that this implementation provides several abstractions over the bare strings in which assembly is normally formatted.
-Due to this, implementation of the actual compiler is a lot more structured and reliable.
-During development of the compiler, this approach has often proven itself to be optimal.
 
 \subsubsection{Data Flow and Register Allocation}
 
-An important characteristic of a compiler is how it represents runtime data at compile time.
-In assembly, runtime data is represented by registers which will contain values at runtime.
-Since this rush compiler emits \riscv{} assembly, it also represents data by using registers internally.
-In the previous paragraphs, we have learned how this implementation uses abstractions in order to represent assembly constructs, including registers.
-
-For reference, the LLVM compiler represents runtime values by passing virtual registers internally.
-Similarly, this compiler also passes abstractions representing registers in order to represent the data flow of the program being compiled.
+The LLVM compiler represents runtime values by passing virtual registers, represented by Inkwell's \qVerb{BasicValueEnum}, internally.
+Similarly, this compiler also passes registers in order to represent the data flow of the program.
 Unlike in LLVM, there is only a finite amount of registers available.
 Therefore, this compiler also manages register allocation so that programs can be represented using this limited number of registers.
-In under to understand the implementation, the code in Listing~\ref{lst:rush_riscv_simple_sum} and Listing~\ref{lst:rush_riscv_simple_sum} is to be considered.
-The former listing contains a rush program which adds two integer variables together in order to use the result as its exit code.
-The latter shows parts of the assembly output representing the logic in the \qVerb{main} function.
+In order to understand the implementation, Listing~\ref{lst:rush_riscv_simple_sum} and Listing~\ref{lst:rush_riscv_simple_sum} are to be considered.
+The former contains a rush program which adds two integer variables together and uses the result as its exit code
+The latter shows a part of the assembly output representing the logic in the \qVerb{main} function.
 
-\begin{minipage}{.34\textwidth}
+\begin{minipage}{.45\textwidth}
 	\center
-	\Lirsting[caption={A rush program calculating the sum of integers.}, label={lst:rush_riscv_simple_sum}, float=H]{listings/simple_add.rush}
+	\Lirsting[caption={A rush program calculating the sum of two integers.}, label={lst:rush_riscv_simple_sum}, float=H]{listings/simple_add.rush}
 \end{minipage}%
-\hspace{3cm}
+\hfill%
 \begin{minipage}{.45\textwidth}
 	\center
 	\Lirsting[ranges={18-25},caption={Assembly output of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}.}, label={lst:asm_riscv_simple_sum}, float=H]{listings/generated/rush_simple_add.s}
+	\vspace{.1cm}
 \end{minipage}
 
-In the lines 2 and 3 of the rush program, the integer variables \qVerb{a} and \qVerb{b} are declared.
-In line 4, the \qVerb{exit} function is invoked, using the sum of these variables as the call argument.
+In the lines~2--3 of the rush program, the integer variables \qVerb{a} and \qVerb{b} are declared.
+In line~4, the \qVerb{exit} function is invoked, using the sum of these variables as the call argument.
+In line~22 of the assembly output, the runtime value of the variable \qVerb{a} is loaded into the register \qVerb{a0}.
+Next, the same operation is performed for \qVerb{b} .
+However, this time, the instruction writes its result into the \qVerb{a1} register instead of the \qVerb{a0} register.
+This is because the previously loaded value in \qVerb{a0} should not be overwritten.
+Unlike the register allocation algorithm of a production-ready compiler, like LLVM,
+this one only aims to use registers without causing conflicts.
+All variables are saved on the stack in order to keep as most registers as possible free for temporary use in calculations and operations like this one.
+Since this algorithm only performs rudimentary register allocation, its implementation is also significantly simpler.
 
-In the line 22 of the assembly output, the runtime value of the \qVerb{a} variable is loaded into the register \qVerb{a0}.
-Next, the same operation is performed for the \qVerb{b} variable.
-However, this time, the instruction writes its result in the \qVerb{a1} register instead of the \qVerb{a0} register.
-This is because the previously loaded value in \qVerb{a0} would be overwritten if this was the case.
-Since both the value of the variable \qVerb{a} and \qVerb{b} are required for the addition, overwriting this register would result in a wrong calculation.
-This is an example of how register allocation is required in order to manage registers and to prevent such bugs.
+The core principle of the register allocator is that each time a register is required,
+a responsible helper method returns the next free one to be used.
+The helper method for managing int registers is called \qVerb{get_int_reg}.
+The Rust code in Listing~\ref{lst:riscv_get_int_reg} shows this method.%
+%
+\Lirsting[ranges={175-186}, float=h, label={lst:riscv_get_int_reg}, caption={The \qVerb{get_int_reg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}%
+%
+It returns the first available register from the register pool that containing either int or float registers.
+Each register pool contains all possible registers for either integer or floating-point numbers.
+In line~175, in the method's signature one can see that the it returns a value of type \qVerb{IntRegister}.
+The for-loop in line~176 is used to iterate over the entire \qVerb{INT_REGISTERS} array.
+This array represents the pool containing integer registers.
+For each register in that pool, the if-expression in the lines~177--180 checks whether the current register \qVerb{reg} is contained in the \qVerb{used_registers} vector.
+If this is not the case, the current register is still unused and can therefore be returned for usage.
+Since the \qVerb{return} statement causes the function to return immediate,
+the loop only iterates until a free register has been found.
 
-Unlike the register allocation algorithm of a production ready compiler like LLVM, this one only aims to use registers without causing conflicts like the previously explained one.
-Therefore, this algorithm does not emphasize performance and instead only performs mandatory task which are required for making a program work.
-For instance, all variables are saved on the stack in order to keep all registers unused and free for use in temporary calculations and operations like this one.
-Since this algorithm only performs rudimentary register allocation, its implementation is also significantly easier.
-
-The core principle of the register allocator is that each method which can return a register decides which register it returns itself.
-In order to choose an output register, each of those methods uses the helper method \qVerb{get_int_reg}.
-The Rust code in Listing~\ref{lst:riscv_get_int_reg} shows the \qVerb{get_int_reg} method of the \riscv{} rush compiler.
-
-\Lirsting[ranges={175-186}, float=h, label={lst:riscv_get_int_reg}, caption={The \qVerb{get_int_reg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
-
-This method returns the first available register from the register pool containing either integer registers\footnote{The \enquote{i} in \qVerb{get_int_reg} hints that it allocates integer registers}.
-Such a register pool contains all possible registers which can hold the data type of that class of registers.
-This compiler contains two pools: one for integer registers and one for floating-point registers.
-In line 175 of Listing~\ref{lst:riscv_get_int_reg}, the signature of the method is shown.
-Here, one can see that the method returns a value of type \qVerb{IntRegister}.
-The for-loop in line 176 is used to itrate through the entire \qVerb{INT_REGISTERS} array.
-This array is constant and therefore represents the pool containing integer registers.
-In the lines 177--180, the if-expression checks if the current register (\qVerb{reg}) is not found in the \qVerb{used_registers} vector.
-If this was the case, the current register would be unused and could therefore be returned.
-Since the \qVerb{return} statement in line 182 returns the current register if it is unused, the loop only runs until a free register has been found.
-Due to the passive nature of the register allocation algorithm used in this compiler, the unreachable-macro in line 185 should never be called since the compiler should not run out of registers.
-However, one can see that this method does not mark the newly returned register as used.
-This is because marking a register as used is only required in some sections of the compiler where overwriting a register would introduce a bug in the output program.
-Therefore, if this method was to be called repeatedly without calls to other methods, it would always yield the same result register.
-
-In order to mark a register as used, it is simply pushed into the \qVerb{used_registers} vector.
-For this, a helper method called \qVerb{use_reg} which only performs this simple call is implemented.
-Due to the simplicity of this method, a listing of its code is intentionally omitted.
-If a register is no longer used and can be overwritten again, it is also simply removed from the \qVerb{used_registers} vector.
-For this, another simple helper method called \qVerb{release_reg} is implemented.
-Just like the previous method, its implementation is so simple that a code listing is omitted.
+Due to the fact that the register allocator only uses as few registers as required,
+the compiler should not run out of registers,
+therefore making the \qVerb{panic!} macro call in line~185 unreachable.
+However, one can see that this method does not mark the returned register as used.
+This is because doing so is only required in some places, where overwriting a register would introduce a bug in the output program.
+Therefore, if this method was called repeatedly, it would always yield the same register.
+In order to mark a register as used, it is appended to the \qVerb{used_registers} vector.
+For this, a helper method called \qVerb{use_reg}, which only performs this one operation, is implemented.
+When a register is no longer used, and can be overwritten again, it must be removed from the \qVerb{used_registers} vector.
+For this, another simple helper method, called \qVerb{release_reg}, is implemented.
 
 \begin{figure}
 	\centering
@@ -499,92 +458,77 @@ Just like the previous method, its implementation is so simple that a code listi
 		\node(ff)[below of=stack, yshift=-.5cm] {\scriptsize first free cell};
 		\draw[arrow, shorten >= 4pt](ff) -- (stack.three south);
 	\end{tikzpicture}
-	\caption{Integer register pool of the \riscv{} rush compiler.}\label{fig:riscv_iregister_pool}
+	\caption{Simplified integer register pool of the \riscv{} rush compiler.}\label{fig:riscv_iregister_pool}
 \end{figure}
 
 Figure~\ref{fig:riscv_iregister_pool} shows an abstract representation of the compiler's integer register pool.
-Here, the pool contains all integer registers of the compiler.
-In this figure, only the first section of the pool which contains the \qVerb{ax} registers can be seen.
-The gray cells at the beginning indicate that these registers are currently in use by the compiler.
-Of course, this information is not saved in the register pool since the \qVerb{used_registers} vector saves this data.
-In the figure, the arrow points to the first free register, meaning the one which follows the last used register \qVerb{a1}.
+Only the first section of the pool, which contains the \qVerb{an} registers, can be seen.
+The gray cells specify registers that are currently in use by the compiler.
+The arrow points to \qVerb{a2}, which is the first free register, meaning the one which follows \qVerb{a1}, the last used register.
 Therefore, if the \qVerb{get_int_reg} method was called when the state of the registers is equivalent to the one displayed in Figure~\ref{fig:riscv_iregister_pool}, it would return the register \qVerb{a2}.
-By considering this example, it has become apparent that the method always returns the first free integer register.
-In the compiler, an equivalent pool for float registers also exists.
-
-Before register allocation can be explained using code samples, how registers are passed around in the compiler needs to be explained first.
-Here, we should focus on the compilation of simple expressions.
-For this, the Rust code in Listing~\ref{lst:riscv_expression} is to be considered.
 
 \Lirsting[float=h, ranges={596-602,662-663}, caption={Parts of the \qVerb{expression} method in the \riscv{} rush compiler.}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
-The code in Listing~\ref{lst:riscv_expression} shows parts of the \qVerb{expression} method.
-This method is responsible for compiling expressions in the \riscv{} rush compiler.
-As the method's signature suggests, it takes a node representing an analyzed expression.
-This method returns an \qVerb{Option<Register>} which is \qVerb{None} if the infix-expression contained a call to the \qVerb{exit} function.
+In order to understand how expressions are compiled, Listing~\ref{lst:riscv_expression}, which shows parts of the \qVerb{expression} method, is to be considered.
+This method is responsible for compiling expressions.
+As the method's signature suggests, it takes an analyzed expression and returns an \qVerb{Option<Register>},
+which is \qVerb{None} if the expression results in the \qVerb{!} or \qVerb{()} types.
 Otherwise, the method returns the register in which the result of its computation will be contained at runtime.
-The code in the lines 598-602 is executed if a constant integer expression is compiled.
-First, a target integer register is allocated by calling the previously shown \qVerb{get_int_reg} method.
-Now, the \qVerb{dest_reg} variable contains the register which will contain the result of the expression.
-Next, an \qVerb{li} instruction is inserted.
-At runtime, this instruction would load the constant integer contained in the variable \qVerb{value} into the register specified \qVerb{dest_reg}.
-Finally, the register which now contains the loaded value is returned.
-For more complex expressions, the corresponding methods are called, just like in the other compilers.
-Now it has become apparent how basic expressions work and how registers are used to hold values.
+The code in the lines~598--602 is executed if the expression is an integer literal.
+First, a target register is retrieved by calling the previously shown \qVerb{get_int_reg} method.
+Now, the \qVerb{dest_reg} variable holds the register which will contain the result of the expression.
+Next, an \qVerb{li} instruction is inserted which loads the integer contained in the variable \qVerb{value} into the register specified by \qVerb{dest_reg}.
+Finally, this register is then returned.
+For more complex expressions, the specified methods are called, just like in the other compilers.
 
-However, we still do not know when the compiler marks certain registers as used.
-In order to understand this problem, the compilation of the rush expression \LirstInline{rush}{n + m} is to be considered.
-The Rust code in Listing~\ref{lst:riscv_infix_expr} shows parts of the \qVerb{infix_expr} method of the rush compiler.
+However, the question of \emph{when} the compiler marks certain registers as used still remains.
+For this, the compilation of the rush expression \qVerb{n+m} is to be considered.
+The Rust code in Listing~\ref{lst:riscv_infix_expr} shows a part of the \qVerb{infix_expr} method of the rush compiler.%
+%
+\Lirsting[float=h, ranges={755-755,791-791,841-858}, caption={Parts of the \qVerb{infix_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+%
+It consumes an annotated tree-node representing an analyzed infix-expression.
+In line~853, the left-hand side expression is compiled, and its result register is saved in the variable \qVerb{lhs_reg}.
+Next, in line~854, the previously discussed \qVerb{use_reg} method is used in order to mark the register specified by \qVerb{lhs_reg} as used.
+The second argument to the method specifies the size of the data which the register holds, 64 bits for \qVerb{int}, 8 bits for \qVerb{char} and \qVerb{bool}.
+This information is also saved in the \qVerb{used_registers} vector and is accessed in case used registers need to be spilled.
 
-\Lirsting[float=h, ranges={761-761,849-864,868-868}, caption={Parts of the \qVerb{infix_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+In line~856, the right-hand side expression is compiled and its result register is saved in the variable \qVerb{rhs_reg}.
+After this, \qVerb{lhs_reg} is marked as unused again.
+Finally, in line~861, the \qVerb{infix_helper} method is called in order to insert the instructions for the actual calculation.
+As discussed previously, calling the \qVerb{get_int_reg} or \qVerb{get_float_reg} methods
+repeatedly, without marking registers as used, results in same registers every time.
+In this scenario, this would create an issue since both the left-hand side and the right-hand side expressions would use the identical register.
+In order to mitigate this issue, the register of the left-hand side is marked as used before compilation of the right-hand side.
+Now, the right-hand side will respect that the register returned by the left-hand side is currently in use and will instead use the next free one.
 
-Like the signature of the method suggests, it consumes an annotated tree-node representing an analyzed infix-expression.
-In line 853, the left-hand side expression is compiled, and its result register is saved in the variable \qVerb{lhs_reg}.
-Next, in line 854, the previously discussed \qVerb{use_reg} method is used in order to mark the previously allocated register as used.
-The second argument to the method specifies the size of the data which the register holds, 64 bits for integers or 8 bits for characters for instance.
-This information is also saved in the \qVerb{used_registers} vector and is used in case used registers need to be spilled.
-In line 856, the right-hand side is expression is compiled, and its result register is saved in the variable \qVerb{rhs_reg}.
-After this, the register returned by the compilation of the left-hand side is marked as unused again.
-Finally, in line 861, the \qVerb{infix_helper} method is called in order to insert the instruction for the actual calculation.
-
-However, the reason the left-hand side register is being marked as used is not immediately apparent.
-As discussed previously, calling the methods responsible for allocating registers, like \qVerb{get_int_reg},
-repeatedly without marking registers as used results in the allocator method returning the same register.
-In this scenario, this would create an issue since both the left-hand side and the right-hand side would result in the identical register, \qVerb{a0} for instance.
-Now, the compilation of the right-hand side expression would overwrite the value stored in the register of the left-hand expression, thus creating invalid output code.
-In order to mitigate this issue, the register of the left-hand side is marked as used as seen in Listing~\ref{lst:riscv_infix_expr}.
-Therefore, the allocator call caused by the compilation of the right-hand side will respect that the register returned by the left-hand side is currently in use and will therefore return the next one.
-
-Next, we will consider the implementation of the \qVerb{infix_helper} helper method.
-This method exists since translation of infix operators is required during compilation of both normal infix-expressions and assign-expressions with additional operations, \qVerb{a += 1} for instance.
-The Rust code in Listing~\ref{lst:riscv_infix_helper} shows parts of this method.
-
-\Lirsting[float=h, ranges={871-871,874-881,987-991,1000-1001}, caption={Parts of the \qVerb{infix_helper} method of the \riscv{} rush compiler.}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
-
-As the method's signature suggests, the left-hand and right-hand side's registers and a type are used its parameters.
-Since this register abstraction does not contain type information, as registers are usually untyped, the type information conveys the type of either the left-hand or right-hand side expression.
-In case of infix-expressions, which side the type specifies is irrelevant since the analyzer demands that both are identical.
-Here, the type information is required order to insert the correct instruction.
-
-In line 874 and 875, an integer and a floating-point output register is allocated.
-These registers are saved in a variable for each type, \qVerb{dest_regi} for integers for instance.
-Of course, only one of these registers is later used.
-However, both are allocated in order to avoid code duplication.
-In line 878-881, the code responsible for inserting an integer addition instruction can be seen.
-For this, the \qVerb{self.insert} helper method is used.
-This inserts a new instruction into the current basic block.
-Due to its simplicity its explanation will be omitted.
-Here, the \qVerb{Instruction::Add} enum variant is used.
-Since the first operand specifies the output reqister, the previously \qVerb{dest_regi} variable is specified.
-For the first and second operands, the registers provided as arguments to the \qVerb{infix_helper} method are used.
-The \qVerb{Add} enum can only use integer registers, like \qVerb{a0} as its operands.
-However, the parameters \qVerb{lhs} and \qVerb{rhs} can be registers of any type.
-For this, the conversion method \qVerb{into} is used.
-In line 987--990, the code for inserting the float subtraction instruction can be seen.
-Since floating-point operations usually require different operators from the one used for integer operations,
-it becomes apparent why type information is passed to this method.
-Here, the \qVerb{fsub} instruction enum variant is used to represent the addition of floating-point numbers.
-In this case, the variable \qVerb{dest_regf} is used as the first operand since it can hold floating-point numbers.
+Next, the implementation of the \qVerb{infix_helper} helper method shall be considered.
+This method exists because translation of the underlying mathematical or logical operation
+is required during compilation of both infix-expressions and certain assign-expressions, \qVerb{a+=1} for instance.
+Listing~\ref{lst:riscv_infix_helper} shows parts of this method.%
+%
+\Lirsting[
+    float=h,
+    ranges={861-861,864-871,977-980,990-991},
+    caption={Parts of the \qVerb{infix_helper} method of the \riscv{} rush compiler.},
+    label={lst:riscv_infix_helper}
+]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+%
+It takes the registers of the left- and right-hand side, the operator, and a type.
+As the registers do not specify one concrete type, it has to be provided additionally.
+The analyzer guarantees equal types on both sides, hence only one type parameter is needed.
+In the lines~874--875, an integer and a floating-point destination register are created, even though only one of them is used later .
+However, both are defined beforehand in order to avoid code duplication.
+In the lines~878--881, the code responsible for inserting an integer addition instruction can be seen.
+For this, the \qVerb{insert} method is used.
+It inserts a new instruction into the current block.
+Here, the \qVerb{add} instruction is used with the integer destination register specified in \qVerb{dest_regi} and the left- and right-hand side registers as operands.
+Since the \qVerb{add} instruction demands it, the operand registers are converted to integer registers via the \qVerb{into} method.
+In the lines~987--990, the code for inserting a float subtraction instruction can be seen.
+Since floating-point operations require different instructions from the ones used for integers, the additional type information is passed to this method.
+Here, the \qVerb{fsub} instruction is used for subtraction.
+In this case, the variable \qVerb{dest_regf} is used as the first operand because the resulting value is a float,
+and these \qVerb{into} calls convert the registers into float ones.
 
 \subsubsection{Functions}
 
@@ -696,7 +640,7 @@ Even though the presented \qVerb{exit} function is special, the rush \riscv{} co
 The Rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of the \qVerb{call_expr} method in the \riscv{} rush compiler.
 This listing only shows the first part of the method since it is too large to be included in a single-page listing.
 
-\Lirsting[float=h, ranges={92-120,127-128,235-235}, caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[float=h, ranges={92-119,126-128,235-235}, caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 Since this method is responsible for translating function calls, its implementation has proven to be very complex and demanding.
 As the method's signature suggests, it consumes an analyzed call-expression in order to return an optional register.
@@ -719,7 +663,7 @@ After the loop, in line 102, the \qVerb{used_registers} vector is moved into the
 Therefore, after the assignment, the \qVerb{used_registers} vector will be empty due to its contents being moved into the \qVerb{used_regs_prev} variable.
 Through this, the compilation of the argument expressions can use more registers since the spilled registers can be overwritten.
 
-In the lines 104--128, the code determines how much additional memory is required in order to place arguments on the stack, which could not fit into registers.
+In the lines~104--128, the code determines how much additional memory is required in order to place arguments on the stack, which could not fit into registers.
 For most calls, this required memory is usually 0.
 However, a call with 9 integer arguments would need 8 additional bytes of memory because the ninth argument would have to be placed on the stack.
 The final amount of additional memory is saved in the \qVerb{spill_param_size} variable.

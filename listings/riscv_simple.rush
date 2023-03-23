@@ -7,5 +7,5 @@ fn main() {
 }
 
 fn foo(n: int) {
-    exit(n)
+    exit(n);
 }

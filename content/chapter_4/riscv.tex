@@ -193,9 +193,9 @@ As outlined in the section about the linker on page~\pageref{sec:linker},
 a program might use functionality provided by external libraries.
 In case of the rush \riscv{} compiler, external functions are used for character-arithmetic,
 the mathematical power operator, and the system \emph{exit} call.
-Char-arithmetic requires external functionality since the bounds of the ASCII range should be regarded while performing operations.
-For instance, in rush, calculating \qVerb{a+a} results in `66', even though `194' ($97 + 97$) would also be logical.
-If the result is larger than `127`, `128` is subtracted from the result, if the result is less than `0', `128' is added to it.
+Character-arithmetic requires external functionality since the bounds of the ASCII range should be regarded while performing operations.
+For instance, in rush, calculating \qVerb{'a'+'a'} results in `66' because `194' ($97 + 97$) is larger than the maximum allowed value `127'.
+If the result is outside the valid range $\left[0; 127\right]$, only the least significant seven bits are considered.
 This way, the ASCII range is always valid.
 
 Since these concepts must introduce additional logic, the compiler should not be emitted their instructions every time they are used.

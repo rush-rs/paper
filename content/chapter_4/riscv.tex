@@ -672,7 +672,7 @@ This loop iterates over each argument expression of the call.
 For each expression, the match-block in line 112 executes different code depending on the rush data type of the expression.
 For instance, expressions which yield in \qVerb{()} or \qVerb{!} do not require registers and can thus be skipped using the \qVerb{continue} keyword in line 113.
 Expressions yielding float variables however are considered in the line 114.
-Here, the \qVerb{nth_param} method on the \qVerb{FloatRegister} enum is called.
+Here, the \qVerb{nth_param} method on the \qVerb{FloatRegister} enumeration is called.
 
 The Rust code in Listing~\ref{lst:riscv_nth_param} shows parts of this method.
 

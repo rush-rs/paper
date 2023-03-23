@@ -225,7 +225,7 @@ Most notably, the rather long sequences of nodes with just a single child, like 
 As the rush parser makes use of Pratt parsing, most of the following code snippets are taken from there.
 First, a mapping from a token kind to its precedence must be defined.
 The one for rush is found in Listing~\ref{lst:rush_tok_prec}.
-It shows the \qVerb{prec} method implemented on the \qVerb{TokenKind} enum.
+It shows the \qVerb{prec} method implemented on the \qVerb{TokenKind} enumeration.
 The return type is a tuple of two integers, one for left and one for right precedence.
 For all but one token kind, the left precedence is lower than the right one, resulting in left-associativity.
 The higher the precedences are, the deeper in the tree the resulting expressions will be, and the earlier they will be evaluated.

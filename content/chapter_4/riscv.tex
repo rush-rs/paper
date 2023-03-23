@@ -456,15 +456,15 @@ For instance, all variables are saved on the stack in order to keep all register
 Since this algorithm only performs rudimentary register allocation, its implementation is also significantly easier.
 
 The core principle of the register allocator is that each method which can return a register decides which register it returns itself.
-In order to choose an output register, each of those methods uses the helper method \qVerb{alloc_ireg}.
-The rust code in Listing~\ref{lst:riscv_alloc_ireg} shows the \qVerb{alloc_ireg} method of the \riscv{} rush compiler.
+In order to choose an output register, each of those methods uses the helper method \qVerb{get_int_reg}.
+The rust code in Listing~\ref{lst:riscv_get_int_reg} shows the \qVerb{get_int_reg} method of the \riscv{} rush compiler.
 
-\Lirsting[ranges={175-186}, float=h, label={lst:riscv_alloc_ireg}, caption={The \qVerb{alloc_ireg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
+\Lirsting[ranges={175-186}, float=h, label={lst:riscv_get_int_reg}, caption={The \qVerb{get_int_reg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
 
-This method returns the first available register from the register pool containing either integer registers\footnote{The \enquote{i} in \qVerb{alloc_ireg} hints that it allocates integer registers}.
+This method returns the first available register from the register pool containing either integer registers\footnote{The \enquote{i} in \qVerb{get_int_reg} hints that it allocates integer registers}.
 Such a register pool contains all possible registers which can hold the data type of that class of registers.
 This compiler contains two pools: one for integer registers and one for floating-point registers.
-In line 175 of Listing~\ref{lst:riscv_alloc_ireg}, the signature of the method is shown.
+In line 175 of Listing~\ref{lst:riscv_get_int_reg}, the signature of the method is shown.
 Here, one can see that the method returns a value of type \qVerb{IntRegister}.
 The for-loop in line 176 is used to itrate through the entire \qVerb{INT_REGISTERS} array.
 This array is constant and therefore represents the pool containing integer registers.
@@ -508,7 +508,7 @@ In this figure, only the first section of the pool which contains the \qVerb{ax}
 The gray cells at the beginning indicate that these registers are currently in use by the compiler.
 Of course, this information is not saved in the register pool since the \qVerb{used_registers} vector saves this data.
 In the figure, the arrow points to the first free register, meaning the one which follows the last used register \qVerb{a1}.
-Therefore, if the \qVerb{alloc_ireg} method was called when the state of the registers is equivalent to the one displayed in Figure~\ref{fig:riscv_iregister_pool}, it would return the register \qVerb{a2}.
+Therefore, if the \qVerb{get_int_reg} method was called when the state of the registers is equivalent to the one displayed in Figure~\ref{fig:riscv_iregister_pool}, it would return the register \qVerb{a2}.
 By considering this example, it has become apparent that the method always returns the first free integer register.
 In the compiler, an equivalent pool for float registers also exists.
 
@@ -524,7 +524,7 @@ As the method's signature suggests, it takes a node representing an analyzed exp
 This method returns an \qVerb{Option<Register>} which is \qVerb{None} if the infix-expression contained a call to the \qVerb{exit} function.
 Otherwise, the method returns the register in which the result of its computation will be contained at runtime.
 The code in the lines 598-602 is executed if a constant integer expression is compiled.
-First, a target integer register is allocated by calling the previously shown \qVerb{alloc_ireg} method.
+First, a target integer register is allocated by calling the previously shown \qVerb{get_int_reg} method.
 Now, the \qVerb{dest_reg} variable contains the register which will contain the result of the expression.
 Next, an \qVerb{li} instruction is inserted.
 At runtime, this instruction would load the constant integer contained in the variable \qVerb{value} into the register specified \qVerb{dest_reg}.
@@ -548,7 +548,7 @@ After this, the register returned by the compilation of the left-hand side is ma
 Finally, in line 861, the \qVerb{infix_helper} method is called in order to insert the instruction for the actual calculation.
 
 However, the reason the left-hand side register is being marked as used is not immediately apparent.
-As discussed previously, calling the methods responsible for allocating registers, like \qVerb{alloc_ireg},
+As discussed previously, calling the methods responsible for allocating registers, like \qVerb{get_int_reg},
 repeatedly without marking registers as used results in the allocator method returning the same register.
 In this scenario, this would create an issue since both the left-hand side and the right-hand side would result in the identical register, \qVerb{a0} for instance.
 Now, the compilation of the right-hand side expression would overwrite the value stored in the register of the left-hand expression, thus creating invalid output code.

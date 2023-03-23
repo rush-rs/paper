@@ -63,8 +63,8 @@ In some instances, like in line~28, alternative short forms are used.
 Here, the directive \qVerb{.quad} denotes a quadruple word.
 
 Another important difference between x64 and \riscv{} is the typical operand structure of instructions.
-\riscv{} requires three operands for \qVerb{add}, \qVerb{sub}, and many other instructions, these being the destination, the first source, and the second source.
-The norm in x64 is using just two operands where the first doubles as both the first source and the destination~\cite[pp.~14--20]{Dandamudi2005Risc}.
+\riscv{} requires three operands for \qVerb{add}, \qVerb{sub}, and many other instructions, these being the destination, the first source, and the second source location.
+The norm in x64 is using just two operands where the first represents both the first source and the destination~\cite[pp.~14--20]{Dandamudi2005Risc}.
 
 \begin{table}[h]
 	\centering
@@ -99,30 +99,25 @@ These are shown in Table~\ref{tbl:x64_registers}.
 Additionally, three more sets of 16 registers are defined, each half the size as the previous one.
 However, instead of these being additional storage, they simply provide an alias to the lower half of the respective larger register.
 For instance, when writing the byte $(2a)_{16}$ into \qreg{al}, the least significant byte of \qreg{ax}, \qreg{eax}, and \qreg{rax} changes to $(2a)_{16}$, too.
-The upper bytes are untouched, however.
-That means, if for example \qreg{ax} contains the value $(a455)_{16}$ before writing, it will contain $(a42a)_{16}$ afterwards, not $(002a)_{16}$.
 
-These registers for smaller sizes are not present for legacy reasons though.
-Considering line~18 from Listing~\ref{lst:x64_asm_example}, the move of the value behind the \qVerb{byte ptr} requires the destination register to one byte in size, too.
+Considering line~18 from Listing~\ref{lst:x64_asm_example}, the move of the value behind the \qVerb{byte ptr} requires the destination register to be one byte in size, too.
 For this reason, the compiler uses the \qreg{sil} register here, instead of its 64-bit equivalent \qreg{rsi}.
 Line~19 then performs the cast from the boolean, saved as a byte, to a 64-bit integer.
-It does this by taking the 64-bit variant of the register, in this case \qreg{rsi}, and assuring all bits, except for the least significant eight, are zeros.
+It does this by taking the 64-bit variant of the register, in this case \qreg{rsi}, and assuring that all bits, except for the least significant eight, are zeros.
 The latter is done using the \emph{bitwise AND} operation with the number $2^8-1=255$, which in binary is represented by eight ones.
 
 Another special register is \qreg{rip}.
-It stores the instruction pointer, that is, the address to the current instruction being executed.
+It stores the instruction pointer, that is, the address of the current instruction being executed.
 The register is usually not modified directly, as branching can be achieved with instructions like \qVerb{call}, \qVerb{ret}, or \qVerb{jmp}.
-Nevertheless, it is sometimes accessed manually, as seen in lines 15 and 17.
-These read and write to the global \qVerb{a} variable, defined at the \qVerb{main..a} symbol.
-Accesses like this simply require the offset by the instruction pointer in x64 Assembly.
+Nevertheless, it is sometimes accessed manually, as seen in the lines 15 and 17.
+In these lines, read and write operations on the global variable \qVerb{a}, defined at the \qVerb{main..a} symbol, are performed.
+Pointers to such global variables and constants in the \qVerb{.data} and \qVerb{.rodata} sections require the instruction pointer as their base in x64 Assembly.
 
-In addition to these general purpose registers, x64 also defines 16 registers for floating-point number calculations, each 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}.
-For the purposes of rush, only the lower 64 bits are ever used, since this is enough for double precision floating-point numbers.
+In addition to these general purpose registers, x64 also defines 16 registers for floating-point numbers, each being 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}.
+For the purposes of rush, only the lower 64 bits are ever used, as this is enough to represent double precision floating-point numbers.
 The additional 64 bits are provided for \emph{single instruction multiple data} (\emph{SIMD}) instructions.
 They can be used by more optimized compilers to operate on multiple values at a time.
-Any single one of these registers would then for instance hold two 64-bit values or four 32-bit values.
-
-\TODO{explain pointers? (should be the same as \riscv{})}
+Any single one of these registers would then for instance hold two 64-bit values or four 32-bit values~\cite[pp.~5--7]{Kusswurm2018-nd}.
 
 \subsection{Stack Layout and Calling Convention}
 
@@ -162,18 +157,19 @@ Any single one of these registers would then for instance hold two 64-bit values
 	\caption[Stack layout of the x64 architecture.]{Stack layout of the x64 architecture~\cite[p.~21]{Lu2022}.}\label{fig:x64_stack}
 \end{wrapfigure}
 
-Alongside the instructions and registers defined by x64 itself, the \emph{System~V} ABI defines how programs should structure the stack during execution.
+Alongside the instructions and registers defined by x64 itself, an additional ABI document defines how programs should structure the stack during execution.
 Figure~\ref{fig:x64_stack} shows this layout.
 The overall outline is similar to that of \riscv{}, but some details differ.
 For one, the order of the saved return address and the saved \qreg{rbp} register is inverted.
-Secondly, the address \qreg{rbp} points to is different by 16 bytes.
+Secondly, the address \qreg{rbp} points to differs by 16 bytes.
 Therefore, in x64 the first stack argument is accessed by offsetting \qreg{rbp} by 16, whereas in \riscv{} the \qVerb{fp} register already points to the first stack argument without any offset.
-In both calling conventions every stack argument uses eight bytes of space, but x64 has no special return address register, and instead only stores the return address on the stack and retrieves it from there when needed.
+In both calling conventions, every stack argument uses eight bytes of space.
+However, x64 has no special return address register, and instead only stores the return address on the stack and retrieves it from there when needed.
 At the moment of calling a function, the stack frame's size must be aligned to a multiple of 16 bytes.
 The unspecified space between \qVerbCmd{\%rbp-8} and \qreg{rsp} can be freely used by the current function to save local variables.
 Its internal layout may differ between programming languages~\cite[p.~21]{Lu2022}.
 
-\subsection{Implementation: The rush compiler targeting x\_64}
+\subsection{Implementation: The rush Compiler Targeting x86\_64}
 
 \Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=o, fancyvrb={numbers=\OuterEdge}, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
 
@@ -277,7 +273,7 @@ Each function that takes parameters should move all passed arguments from their 
 In Listing~\ref{lst:x64_functions_asm} this happens in line~23 for the one parameter called \qVerb{n}.
 More optimized compilers can of course try to keep the arguments in the registers for as long as they are not specifically needed elsewhere, but as the rush compilers only serve educational purposes this is not done.
 
-\subsubsection{\TODO{Write something one Corelib?}}
+\subsubsection{\TODO{Write something on Corelib?}}
 
 \subsubsection{Control Flow}
 
@@ -379,3 +375,9 @@ After pushing the \qVerb{ucomisd} instruction, two additional checks are perform
 Firstly, if the condition is \qVerb{==}, then add a conditional jump to the else-block for when the result is unordered.
 Secondly, if the condition is \qVerb{!=}, then add a conditional jump to the else-block for when the result is \emph{not} unordered.
 An expression like \qVerb{NaN != NaN} is therefore considered to be true.
+
+\subsubsection{Pointers}
+\TODO{explain pointers (mostly the same as \riscv{})}
+
+As for pointers, the x64 compiler operates based on the same principles as the \riscv{} one.
+However, the exact implementation differs because x64 [blah blah]

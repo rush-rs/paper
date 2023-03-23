@@ -52,16 +52,16 @@ The \qVerb{ra} register saves the \emph{return address} of a procedure.
 If a return instruction is used, the value in \qVerb{ra} is used as the address to jump back to.
 The \qVerb{sp} and \qVerb{fp} registers are used for managing stack memory.
 The registers \qVerb{a0} and \qVerb{a1} both serve as call arguments and return values of functions.
-The remaining \qVerb{an}-registers (\qVerb{a2}--\qVerb{a7}) should be primarely used as function call arguments.
-How functions are called using registers will be explained in Subsection~\ref{sec:riscv_calling_conv}.
-The next row contains the \emph{saved} registers \qVerb{s1} — \qVerb{s11}.
+The remaining `\Verb{a}$n$' registers (\qVerb{a2}--\qVerb{a7}) should be primarily used as function call arguments.
+How functions are called using registers will be explained in Section~\ref{sec:riscv_calling_conv}.
+The next row contains the \emph{saved} registers \qVerb{s1}-\qVerb{s11}.
 These registers are meant to be preserved across function calls, meaning a called function must not overwrite them.
 What the previously explained registers have in common is that they all hold integer values.
 Depending on the used \riscv{} extensions, all registers, including floating-point registers, either hold 32 or 64 bits of information.
 The float registers are able to hold floating-point numbers according to the \emph{IEEE 754--2008} standard~\cite[Chapter~11]{Waterman2019}.
 Just like their integer counterparts, the floating-point registers \qVerb{fa0} and \qVerb{fa1} are used as function call arguments and as return values.
-However, the other \qVerb{fan}-registers (\qVerb{fa2}--\qVerb{fa7}) are meant to be used as float function arguments.
-Just like the \qVerb{sn} registers, the \qVerb{fs0}--\qVerb{fs11} registers are usually preserved across function calls.
+However, the other `\Verb{fa}$n$' registers (\qVerb{fa2}--\qVerb{fa7}) are meant to be used as float function arguments.
+Just like the `\Verb{s}$n$' registers, the \qVerb{fs0}--\qVerb{fs11} registers are usually preserved across function calls.
 Lastly, the \qVerb{ft0}--\qVerb{ft11} registers can be used as temporary registers for floating-point numbers.
 It is apparent that the floating-point registers are provisioned very similarly to the integer registers.
 Therefore, a compiler targeting the architecture can utilize roughly the same principles,
@@ -109,7 +109,7 @@ Every category is meant to be used in the specified manner, however, these group
 		+(-2,.5) -- +(-2,-.5) -- +(2,-.5) -- +(2,.5);
 		\draw (0,\value{cellnb}) node{...};
 
-		\cell{$n$\textsuperscript{th} stack argument} \cellcom{\texttt{8$n$(fp)}}
+		\cell{$n$\textsuperscript{th} stack argument} \cellcom{\texttt{$8n$(fp)}}
 		\cell[padding]{...}
 		% custom draw instead of `\cellcom` for yshift
 		\draw (2.4,\value{cellnb}) node[anchor=west, yshift=3.5pt] {\vdots};
@@ -136,11 +136,11 @@ Stack frames are enclosed by the \qVerb{fp} and \qVerb{sp} registers.
 Here, \qVerb{sp} always points to the lowest address inside of the current stack frame while
 \qVerb{fp} points to 16 bytes\footnote{Assuming the \TODO{RV64I} extension is used.} above the top of the current frame.
 The available space for functions therefore ranges from \qVerb{-24(fp)} to \qVerb{0(sp)}.
-It is used for storing variables, following the alignment rules that were explained in Subsection~\ref{sec:alignment}.
+It is used for storing variables, following the alignment rules that were explained in Section~\ref{sec:alignment}.
 In the space between \qVerb{0(fp)} and \qVerb{-24(fp)}, the frame pointer of the previous stack frame and the return address are saved at the positions \qVerb{-8(fp)} and \qVerb{-16(fp)}, respectively.
-If stack arguments were present, the would be placed upwards from \qVerb{fp}.
+If stack arguments were present, they would be placed upwards of \qVerb{fp}.
 Each stack argument \emph{always} uses eight bytes of memory, regardless of the actual size of its content.
-Thus, the $n$\textsuperscript{th} stack argument would be placed at the position \texttt{$8n$(fp)}.
+Thus, the $n$\textsuperscript{th} stack argument would be placed at the position $8n$\texttt{(fp)}.
 To keep track of variable locations on the stack, the compiler maps a variable's name to a memory location.
 To be precise, the compiler contains a \qVerb{HashMap} which associates a variable's name with its \qVerb{fp} offset.
 When the variable is referenced at a later point, the compiler performs a simple lookup of the variable's memory address.
@@ -149,7 +149,7 @@ When the variable is referenced at a later point, the compiler performs a simple
 
 Just like previously explained, most architectures provide a calling convention which dictates how low-level function calls should be managed.
 For most architectures, the calling convention is part of the ISA's official specification.
-In the case of \riscv{}, the calling convention consists of three main steps and is specified in a separate document~\cite{RiscvABI2022}.
+In the case of \riscv{}, the calling convention consists of four main steps and is specified in a separate document~\cite{RiscvABI2022}.
 
 The first step of calling a function involves placing the arguments in a place where the function can access them.
 For \riscv{}, this involves placing the arguments into certain registers.
@@ -306,7 +306,7 @@ Finally, the \qVerb{ret} instruction in line 31 is used in order to jump back to
 
 \subsection{Supporting Pointers}
 
-In Subsection~\ref{sec:pointers}, we have explained how pointers can be used in rush.
+In Section~\ref{sec:pointers}, we have explained how pointers can be used in rush.
 Since every rush backend should support all features of the language, pointers also need to be implemented for the \riscv{} architecture.
 In order to get a rough understanding of how pointers work in this compiler, the code in Listing~\ref{lst:rush_simple_pointer} and~\ref{lst:rush_simple_pointer_asm} are to be considered.
 
@@ -358,7 +358,7 @@ Unlike the LLVM or WASM compiler, this compiler emits \riscv{} assembly files wh
 \subsubsection{Struct Fields}
 
 Before any complex code samples can be considered, important struct fields of the compiler first need to be explained.
-The rust code in Listing~\ref{lst:riscv_compiler_attr} shows important struct fields of the rush compiler targeting \riscv{}.
+The Rust code in Listing~\ref{lst:riscv_compiler_attr} shows important struct fields of the rush compiler targeting \riscv{}.
 
 \Lirsting[ranges={11-11,15-15,19-34}, caption={Fields of the \riscv{} \qVerb{Compiler} struct.}, label={lst:riscv_compiler_attr}, float=H]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -457,7 +457,7 @@ Since this algorithm only performs rudimentary register allocation, its implemen
 
 The core principle of the register allocator is that each method which can return a register decides which register it returns itself.
 In order to choose an output register, each of those methods uses the helper method \qVerb{get_int_reg}.
-The rust code in Listing~\ref{lst:riscv_get_int_reg} shows the \qVerb{get_int_reg} method of the \riscv{} rush compiler.
+The Rust code in Listing~\ref{lst:riscv_get_int_reg} shows the \qVerb{get_int_reg} method of the \riscv{} rush compiler.
 
 \Lirsting[ranges={175-186}, float=h, label={lst:riscv_get_int_reg}, caption={The \qVerb{get_int_reg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
 
@@ -514,7 +514,7 @@ In the compiler, an equivalent pool for float registers also exists.
 
 Before register allocation can be explained using code samples, how registers are passed around in the compiler needs to be explained first.
 Here, we should focus on the compilation of simple expressions.
-For this, the rust code in Listing~\ref{lst:riscv_expression} is to be considered.
+For this, the Rust code in Listing~\ref{lst:riscv_expression} is to be considered.
 
 \Lirsting[float=h, ranges={596-602,662-663}, caption={Parts of the \qVerb{expression} method in the \riscv{} rush compiler.}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -534,7 +534,7 @@ Now it has become apparent how basic expressions work and how registers are used
 
 However, we still do not know when the compiler marks certain registers as used.
 In order to understand this problem, the compilation of the rush expression \LirstInline{rush}{n + m} is to be considered.
-The rust code in Listing~\ref{lst:riscv_infix_expr} shows parts of the \qVerb{infix_expr} method of the rush compiler.
+The Rust code in Listing~\ref{lst:riscv_infix_expr} shows parts of the \qVerb{infix_expr} method of the rush compiler.
 
 \Lirsting[float=h, ranges={761-761,849-864,868-868}, caption={Parts of the \qVerb{infix_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -557,7 +557,7 @@ Therefore, the allocator call caused by the compilation of the right-hand side w
 
 Next, we will consider the implementation of the \qVerb{infix_helper} helper method.
 This method exists since translation of infix operators is required during compilation of both normal infix-expressions and assign-expressions with additional operations, \qVerb{a += 1} for instance.
-The rust code in Listing~\ref{lst:riscv_infix_helper} shows parts of this method.
+The Rust code in Listing~\ref{lst:riscv_infix_helper} shows parts of this method.
 
 \Lirsting[float=h, ranges={871-871,874-881,987-991,1000-1001}, caption={Parts of the \qVerb{infix_helper} method of the \riscv{} rush compiler.}, label={lst:riscv_infix_helper}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -591,7 +591,7 @@ In this case, the variable \qVerb{dest_regf} is used as the first operand since 
 However, before the infix-expression in Listing~\ref{lst:rush_riscv_simple_sum} is compiled,
 the compiler considers the functions of the program.
 In this case, only the \qVerb{main} function is present.
-The rust code in Listing~\ref{lst:riscv_declare_main_fn} shows the \qVerb{declare_main_fn} method of the rush \riscv{} compiler.
+The Rust code in Listing~\ref{lst:riscv_declare_main_fn} shows the \qVerb{declare_main_fn} method of the rush \riscv{} compiler.
 
 \Lirsting[float=h, ranges={123-156}, caption={The \qVerb{declare_main_fn} method of the \riscv{} rush compiler.}, label={lst:riscv_declare_main_fn}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -631,7 +631,7 @@ In other words, the current block now contains the function's prologue and body.
 In the lines 152--155, the code responsible for inserting the trailing epilogue code can be seen.
 For this, in line 153, the previously created epilogue label is now appended to the \qVerb{blocks} vector.
 In line 154, the \qVerb{epilogue} method of the compiler is callled.
-The rust code in Listing~\ref{lst:riscv_epilogue} shows the \qVerb{epilogue} method of the rush \riscv{} compiler.
+The Rust code in Listing~\ref{lst:riscv_epilogue} shows the \qVerb{epilogue} method of the rush \riscv{} compiler.
 
 \Lirsting[float=h, ranges={66-87}, caption={The \qVerb{epilogue} method of the \riscv{} rush compiler.}, label={lst:riscv_epilogue}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
@@ -655,7 +655,7 @@ Second, the special instructions for calling to the \qVerb{main} and \qVerb{exi}
 
 In line 2 and 3 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}, let statements are used in order to save values on the stack.
 For this, the rush \riscv{} compiler implements a separate method named \qVerb{let_statement}.
-The rust code in Listing~\ref{lst:riscv_let_stmt} shows the \qVerb{let_statement} method of the rush \riscv{} compiler.
+The Rust code in Listing~\ref{lst:riscv_let_stmt} shows the \qVerb{let_statement} method of the rush \riscv{} compiler.
 
 \Lirsting[float=h, ranges={554-561}, caption={The \qVerb{let_statement} method of the \riscv{} rush compiler.}, label={lst:riscv_let_stmt}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -667,7 +667,7 @@ In the next line, this memory address is inserted into the current scope,
 thus associating the name of the compiled variable in to its relative memory location.
 This data is saved so that the variable can be accessed later.
 Since the main work is accomplished by the \qVerb{save_expr_on_stack} method, it will now be considered in detail.
-The rust code in Listing~\ref{lst:riscv_save_on_stack} displays parts of the \qVerb{save_expr_on_stack} which was called in line 558 of the previous listing.
+The Rust code in Listing~\ref{lst:riscv_save_on_stack} displays parts of the \qVerb{save_expr_on_stack} which was called in line 558 of the previous listing.
 
 \Lirsting[float=h, ranges={563-563,_567-573,586-593}, caption={The \qVerb{save_expr_on_stack} Method in the \riscv{} rush compiler}, label={lst:riscv_save_on_stack}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -693,7 +693,7 @@ In this case, \qVerb{fp} is specified as the register and the value of \qVerb{of
 
 In line 4 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}, the \qVerb{exit} function is called.
 Even though the presented \qVerb{exit} function is special, the rush \riscv{} compiler is able to translate all sorts of different call-expressions using one internal method.
-The rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of the \qVerb{call_expr} method in the \riscv{} rush compiler.
+The Rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of the \qVerb{call_expr} method in the \riscv{} rush compiler.
 This listing only shows the first part of the method since it is too large to be included in a single-page listing.
 
 \Lirsting[float=h, ranges={92-120,127-128,235-235}, caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
@@ -730,7 +730,7 @@ For instance, expressions which yield in \qVerb{()} or \qVerb{!} do not require 
 Expressions yielding float variables however are considered in the line 114.
 Here, the \qVerb{nth_param} method on the \qVerb{FloatRegister} enum is called.
 
-The rust code in Listing~\ref{lst:riscv_nth_param} shows parts of this method.
+The Rust code in Listing~\ref{lst:riscv_nth_param} shows parts of this method.
 
 \Lirsting[float=H, ranges={215-217,224-227}, caption={The \qVerb{nth_param} method of the \riscv{} rush compiler.}, label={lst:riscv_nth_param}]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
 
@@ -751,7 +751,7 @@ If the exit function was to be called using two integer registers, the \qVerb{in
 Through this example, it becomes apparent what the task of the code displayed in Listing~\ref{lst:riscv_call_expr} are.
 
 However, only the first part of the \qVerb{call_expr} method is shown in this listing.
-The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the second part of the method.
+The Rust code in Listing~\ref{lst:riscv_call_expr_2} shows the second part of the method.
 
 \Lirsting[float=H, ranges={130-173,198-199,235-235}, caption={The second part of the \qVerb{call_expr} method of the \riscv{} rush compiler.}, label={lst:riscv_call_expr_2}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
@@ -778,7 +778,7 @@ Therefore, the resulting value of argument expressions will always be in the cor
 However, if there is no register for the current argument, the value has to be spilled onto the stack.
 For this, a \qVerb{fsd} instruction (or \qVerb{sd} instruction for integers) is inserted in order to save the result of the current argument on the stack.
 As described in a previous section about the \riscv{} calling convention, spilled arguments are placed on the stack in a way so that the first spilled argument is at the lowest memory position.
-For reference, this process is described in detail in Figure~\ref{fig:riscv_call_spill} in Subsection~\ref{sec:riscv_calling_conv} on page~\pageref{sec:riscv_calling_conv}.
+For reference, this process is described in detail in Figure~\ref{fig:riscv_call_spill} in Section~\ref{sec:riscv_calling_conv} on page~\pageref{sec:riscv_calling_conv}.
 In order to calculate this increasing offset easily, the \qVerb{spill_count} variable is declared in line 146.
 Every time an argument is spilled, this counter increases.
 In line 165, the code calculating the offset relative to \qVerb{sp} can be seen.
@@ -789,7 +789,7 @@ Although just the code for floats is shown here, the algorithm for integer-based
 
 Now it has become clear how the argument expressions are compiled.
 Even until now, not the entire method has been shown.
-The rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.
+The Rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.
 
 \Lirsting[float=H, ranges={201-235}, caption={The third part of the \qVerb{call_expr} method of the \riscv{} rush compiler.}, label={lst:riscv_call_expr_3}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
@@ -874,4 +874,4 @@ This way, the compiler is able to generate instructions for the \qVerb{loop}, \q
 However, \qVerb{loop} statements lack the control code which checks a condition as there is no condition in these loops.
 Furthermore, \qVerb{for} loops contain code representing its update expression at the end of their body.
 By using this approach, the compiler is also able to generate nested loops reliably.
-Due to the simplicity of the presented approach, rust code from the compiler is omitted.
+Due to the simplicity of the presented approach, Rust code from the compiler is omitted.

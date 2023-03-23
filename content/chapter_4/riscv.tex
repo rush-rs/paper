@@ -246,7 +246,7 @@ On most architectures, the \qVerb{_start} label indicates a program's entry poin
 In line~6, the \qVerb{call} instruction is used to call the \qVerb{main..main} function.
 Here, the already familiar \qVerb{main} function is prepended by the prefix \qVerb{main..}.
 Since this rush compiler implements name mangling\footnote{Compilers often \emph{mangle} names in order to guarantee a unique name for every function~\cite[pp.~119-120]{Levine2000}.},
-every function declared in a rush program will contain this prefix.
+every function defined in a rush program will contain this prefix.
 
 \Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, caption={Compiler output from the rush program in Listing~\ref{lst:riscv_simple2}.}, label={lst:riscv_simple_asm}, ranges={1-31, -4 53-56}]{listings/generated/riscv_simple.s}
 
@@ -508,10 +508,10 @@ is required during compilation of both infix-expressions and certain assign-expr
 Listing~\ref{lst:riscv_infix_helper} shows parts of this method.%
 %
 \Lirsting[
-    float=h,
-    ranges={861-861,864-871,977-980,990-991},
-    caption={Parts of the \qVerb{infix_helper} method of the \riscv{} rush compiler.},
-    label={lst:riscv_infix_helper}
+	float=h,
+	ranges={861-861,864-871,977-980,990-991},
+	caption={Parts of the \qVerb{infix_helper} method of the \riscv{} rush compiler.},
+	label={lst:riscv_infix_helper}
 ]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 %
 It takes the registers of the left- and right-hand side, the operator, and a type.
@@ -532,172 +532,149 @@ and these \qVerb{into} calls convert the registers into float ones.
 
 \subsubsection{Functions}
 
-However, before the infix-expression in Listing~\ref{lst:rush_riscv_simple_sum} is compiled,
-the compiler considers the functions of the program.
+However, before the infix-expression in Listing~\ref{lst:rush_riscv_simple_sum} on page~\ref{lst:rush_riscv_simple_sum} is compiled, the compiler iteretes over the functions of the program.
 In this case, only the \qVerb{main} function is present.
-The Rust code in Listing~\ref{lst:riscv_declare_main_fn} shows the \qVerb{declare_main_fn} method of the rush \riscv{} compiler.
+Listing~\ref{lst:riscv_define_main_fn} shows the \qVerb{define_main_fn} method of the rush \riscv{} compiler.%
+%
+\Lirsting[
+	float=h,
+	ranges={123-156},
+	caption={The \qVerb{define_main_fn} method of the \riscv{} rush compiler.},
+	label={lst:riscv_define_main_fn}
+]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+%
+This method is only responsible for compilation of the \qVerb{main} function.
+All other rush functions are compiled by the method \qVerb{function_definition}.
+However, these two methods only mainly differ in two ways:
+Firstly, the latter contains code which handles function parameters.
+Secondly, the special instructions for calling to the \qVerb{main} and \qVerb{exit} functions are not required.
 
-\Lirsting[float=h, ranges={123-156}, caption={The \qVerb{declare_main_fn} method of the \riscv{} rush compiler.}, label={lst:riscv_declare_main_fn}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+The method takes a block, that is, a list of statements as its input.
+In the lines~124--126, the \qVerb{_start} label is created and exported so that the linker will later be able to refer to it.
+Next, in the lines~128--129, a new block with the \qVerb{main..main} label is created.
+As explained previously, this block represents the start of the body of the \qVerb{main} function.
+Next, the line~132 inserts a \qVerb{call} instruction, which is responsible for calling the \qVerb{main} function at the start of program execution, after the \qVerb{_start} label.
+In the lines~134--135, instructions for calling the \qVerb{exit} function using `0' as the exit code are inserted.
+Next, in the lines~137--139, a new epilogue label is generated.
+Then, the \qVerb{curr_fn} field is updated so that it contains this newly created epilogue label.
+However, this label is not directly added to the \qVerb{blocks}  vector since it should appear after function body.
 
-Like its signature suggests, the method takes a block, meaning a list of statements as its input.
-In the lines 124--126, the \qVerb{_start} label is created and marked as exported so that the linker will later find it.
-After this insertion, the \qVerb{curr_block} index is 0, meaning that the block in which is inserted to is the one of the \qVerb{_start} label.
+Next, the \qVerb{main} function's body is compiled.
+For this, the current insertion position is first updated to the end of the previously created \qVerb{main..main} block by calling the method \qVerb{insert_at}.
+Following that, a new variable scope is added for the function body.
+Then, the function body's content is compiled by calling the \qVerb{function_body} method.
+After the body's compilation, the previously added scope is removed again.
 
-In the lines 128--129, a new block with the \qVerb{main..main} label is created.
-As explained previously, this block represents the start of the body of the \qVerb{main} function in rush.
-Next, the line 132 inserts a \qVerb{call} instruction which is responsible for calling the \qVerb{main} function when the program is executed.
-In the lines 134--135, instructions for calling the \qVerb{exit} function using 0 as the exit code are inserted.
-These two instructions are necessary in order to prevent a segmentation fault at the end of the program.
+In line~148, the \qVerb{prologue} method returns the instructions for the prologue.
+It is only inserted \emph{after} the function body was compiled, even though it will execute \emph{before} the function during runtime.
+This is because the prologue needs to allocate a certain amount of stack space, which the compiler can only determine after the code for the body has been generated.
+Next, in line~149, the insertion position is moved back to the end of the \qVerb{main..main} label.
+The lines~150--151 are then responsible for prepending the generated prologue instructions to the instructions representing the function body.
+This is achieved by first appending the contents of the current block to the end of the prologue instructions.
+Then, the current block's instructions are overwritten with the result.
+In the lines 153--154, the code responsible for inserting the trailing epilogue code can be seen.
+For this, the previously created epilogue label is now appended to the \qVerb{blocks} vector, and the \qVerb{epilogue} method of the compiler is called.
 
-In the lines 137--139, a new epilogue label is generated.
-Then, the current function is updated so that it contains this newly created epilogue label.
-However, this label is not directly added to the \qVerb{blocks}  vector since it should ideally appear after the body of the function.
+\Lirsting[
+    float=h,
+    ranges={66-87},
+    caption={The \qVerb{epilogue} method of the \riscv{} rush compiler.},
+    label={lst:riscv_epilogue}
+]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
-Next, in the lines 142--145, the \qVerb{main} function's body is compiled.
-For this, the current insertion position is first updated to the end of the previously created \qVerb{main..main} block by using the helper method \qVerb{insert_at} in line 142.
-In line 143, a new variable scope is added for the function's body.
-Then, the function's body is compiled by calling the \qVerb{function_body} method in line 144.
-After the body's compilation, the previously added scope is removed again in line 145.
-
-Now, the code responsible for inserting the prologue is executed.
-The prologue is inserted after the function's body even though it introduces each function.
-Since the required memory of the function is not known before the function's body is compiled,
-no stack space can be allocated before the body of the functions was traversed.
-In order to mitigate this issue, the code responsible for a function's prologue is generated after the entire function body has been traversed.
-
-The call to the method \qVerb{prologue} in line 148 generates the instructions which represent the prologue.
-Next, in line 149, the insertion position is moved back to the end of the \qVerb{main..main} label.
-In line 150, the instructions generated from the function's body are concatenated to the end of prologue instructions.
-This way, the variable \qVerb{prologue} now represents a vector containing the instructions of the \qVerb{main} function's prologue followed by the ones of its body.
-In line 151, the instructions of the current block, meaning the \qVerb{main..main} block, are overwritten with the contents of the variable.
-In other words, the current block now contains the function's prologue and body.
-
-In the lines 152--155, the code responsible for inserting the trailing epilogue code can be seen.
-For this, in line 153, the previously created epilogue label is now appended to the \qVerb{blocks} vector.
-In line 154, the \qVerb{epilogue} method of the compiler is callled.
-The Rust code in Listing~\ref{lst:riscv_epilogue} shows the \qVerb{epilogue} method of the rush \riscv{} compiler.
-
-\Lirsting[float=h, ranges={66-87}, caption={The \qVerb{epilogue} method of the \riscv{} rush compiler.}, label={lst:riscv_epilogue}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
-
-As the context of the previous code snipped suggests, this method is called in order to generate the instructions for a function's epilogue.
-First, in the lines 67--68, the insertion position of the compiler is updated to the end of the epilogue label.
-This is done since the epilogue must exist in a separate label in order to be reused when \qVerb{return} statements are encontered.
-The instruction insertion in line 70 is responsible for a \qVerb{ld} instruction.
-As described previously, this particular instruction restores the previously saved \qVerb{fp} register.
-Next, in line 75, another \qVerb{ld} instruction for restoring the \qVerb{ra} register is inserted.
-In line 80, an \qVerb{addi} instruction is inserted in order to restore the previously allocated stack space.
+Listing~\ref{lst:riscv_epilogue} shows the \qVerb{epilogue} method of the rush \riscv{} compiler.
+This method generates the instructions for a function's epilogue.
+First, in the lines~67--68, the insertion position of the compiler is set to the epilogue block.
+The epilogue must exist in a separate label in order to be used when \qVerb{return} statements are encontered.
+The instruction insertion in line~70 is responsible for an \qVerb{ld} instruction.
+Here, the \qVerb{ld} instruction is used to restore the previously saved \qVerb{fp} register.
+In line~75, another \qVerb{ld} instruction for restoring the \qVerb{ra} register is inserted.
+In line~80, an \qVerb{addi} instruction is inserted in order to free the memory used for the function's stack frame.
 Finally, a \qVerb{ret} instruction is inserted which is responsible for transferring control back to the caller.
-Now it becomes apparent that the inserted instructions resemble the already known patters observed in previously shown listings.
-
-As for the code in Listing~\ref{lst:riscv_declare_main_fn},
-the presented method is very similar to the one which translates other rush functions.
-However, the \qVerb{function_declaration} method which is responsible for other functions differs in two ways.
-First, it contains code which handles function parameters.
-Second, the special instructions for calling to the \qVerb{main} and \qVerb{exi} functions are not required for other functions.
 
 \subsubsection{Let Statements}
 
-In line 2 and 3 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}, let statements are used in order to save values on the stack.
-For this, the rush \riscv{} compiler implements a separate method named \qVerb{let_statement}.
-The Rust code in Listing~\ref{lst:riscv_let_stmt} shows the \qVerb{let_statement} method of the rush \riscv{} compiler.
+In the lines~2--3 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum} on page~\pageref{lst:rush_riscv_simple_sum}, let statements are used in order to save values on the stack.
+The method responsible for compiling these statements is called \qVerb{let_statement}.
+It saves the initializing expression on the stack and saves the resulting pointer in the current scope.
+The main work is accomplished by the \qVerb{save_expr_on_stack} method.
+The Rust code in Listing~\ref{lst:riscv_save_on_stack} displays parts of this method.%
+%
+\Lirsting[
+    float=h,
+    ranges={557-557,_561-567,580-587},
+    caption={The \qVerb{save_expr_on_stack} method in the \riscv{} rush compiler.},
+    label={lst:riscv_save_on_stack}
+]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+%
+This method takes an expression in order to compile it and save the resulting value on the stack.
+The method returns an \qVerb{Option<Pointer>}, where \qVerb{None} again represents the \qVerb{!} and \qVerb{()} types.
+A \qVerb{Pointer} stores a relative memory address and an arbitrary base register, \qVerb{fp} in this case.
 
-\Lirsting[float=h, ranges={554-561}, caption={The \qVerb{let_statement} method of the \riscv{} rush compiler.}, label={lst:riscv_let_stmt}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
-
-This method only calls the \qVerb{save_expr_on_stack} method in order to save the resulting memory address in the current scope.
-The purpose of the \qVerb{save_expr_on_stack} is explained later.
-That method returns an abstraction which represents a memory location on the stack.
-In line 558 of Listing~\ref{lst:riscv_let_stmt}, this method is called and the resulting relative memory address is saved in the variable \qVerb{ptr}.
-In the next line, this memory address is inserted into the current scope,
-thus associating the name of the compiled variable in to its relative memory location.
-This data is saved so that the variable can be accessed later.
-Since the main work is accomplished by the \qVerb{save_expr_on_stack} method, it will now be considered in detail.
-The Rust code in Listing~\ref{lst:riscv_save_on_stack} displays parts of the \qVerb{save_expr_on_stack} which was called in line 558 of the previous listing.
-
-\Lirsting[float=h, ranges={563-563,_567-573,586-593}, caption={The \qVerb{save_expr_on_stack} Method in the \riscv{} rush compiler}, label={lst:riscv_save_on_stack}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
-
-This method takes an expression in order to save it on the stack.
-As its signature suggests, the method returns an \qVerb{Option<Pointer>}.
-Just like other methods, this one will return \qVerb{None} if the passed expression yields no value.
-Otherwise, the method returns the relative memory address which will contain the value of the saved expression at runtime.
-In line 569, the passed expression is compiled, and the resulting register is saved in the variable \qVerb{reg}.
-In line 571, the \qVerb{get_offset} method is used in order to calculate the fp-offset of variable.
-Since types like char or bool require less memory, the data type of the expression is also passed to the helper method.
-Now, the \qVerb{offset} variable contains the fp-offset at which the variable can be saved.
+In line~569, the expression is compiled, and the resulting register is saved in the variable \qVerb{reg}.
+In line~571, the \qVerb{get_offset} method is used in order to calculate the frame pointer offset of a variable.
+Since types like \qVerb{char} or \qVerb{bool} require less memory compared to \qVerb{int}, the size of the expressions's data type must also be available to this method.
+Now, the \qVerb{offset} variable contains the frame pointer offset at which the variable should be saved.
 Since the \qVerb{get_offset} method is used every time values need to be saved on the stack,
-it also increments the \qVerb{stack_allocs} variable, so that components like the prologue or epilogue are aware of this stack allocation.
-The \qVerb{match} block in line 573 executes different code based on the register type which the expression yielded.
-In the lines 586--589, the code which is executed if the expression yielded a float register can be seen.
-Here, the \qVerb{fsd} instruction is used in order to save the yielded register at the memory position relative to \qVerb{fp} which is specified in the variable \qVerb{offset}.
-The code for integer registers is omitted since it also differentiates between 8-bit and 64-bit data.
-In line 592, the \qVerb{Pointer} abstraction representing the memory location of the expression is returned.
+it also increments the \qVerb{stack_allocs} variable, so that the prologue and epilogue are aware of this stack allocation.
+
+The \qVerb{match} block in line~573 executes different code based on the register type which the expression yielded.
+In the lines~586--589, the code responsible for float registers can be seen.
+Here, the \qVerb{fsd} (\enquote{\textbf{f}loat \textbf{s}tore \textbf{d}ouble}) instruction is used in order to save the resulting register at the memory position relative to \qVerb{fp} which is specified in the variable \qVerb{offset}.
+The code for integer registers is similar, but was omitted since it also differentiates between 8-bit and 64-bit data.
+In line~592, the \qVerb{Pointer} abstraction representing the memory location of the expression is returned.
 Here, it is apparent that this variant of a \qVerb{Pointer} only saves a register and an offset to this register.
 In this case, \qVerb{fp} is specified as the register and the value of \qVerb{offset} is used as the offset.
 
 \subsubsection{Function Calls and Returns}
 
-In line 4 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}, the \qVerb{exit} function is called.
-Even though the presented \qVerb{exit} function is special, the rush \riscv{} compiler is able to translate all sorts of different call-expressions using one internal method.
-The Rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of the \qVerb{call_expr} method in the \riscv{} rush compiler.
-This listing only shows the first part of the method since it is too large to be included in a single-page listing.
+For compiling call-expressions, also the ones of builtin functions, the compiler uses the \qVerb{call_expr} method.
+The Rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of this method.%
+%
+\Lirsting[
+    float=h,
+    ranges={92-119,126-127, 235-235},
+    caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.},
+    label={lst:riscv_call_expr}
+]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+%
+Due to the aforementioned low-level calling conventions,
+its implementation has proven to be very complex and demanding.
+The part of code shown here is only preparing the compilation of the function call.
+The method consumes an analyzed call-expression and optionally returns a register representing the call return value.
+For instance, if the \qVerb{exit} function was called, this method would return no register as the \qVerb{exit} function results in the \qVerb{!} type.
 
-\Lirsting[float=h, ranges={92-119,126-128,235-235}, caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_call_expr}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+In the lines~93--102, all registers which are used at the time of the function call are spilled and then marked as unused.
+This is required since the register allocator of this compiler is so simple that it only considers one function at the time.
+In production-ready compiler systems, a register allocation algorithm could also work interprocedurally.
+It becomes apparent that saving \emph{all} used registers does not produce very efficient output code.
+However, throughout the extensive testing conducted on the rush backends, this approach has presented itself as simple and reliable\footnote{For each new commit, \rushCountTests integration tests are conducted on every backend}.
+In the lines~94--99, the register spilling is performed by iterating over the currently used registers and calling the \qVerb{spill_reg} method for each register.
+That method is structured very similarly to the aforementioned \qVerb{save_expr_on_stack} method.
+After the register spilling, the contents of the \qVerb{used_registers} vector are moved into the local \qVerb{used_regs_prev} variable.
+Therefore, after the assignment, the \qVerb{used_registers} vector will be empty.
 
-Since this method is responsible for translating function calls, its implementation has proven to be very complex and demanding.
-As the method's signature suggests, it consumes an analyzed call-expression in order to return an optional register.
-No register is returned if a function which returns the \qVerb{()} type or the \qVerb{!} type is called.
-In line 4 of the code in Listing~\ref{lst:rush_riscv_simple_sum}, this method would return no register because the \qVerb{exit} function is called.
-
-The parts of code in the shown listing are responsible for preparing the compiler for compilation of the function call.
-In the lines 93--102, all registers which are used at the time of the function call are saved on the stack.
-This is required since the register allocator of this compiler is so simple that it only considers a function at the time.
-In production-ready compiler systems, a register allocation algorithm could also work in an interprocedural manner.
-When considering this practical example, it becomes apparent that saving \textbf{all} used registers does not produce the most efficient output code.
-However, the presented algorithm remains relatively simple.
-Furthermore, throughout the extensive testing conducted on the rush backends, this approach has presented itself as reliable\footnote{For each new commit, \rushCountTests integration tests are conducted on every backend}.
-In line 95, a new vector named \qVerb{regs_on_stack} which will later contain registers is created.
-The for loop in the lines 96--99 is used to spill every used register to the stack.
-For this, the helper method \qVerb{spill_reg} is used.
-Due to its similarity to the previously explained \qVerb{save_expr_on_stack} method, this method will not be explained further.
-After a register has been saved on the stack, it is added to the previously declared vector.
-After the loop, in line 102, the \qVerb{used_registers} vector is moved into the local \qVerb{used_regs_prev} variable.
-Therefore, after the assignment, the \qVerb{used_registers} vector will be empty due to its contents being moved into the \qVerb{used_regs_prev} variable.
-Through this, the compilation of the argument expressions can use more registers since the spilled registers can be overwritten.
-
-In the lines~104--128, the code determines how much additional memory is required in order to place arguments on the stack, which could not fit into registers.
-For most calls, this required memory is usually 0.
-However, a call with 9 integer arguments would need 8 additional bytes of memory because the ninth argument would have to be placed on the stack.
-The final amount of additional memory is saved in the \qVerb{spill_param_size} variable.
-Determination of the required size is performed by the for-loop in line 111.
-This loop iterates over each argument expression of the call.
-For each expression, the match-block in line 112 executes different code depending on the rush data type of the expression.
-For instance, expressions which yield in \qVerb{()} or \qVerb{!} do not require registers and can thus be skipped using the \qVerb{continue} keyword in line 113.
-Expressions yielding float variables however are considered in the line 114.
-Here, the \qVerb{nth_param} method on the \qVerb{FloatRegister} enumeration is called.
-
-The Rust code in Listing~\ref{lst:riscv_nth_param} shows parts of this method.
-
-\Lirsting[float=H, ranges={215-217,224-227}, caption={The \qVerb{nth_param} method of the \riscv{} rush compiler.}, label={lst:riscv_nth_param}]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
-
-This method associates an index of a parameter to a register which could represent this position.
+In the lines~104--127, the code determines how much additional memory is required by arguments that need to be placed on the stack.
+For instance, a call with nine integer arguments would need eight additional bytes of memory since the \nth{9} argument would have to be placed on the stack.
+The result is saved in the \qVerb{spill_param_size} variable.
+Determination of the required size is performed by the for-loop in line~111.
+It iterates over each argument expression of the call, and for each expression, the match-block in line~112 executes different code depending on the expression's result data type.
+For instance, expressions which yield in \qVerb{()} or \qVerb{!} do not require registers and can thus be skipped using the \qVerb{continue} keyword in line~113.
+However, for float values, the \qVerb{nth_param} method is called on the \qVerb{FloatRegister} enumeration.
+This method associates an index of a parameter to a register.
 For instance, the index 2 represents the third parameter, which is represented by the register \qVerb{fa2}.
-For any other indices, the method return \qVerb{None}.
-Therefore, the if-expression in line 115 of Listing~\ref{lst:riscv_call_expr} checks if there is no longer a register which could represent the current argument position.
-This position is saved in the \qVerb{float_cnt} and \qVerb{int_cnt} variables which are incremented during some iterations of the for-loop.
-Here, two counters are used in order to preserve independence between integer and float arguments.
-If there is no register for representing the current \qVerb{float_cnt}, the variable's value is greater than 7 and thus exceeds the capacity provided by the eight float parameter registers.
-If this is was case, the \qVerb{spill_param_size} variable is incremented by 8 bytes since in rush, a floating-point number requires 64 bits of information.
-At the end of the float-specific block, the \qVerb{float_cnt} is incremented by one.
-This way, the for loop is able to determine if there are any additional memory requirements of the current function.
-In line 4 if the code in Listing~\ref{lst:rush_riscv_simple_sum}, the \qVerb{exit} function is called with one integer argument.
-After the code displayed in Listing~\ref{riscv_call_expr} has executed,
-the runtime value of the \qVerb{int_cnt} variable is 1 while the \qVerb{spill_param_size} variable holds 0.
-If the exit function was to be called using two integer registers, the \qVerb{int_cnt} variable would hold the value 2.
-Through this example, it becomes apparent what the task of the code displayed in Listing~\ref{lst:riscv_call_expr} are.
-
-However, only the first part of the \qVerb{call_expr} method is shown in this listing.
+For unsupported indices, the method returns \qVerb{None}.
+Therefore, the if-expression in line~115 of Listing~\ref{lst:riscv_call_expr} checks whether there still is a register which could represent the current argument position.
+This position is saved in the \qVerb{float_cnt} and \qVerb{int_cnt} variables which are incremented whenever an argument of the respective type is encountered, in line~118 for instance.
+If there is no register left, the \qVerb{spill_param_size} variable is incremented by 8 bytes as floats require eight bytes of information.
 The Rust code in Listing~\ref{lst:riscv_call_expr_2} shows the second part of the method.
 
-\Lirsting[float=H, ranges={130-173,198-199,235-235}, caption={The second part of the \qVerb{call_expr} method of the \riscv{} rush compiler.}, label={lst:riscv_call_expr_2}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+\Lirsting[
+    float=H,
+    ranges={130-173,198-199,235-235},
+    caption={The second part of the \qVerb{call_expr} method of the \riscv{} rush compiler.},
+    label={lst:riscv_call_expr_2}
+]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 In the lines 130--131, the \qVerb{int_cnt} and \qVerb{float_cnt} variables are reset to 0.
 In line 134, a new empty vector named \qVerb{params_regs} is created.

@@ -43,3 +43,9 @@ both in objective metrics and subjective experiences.
 Therefore, if the reader intents to develop a compiler on their own,
 we strongly recommend choosing a RISC over a CISC architecture as the compiler's target.
 Here, \riscv{} could be considered as a modern and relevant RISC architecture.
+
+\TODO{
+	By only considering the compiler's struct fields, it has become apparent that this implementation provides several abstractions over the bare strings in which assembly is normally formatted.
+	Due to this, implementation of the actual compiler is a lot more structured and reliable.
+	During development of the compiler, this approach has often proven itself to be optimal.
+}

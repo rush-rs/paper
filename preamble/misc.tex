@@ -1,4 +1,4 @@
-\documentclass[english, 12pt, listof=totoc, tablecaptionabove, draft=false, twoside=true]{scrreprt}
+\documentclass[english, 12pt, listof=totoc, tablecaptionabove, draft=true, twoside=true]{scrreprt}
 % TODO: disable draft mode
 
 \usepackage[a4paper, left=2.5cm, right=2cm, top=1.5cm, bottom=2cm, footskip=.8cm]{geometry}
@@ -48,7 +48,7 @@
 \hyphenation{WebAssembly}
 
 \newcommand{\TODO}[1]{\textcolor{red}{\textbf{TODO: #1}}}
-\newcommand{\tokei}[1]{\input{"|python3 tokei.py #1"}}
+\newcommand{\tokei}[1]{\input{"|python3 tokei.py #1"}\unskip}
 \newcommand{\rushCommit}{`\texttt{\input{"|git -C ./deps/rush rev-parse --short HEAD"}}\unskip'}
 \newcommand{\paperCommit}{`\texttt{\input{"|git rev-parse --short HEAD"}}\unskip'}
 %\newcommand{\rushCountTests}{\ignorespaces{\input "|python3 ./deps/rush/samples/tests/main.py count-tests"}\unskip}

@@ -5,28 +5,27 @@ These languages introduce many constraints, such as syntactic and semantic rules
 programmers to implement algorithms in a structured and precise manner.
 Advantages of high-level languages are that program development is faster and easier, that programs are easier to maintain, and that programs are portable,
 meaning that the program can be executed on different architectures~\cite[p.~9]{Dandamudi2005Risc}.
-Since programming languages should be easy to write for a human while being easy to understand by a computer,
-they are often falsely regarded as mysterious.
-The fundamental challenge is that a computer is only able to interpret a sequence of CPU instructions instead of a written program.
+Since programming languages should be easy to write for a human while being easy to understand for a computer,
+they are often regarded as complicated.
+The fundamental challenge is that a computer is only able to interpret a sequence of CPU instructions, instead of a written program.
 Therefore, the source program has to be translated into such a sequence of instructions before it can be executed by the computer.
 Because programming languages are strictly defined by formal constraints, the translation process can be defined formally as well.
 Therefore, this translation can be automated and implemented as an algorithm on its own.
 This process is referred to as \emph{compilation}, and is usually performed by a program called a \emph{compiler}.
 It is apparent that compilation requires significant effort and must obey complex rules
-since it should translate the source program precisely without altering its meaning.
+since it should translate the source program precisely, without altering its meaning.
 
-Another common method of program execution is to implement a program, often referred to as an \emph{interpreter}, which interprets the source code directly.
-Although compilers and interpreters share some of their core principles, their major difference is that the interpreter omits translation.
-The implementation of an interpreter is often significantly easier and smaller since the interpreter only has to understand the source program in order to execute it.
+Another common method of program execution is to implement a program, often referred to as an \emph{interpreter}, which evaluates the source code directly.
+Although compilers and interpreters share some of their core principles, the major difference is that the interpreter omits translation.
+The implementation of an interpreter is often significantly easier and smaller since the interpreter only has to comprehend the source program in order to execute it.
 In other words, the step of translating the source program into another form can be avoided completely.
-However, implementing an interpreter is only sensible if it is written using a high-level language like C or Rust.
-Implementation of an interpreter in a high-level language is often favorable since the implementation language is able to save the programmer a lot of work.
+However, implementing an interpreter is only sensible if it is written using a high-level language like C or Rust, since the implementation language is able to save the programmer a lot of work.
 If an interpreter was to be implemented using a low-level language like assembly, there would not be much work done by the implementation language.
 Compared to interpreters, compilers played an essential role in the early days of computing as high-level languages were yet to be developed.
 
 The first compiler was implemented around 1956 and aimed to translate \emph{Fortran} to computer instructions.
 However, the success of this programming endeavor was not assured until the program was completed.
-In total, the poject involved roughly 18 man-years of work
+In total, the project involved roughly 18 man-years of work
 and is thereby regarded as one of the largest programming projects of the time.
-To this day, new compilers are created and innovations in the field of programming languages can be observed regularly.
+To this day, new compilers are created, and innovations in the field of programming languages can be observed regularly.
 Therefore, compiler construction can still be considered a fundamental and relevant topic in computer science~\cite[p.~6]{wirth_compiler_construction_2005}.

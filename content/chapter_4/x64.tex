@@ -169,7 +169,7 @@ At the moment of calling a function, the stack frame's size must be aligned to a
 The unspecified space between \qVerbCmd{\%rbp-8} and \qreg{rsp} can be freely used by the current function to save local variables.
 Its internal layout may differ between programming languages~\cite[p.~21]{Lu2022}.
 
-\subsection{Implementation: The rush Compiler Targeting x86\_64}
+\subsection{Implementation}
 
 \Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=o, fancyvrb={numbers=\OuterEdge}, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
 

@@ -1,8 +1,6 @@
 \begin{abstract}
 	\section*{Abstract}
 
-	\buildDate
-
 	Programming languages are undoubtedly of great importance for various aspects of
 	modern-day life. Even if they remain unnoticed, digital systems running programs
 	written in some sort of programming language are ubiquitous.
@@ -13,21 +11,21 @@
 
 	This paper aims to inform the reader about different means of program execution, focussing on compiler construction.
 	However, we will only focus on the basics since implementing a programming language is often a demanding task.
-	In order to include practical examples, we will explain concepts on the basis of \emph{rush}, our own programming language which was purposefully designed for this paper.
+	In order to include practical examples, we will explain concepts on the basis of \emph{rush}, our own programming language, which was purposefully designed for this paper.
 	During the implementation of rush, the focus for this paper has shifted slightly.
 	As the title suggests, we originally planned to only implement and explain one compiler.
 	However, there are numerous architectures which a compiler could target and settling on just one felt like the reader would miss out on too much.
-	Therefore, we have implemented rush using one interpreter, one virtual machine, one transpiler, and five compilers.
+	Therefore, we have implemented rush using two interpreters machine, one transpiler, and four compilers.
 
-	In chapter 1, we will give an introduction to implementing a programming language.
+    In Chapter~\ref{chap:introduction}, we will give an introduction to implementing a programming language.
 	Moreover, the rush programming language and its characteristics are presented.
-	In chapter 2, the process of analyzing the program's syntax and semantics is explained.
-	Chapter 3 focuses on how interpreters can be used in order to implement an interpreted programming language.
+    In Chapter~\ref{chap:analyzing_source}, the process of analyzing the program's syntax and semantics is explained.
+    Chapter~\ref{chap:interpreting} focuses on how interpreters can be used in order to implement a programming language.
 	Here, we will differentiate between a \emph{tree-walking interpreter} and a \emph{virtual machine}.
-	Chapter 4 illustrates how compilation to high-level\footnote{\emph{High-level} targets: in this case machine independent; many abstractions are provided.} targets works.
+    Chapter~\ref{chap:high_level_targets} illustrates how compilation to \emph{high-level} targets\footnote{High-level targets: in this case machine independent; many abstractions are provided.} works.
 	As examples for high-level targets, we will present a compiler targeting the rush virtual machine, a compiler targeting \emph{WebAssembly},
 	and a compiler which uses the \emph{LLVM} framework.
-	Chapter 5 focuses on how compilers targeting low-level\footnote{\emph{Low-level} targets: specific to one physical target architecture and operating system; little abstraction is provided.} architectures can be implemented.
+    Chapter~\ref{chap:low_level_targets} focuses on how compilers targeting \emph{low-level} targets\footnote{Low-level targets: specific to one CPU architecture and operating system; little abstraction is provided.} can be implemented.
 	For this, we will present a compiler targeting \emph{\riscv{}} assembly and another compiler targeting \emph{x86\_64} assembly.
-	Lastly, Chapter 6 presents final thoughts and a conclusion on the topic of implementing a programming language.
+    Lastly, Chapter~\ref{chap:final_thoughts} presents final thoughts and conclusions.
 \end{abstract}

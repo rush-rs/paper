@@ -66,7 +66,7 @@ These must be initialized with a constant value and can either be mutable or imm
 One may have already noticed that except for the version number at the start, all sizes, indices, lengths, and so on, have been stored using just a single byte.
 But, this is not because those can only reach a maximum of 255, but instead WebAssembly uses the LEB128 encoding for integer literals in binary modules.
 It is a space efficient way to store integers by only ever needing as many bytes as necessary for a number~\cite[Section~5.2.2]{WasmSpec}.
-The encoding details are not explained here however, and our implementation for this rush compiler simply uses a pre-existing crate\footnote{A crate is a software library in Rust terms.} called \enquote{leb128}.
+The encoding details are not explained here however, and our implementation for this rush compiler simply uses a pre-existing crate called \enquote{leb128}.
 
 \subsection{The WebAssembly System Interface}
 Since WebAssembly itself does not provide any guarantees about the runtime environment, it does not provide ways to interact with the environment, except for module imports and exports.
@@ -147,7 +147,7 @@ In line~777 an early return is issued to skip the logic used for all other infix
 
 The other compilers explained in this paper, while not mentioning it again, all use the same strategy for these logical operators.
 
-\subsection{Example}
+\subsection{Considering an Example rush Program}
 
 \Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, label={lst:wasm_example}, caption={Example rush program.}]{listings/x64_simple.rush}
 

@@ -633,7 +633,8 @@ The Rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of this 
 %
 \Lirsting[
     float=h,
-    ranges={92-119,126-127, 235-235},
+    ranges={92-113,189-189},
+    fancyvrb={lastline=23},
     caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.},
     label={lst:riscv_call_expr}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
@@ -644,93 +645,80 @@ The part of code shown here is only preparing the compilation of the function ca
 The method consumes an analyzed call-expression and optionally returns a register representing the call return value.
 For instance, if the \qVerb{exit} function was called, this method would return no register as the \qVerb{exit} function results in the \qVerb{!} type.
 
-In the lines~93--102, all registers which are used at the time of the function call are spilled and then marked as unused.
+In the lines~93--99, all registers which are used at the time of the function call are spilled and then marked as unused.
 This is required since the register allocator of this compiler is so simple that it only considers one function at the time.
 In production-ready compiler systems, a register allocation algorithm could also work interprocedurally.
 It becomes apparent that saving \emph{all} used registers does not produce very efficient output code.
 However, throughout the extensive testing conducted on the rush backends, this approach has presented itself as simple and reliable\footnote{For each new commit, \rushCountTests integration tests are conducted on every backend}.
-In the lines~94--99, the register spilling is performed by iterating over the currently used registers and calling the \qVerb{spill_reg} method for each register.
+In the lines~93--99, the register spilling is performed by iterating over the currently used registers and calling the \qVerb{spill_reg} method for each register.
 That method is structured very similarly to the aforementioned \qVerb{save_expr_on_stack} method.
 After the register spilling, the contents of the \qVerb{used_registers} vector are moved into the local \qVerb{used_regs_prev} variable.
 Therefore, after the assignment, the \qVerb{used_registers} vector will be empty.
 
-In the lines~104--127, the code determines how much additional memory is required by arguments that need to be placed on the stack.
+\Lirsting[
+    float=H,
+    ranges={92-92, 115-133:59, _133:84-139, 160-161, 189-189},
+    caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
+    label={lst:riscv_call_expr_2},
+    fancyvrb={firstline=2, lastline=30},
+    continued=true,
+]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+
+In line~136, the \qVerb{spill_param_size} variable is incremented.
+It specifies the additional storage required for placing arguments on the stack.
 For instance, a call with nine integer arguments would need eight additional bytes of memory since the \nth{9} argument would have to be placed on the stack.
-The result is saved in the \qVerb{spill_param_size} variable.
-Determination of the required size is performed by the for-loop in line~111.
-It iterates over each argument expression of the call, and for each expression, the match-block in line~112 executes different code depending on the expression's result data type.
-For instance, expressions which yield in \qVerb{()} or \qVerb{!} do not require registers and can thus be skipped using the \qVerb{continue} keyword in line~113.
-However, for float values, the \qVerb{nth_param} method is called on the \qVerb{FloatRegister} enumeration.
+The optional placement of arguments on the stack is performed by the loop in line~115.
+It iterates over each argument expression of the call, and for each expression, the match-block in line~116 executes different code depending on the expression's result data type.
+For instance, expressions which yield in \qVerb{()} or \qVerb{!} do not require registers and can thus be compiled without further consideration.
+However, for float values, the code in the lines~121--136 is executed.
+Firstly, the argument's expression is compiled and the resulting register is saved in the variable \qVerb{res_reg}.
+Next, the \qVerb{nth_param} method is called on the \qVerb{FloatRegister} enumeration.
 This method associates an index of a parameter to a register.
 For instance, the index 2 represents the third parameter, which is represented by the register \qVerb{fa2}.
 For unsupported indices, the method returns \qVerb{None}.
-Therefore, the if-expression in line~115 of Listing~\ref{lst:riscv_call_expr} checks whether there still is a register which could represent the current argument position.
-This position is saved in the \qVerb{float_cnt} and \qVerb{int_cnt} variables which are incremented whenever an argument of the respective type is encountered, in line~118 for instance.
+Therefore, the if-expression in line~123 of Listing~\ref{lst:riscv_call_expr} checks whether there still is a register which could represent the current argument position.
+This position is saved in the \qVerb{float_cnt} and \qVerb{int_cnt} variables which are incremented whenever an argument of the respective type is encountered, in line~138 for instance.
 If there is no register left, the \qVerb{spill_param_size} variable is incremented by 8 bytes as floats require eight bytes of information.
-The Rust code in Listing~\ref{lst:riscv_call_expr_2} shows the second part of the method.
-
-\Lirsting[
-    float=H,
-    ranges={130-173,198-199,235-235},
-    caption={The second part of the \qVerb{call_expr} method of the \riscv{} rush compiler.},
-    label={lst:riscv_call_expr_2}
-]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
-
-In the lines 130--131, the \qVerb{int_cnt} and \qVerb{float_cnt} variables are reset to 0.
-In line 134, a new empty vector named \qVerb{params_regs} is created.
-The lines 137--143 are responsible for inserting an \qVerb{addi} instruction in order to allocate stack space.
-However, this instruction is only inserted if the size of the spilled parameters is non-zero,
-meaning that parameters have been spilled.
-If this was the case, inserting an instruction in order to allocate memory is required.
-
-Next, the for-loop in line 148 iterates over the argument expressions.
-Just like in the last listings, the match-block in line 149 executes different code based on the data type of the argument expression.
-In case of unit or never types, the expression is compiled and the resulting value is ignored.
-This is reasonable since these types of expressions yield no register.
-For other data types, like floats, other code is executed.
-Expressions which yield floats for instance are handled in line 153.
-In the next line, the expression is compiled and the resulting register is saved in the variable \qVerb{res_reg}.
-In line 155, different code depending on whether the current argument needs to be spilled is executed.
-If the current expression does not need to be spilled, the code after the line 156 is executed.
+Otherwise, in case a register is available, the code in the lines~124--125 is executed.
 Here, \qVerb{res_reg} is only marked as used and pushed in the \qVerb{param_regs} vector.
-Interestingly, there is no code validating that the correct register for the argument position is returned.
+There is no code validating that the correct register for the argument position is returned.
 This check is redundant since all registers have been marked as unused prior to this block.
 Therefore, the resulting value of argument expressions will always be in the correct registers.
 However, if there is no register for the current argument, the value has to be spilled onto the stack.
 For this, a \qVerb{fsd} instruction (or \qVerb{sd} instruction for integers) is inserted in order to save the result of the current argument on the stack.
 As described in a previous section about the \riscv{} calling convention, spilled arguments are placed on the stack in a way so that the first spilled argument is at the lowest memory position.
 For reference, this process is described in detail in Figure~\ref{fig:riscv_call_spill} in Section~\ref{sec:riscv_calling_conv} on page~\pageref{sec:riscv_calling_conv}.
-In order to calculate this increasing offset easily, the \qVerb{spill_count} variable is declared in line 146.
+In order to calculate this increasing offset easily, the \qVerb{spill_cnt} variable was declared in line~113 of Listing~\ref{lst:riscv_call_expr}
 Every time an argument is spilled, this counter increases.
-In line 165, the code calculating the offset relative to \qVerb{sp} can be seen.
-Here, the value of \qVerb{spill_count} is simply multiplied by 8 in order to obtain the correct offset.
+In line~131 of Listing~\ref{fig:riscv_call_expr_2}, the code calculating the offset relative to \qVerb{sp} can be seen.
+Here, the value of \qVerb{spill_cnt} is simply multiplied by 8 in order to obtain the correct offset.
 Therefore, the memory offset $o$ is calculated like this: $o = \text{count}_\text{spilled} \times 8$.
-In line 169, the \qVerb{spill_count} variable is incremented like described previously.
+In line 169, the \qVerb{spill_cnt} variable is incremented like described previously.
 Although just the code for floats is shown here, the algorithm for integer-based types only deviates slightly from the one for floats.
 
-Now it has become clear how the argument expressions are compiled.
-Even until now, not the entire method has been shown.
-The Rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.
-
-\Lirsting[float=H, ranges={201-235}, caption={The third part of the \qVerb{call_expr} method of the \riscv{} rush compiler.}, label={lst:riscv_call_expr_3}]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
-
-The code in the lines 201--209 is responsible for mangling the name of the called function so that it includes the \qVerb{main..} prefix.
+The Rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.%
+%
+\Lirsting[
+    continued=true,
+    float=H,
+    ranges={92-92, 163-189},
+    fancyvrb={firstline=2},
+    caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
+    label={lst:riscv_call_expr_2}
+]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
+%
+The code in the lines~165--173 is responsible for mangling the name of the called function so that it includes the \qVerb{main..} prefix.
 However, if the \qVerb{exit} function is called, the name is not mangled.
-In line 201, the \qVerb{call} instruction responsible for invoking the function call is inserted.
+In line~174, the \qVerb{call} instruction responsible for performing the actual call is inserted.
 At this point, the arguments are in their correct places so that the called function will be able to access them.
-Therefore, the instruction can be inserted without additional effort.
-
-The code in the lines 212--219 is responsible for restoring stack space which was allocated in order to fit spilled arguments.
-Of course, the responsible \qVerb{addi} instruction is only inserted if there are indeed spilled arguments.
-In line 222, the previously emptied \qVerb{used_registers} vector is restored to its state before the call.
+In line~177, the previously emptied \qVerb{used_registers} vector is restored to its state before the call.
 This is done in order to allow the register allocation for the call arguments to happen independently of the rest of the compiled code.
-The code in the lines 224--231 is responsible for selecting an appropriate output register based on the function's return type.
-For instance, functions which return \qVerb{float} values place their return value inside the register \qVerb{fa0}.
-Therefore, the variable \qVerb{res_reg} represents the register containing the called function's return value.
-For functions which return the \qVerb{()} or \qVerb{!} type, no register is selected and \qVerb{None} is returned.
-The invocation of the helper method \qVerb{restore_regs_after_call} is used in order to insert instructions which restore the previously spilled registers after the call.
-The \qVerb{used_registers} vector could only be completely emptied due to the prior save of all used registers, these restored registers need to be restored after the call has completed.
-What strikes the eye here is that the method takes the \qVerb{res_reg} variable as its first argument.
+The code in the lines~179--185 is responsible for selecting an appropriate output register based on the function's return type, storing it in \qVerb{res_reg}.
+For instance, functions which return \qVerb{float} values place their return value inside the register \qVerb{fa0}, and for functions which return the \qVerb{()} or \qVerb{!} types, no register is selected and \qVerb{None} is returned.
+In line~188, the method \qVerb{restore_regs_after_call} later reloads the old register values from the stack.
+However, that method also requires the return register of the called function as its first argument.
+
+
 
 For instance, a function might return a value of type \qVerb{int}, therefore making \qVerb{a0} the content of \qVerb{res_reg}.
 If the register \qVerb{a0} was used before the function call, it would have to be restored by the helper method.

@@ -576,10 +576,10 @@ In the lines 153--154, the code responsible for inserting the trailing epilogue 
 For this, the previously created epilogue label is now appended to the \qVerb{blocks} vector, and the \qVerb{epilogue} method of the compiler is called.
 
 \Lirsting[
-    float=h,
-    ranges={66-87},
-    caption={The \qVerb{epilogue} method of the \riscv{} rush compiler.},
-    label={lst:riscv_epilogue}
+	float=h,
+	ranges={66-87},
+	caption={The \qVerb{epilogue} method of the \riscv{} rush compiler.},
+	label={lst:riscv_epilogue}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 Listing~\ref{lst:riscv_epilogue} shows the \qVerb{epilogue} method of the rush \riscv{} compiler.
@@ -601,10 +601,10 @@ The main work is accomplished by the \qVerb{save_expr_on_stack} method.
 The Rust code in Listing~\ref{lst:riscv_save_on_stack} displays parts of this method.%
 %
 \Lirsting[
-    float=h,
-    ranges={557-557,_561-567,580-587},
-    caption={The \qVerb{save_expr_on_stack} method in the \riscv{} rush compiler.},
-    label={lst:riscv_save_on_stack}
+	float=h,
+	ranges={557-557,_561-567,580-587},
+	caption={The \qVerb{save_expr_on_stack} method in the \riscv{} rush compiler.},
+	label={lst:riscv_save_on_stack}
 ]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 %
 This method takes an expression in order to compile it and save the resulting value on the stack.
@@ -632,11 +632,11 @@ For compiling call-expressions, also the ones of builtin functions, the compiler
 The Rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of this method.%
 %
 \Lirsting[
-    float=h,
-    ranges={92-113,189-189},
-    fancyvrb={lastline=23},
-    caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.},
-    label={lst:riscv_call_expr}
+	float=h,
+	ranges={92-113,189-189},
+	fancyvrb={lastline=23},
+	caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.},
+	label={lst:riscv_call_expr}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 %
 Due to the aforementioned low-level calling conventions,
@@ -656,12 +656,12 @@ After the register spilling, the contents of the \qVerb{used_registers} vector a
 Therefore, after the assignment, the \qVerb{used_registers} vector will be empty.
 
 \Lirsting[
-    float=H,
-    ranges={92-92, 115-133:59, _133:84-139, 160-161, 189-189},
-    caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
-    label={lst:riscv_call_expr_2},
-    fancyvrb={firstline=2, lastline=30},
-    continued=true,
+	float=H,
+	ranges={92-92, 115-133:59, _133:84-139, 160-161, 189-189},
+	caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
+	label={lst:riscv_call_expr_2},
+	fancyvrb={firstline=2, lastline=30},
+	continued=true,
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
 In line~136, the \qVerb{spill_param_size} variable is incremented.
@@ -699,12 +699,12 @@ Although just the code for floats is shown here, the algorithm for integer-based
 The Rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.%
 %
 \Lirsting[
-    continued=true,
-    float=H,
-    ranges={92-92, 163-189},
-    fancyvrb={firstline=2},
-    caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
-    label={lst:riscv_call_expr_2}
+	continued=true,
+	float=H,
+	ranges={92-92, 163-189},
+	fancyvrb={firstline=2},
+	caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
+	label={lst:riscv_call_expr_2}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 %
 The code in the lines~165--173 is responsible for mangling the name of the called function so that it includes the \qVerb{main..} prefix.
@@ -717,70 +717,52 @@ The code in the lines~179--185 is responsible for selecting an appropriate outpu
 For instance, functions which return \qVerb{float} values place their return value inside the register \qVerb{fa0}, and for functions which return the \qVerb{()} or \qVerb{!} types, no register is selected and \qVerb{None} is returned.
 In line~188, the method \qVerb{restore_regs_after_call} later reloads the old register values from the stack.
 However, that method also requires the return register of the called function as its first argument.
-
-
-
-For instance, a function might return a value of type \qVerb{int}, therefore making \qVerb{a0} the content of \qVerb{res_reg}.
-If the register \qVerb{a0} was used before the function call, it would have to be restored by the helper method.
+The reasons why \qVerb{restore_regs_after_call} has to access the return register is that this register might habe been in use before the call.
 However, restoring the register would result in the function's return value to be overwritten, therefore creating a bug.
 In order to mitigate this issue, the method will alter the result register by inserting a \qVerb{mv} instruction if necessary.
-Since the method returns the final output register which contains the call's result, it is used as the last expression of the block, thus making it the return value of the \qVerb{call_expr} method.
+Since the method returns the final output register which contains the call's result, it is used as the last expression of the block,
+thus making it the return value of the \qVerb{call_expr} method.
 
-Now it has become apparent how function calls are implemented in the rush \riscv{} compiler.
-However, the question of how a called function returns a value still remains.
-In the previous sections, we have covered that every generated function contains an \qVerb{epilogue_x}.
-Every time the \qVerb{return} keyword is used in rush, the compiler generates an instruction which jumps to the epilogue label of the function being compiled.
-If the function should a value, meaning that the \qVerb{return} statement contains an expression,
-it is first compiled in order to observe its output register.
-If the output register is already the desired register, like \qVerb{a0} for integer values, the compiler can carry on.
-However, if the output register of the compiled expression deviates from the register in which return values shall be passed,
-the compiler inserts a \qVerb{mv} instructions prior to the instruction jumping to the epilogue label.
-This way, values can be returned at any time while stopping execution of the function.
-For implicit returns, meaning trailing expressions which are not terminated by a semicolon,
-this procedure is identical.
+The last thing to mention is how a called function returns a value.
+Whenever an explicit or implicit return in a function is encountered,
+the compiler checks whether the expression already saved its result in the appropriate return register.
+In case it did not, a \qVerb{mv} (\enquote(\textbf{m}o\textbf{v}e)) instruction is used to move it there.
+Afterwards, a jump to the function's epilogue is issued, causing the function to return.
 
 \subsubsection{Loops}
 
-Since most assembly dialects do not provide high-level control-flow scaffolds like loops,
-a compiler targeting assembly has to generate code which behaves like a loop.
-The code in Listing~\ref{lst:rush_while_loop} shows a rush program containing a while-loop.
-On the right side, Listing~\ref{lst:asm_riscv_while_loop} shows parts of the assembler output generated from the rush program.
+Since assembly dialects does not provide high-level control-flow constructs like loops,
+a compiler targeting assembly has to generate code which reproduces the behaviour.
+Listing~\ref{lst:rush_while_loop} shows a rush program containing a while-loop.
+Next to it, Listing~\ref{lst:asm_riscv_while_loop} shows the part of the compiler output that represents the loop and the \qVerb{exit} call.
 
-\begin{minipage}{.32\textwidth}
+\begin{minipage}{.45\textwidth}
 	\center
 	\Lirsting[caption={A rush program containing a while-loop.}, label={lst:rush_while_loop}, float=H]{listings/while_loop.rush}
 \end{minipage}%
-\hspace{2.5cm}
-\begin{minipage}{.47\textwidth}
+\hfill
+\begin{minipage}{.45\textwidth}
 	\center
-	\Lirsting[ranges={21-36},caption={Assembly output of rush program in Listing~\ref{lst:rush_while_loop}.}, label={lst:asm_riscv_while_loop}, float=H]{listings/generated/rush_while_loop.s}
+	\Lirsting[ranges={21-36},caption={Compiler output of the rush program in Listing~\ref{lst:rush_while_loop}.}, label={lst:asm_riscv_while_loop}, float=H]{listings/generated/rush_while_loop.s}
+	\vspace{.1cm}
 \end{minipage}
 
-The rush program in Listing~\ref{lst:rush_while_loop} contains a while loop which will iterate ten times.
+The rush program contains a while-loop which iterates ten times.
 At the beginning of the program, the integer variable \qVerb{count} is declared.
-Before each iteration, the while-loop checks that the condition in its head is true.
-If the condition was true, the code inside the loop is executed.
+Before each iteration, the while-loop checks whether \qVerb{count} is less than `10'.
+If it is, count is incremented by \qVerb{1}, and the loop begins its next iteration.
 Otherwise, the execution of the loop stops and the code after the loop is executed.
-In the assembly output in Listing~\ref{lst:asm_riscv_while_loop}, the contents of the loop is represented by the instructions inside the \qVerb{while_head_0} label.
-The instructions generated from code before the loop are not visible but appear before the code shown in the listing.
-As the comment in line 22 suggests, the first instructions after the label declaration represent the loop control code.
+In the assembly code, the content of the loop is represented by the instructions below the \qVerb{while_head_0} label.
+As the comment in line 22 suggests, the first four instructions represent the loop control code.
 These instructions are executed every time time loop begins a new iteration, therefore they check if the condition is true before any of the code inside the loop's body is executed.
-If the condition is false, the execution of the loop should stop.
+If it results in `false', the execution of the loop should stop.
+This is accomplished by the \qVerb{beqz} (\enquote{\textbf{b}ranch (if) \textbf{eq}ual (to) \textbf{z}ero}) instruction in line 26.
+It is a pseudoinstruction which jumps to the specified label if the value inside the first operand is zero~\cite[p.~105]{Waterman2019}.
+Here, this means that the instruction would jump to the \qVerb{after_while_0} label if the condition of the loop evaluated to `false'.
 
-This is accomplished by the \qVerb{beqz} instruction in line 26.
-This instruction is a pseudoinstruction which jumps to the target label if the value inside the first operand is zero~\cite[p.~105]{Waterman2019}.
-Here, this would mean that the instruction would jump to the \qVerb{after_while_0} label if the condition of the loop evaluated to false.
-Just like the name of the \qVerb{after_loop} label suggests, it contains code which follows the while-statement.
-Therefore, in this example, it contains the instructions calling the \qVerb{exit} function with the code saved in the variable \qVerb{count}.
-However, if the condition evaluated to \qVerb{true}, the \qVerb{beqz} instruction would execute without causing a jump.
-In this case, the instructions following the comment in line 27 are executed.
-As the comment suggests, these instructions represent the code inside the loop's body.
-The instructions in the lines 28--31 represent the expression \qVerb{count += 1} in line 4 of the rush code.
-In line 32, an unconditional \qVerb{j} instruction jumps back to the beginning of the \qVerb{while_head_0} label.
-Since this jump happens unconditionally, this instructions introduces the iteration for which the loop is desired.
-Therefore, at the end of a loop, an instruction jumps back to the start, where the condition is then evaluated again.
-This way, the compiler is able to generate instructions for the \qVerb{loop}, \qVerb{while}, and \qVerb{for} statements.
-However, \qVerb{loop} statements lack the control code which checks a condition as there is no condition in these loops.
-Furthermore, \qVerb{for} loops contain code representing its update expression at the end of their body.
-By using this approach, the compiler is also able to generate nested loops reliably.
-Due to the simplicity of the presented approach, Rust code from the compiler is omitted.
+This label contains code which follows the while-statement, here only the call to the \qVerb{exit} function.
+Otherwise, if the condition evaluated to `true', the \qVerb{beqz} instruction would not perform a jump and the CPU would just continue to the following instruction.
+The instructions following that conditional jump represent the loop body, i.e., the statement \qVerb{count +=1}
+In line~32, and unconditional jump, which jumps back to the beginning of the \qVerb{while_head_0} label, follows.
+Therefore, the loop begins its next iteration.
+Using this appropriate, the compiler is able to generate instructions for the \qVerb{loop}, \qVerb{while}, and \qVerb{for} statements.

@@ -1,8 +1,8 @@
+let mut global = 40;
+
 fn main() {
     exit(plus_two(global));
 }
-
-let mut global = 40;
 
 fn plus_two(num: int) -> int {
     return num + 2;

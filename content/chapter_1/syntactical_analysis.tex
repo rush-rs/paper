@@ -22,7 +22,7 @@ One thing worth explaining is the \qVerb{-} at the end of line~5.
 It is used to exclude a set of symbols from the preceding rule.
 As in this case, there is no symbol following the dash, the empty word, called $\varepsilon$, is excluded from the preceding repetition.
 Thus, the repetition cannot be repeated zero times here, as that would produce the empty word, which is excluded.
-So the notation \qVerb{{ ... }-} is used to represent repetitions of one or more times, whereas the same without the trailing dash represents repetitions of zero or more times.
+So the notation \qVerbCmd{\{ \dots{} \}-} is used to represent repetitions of one or more times, whereas the same without the trailing dash represents repetitions of zero or more times.
 
 \subsection{Grouping Characters Into Tokens}
 
@@ -99,7 +99,7 @@ The former still contains%
 \Lirsting[wrap=l, wrap width=0.3\textwidth, caption={Simplified \qVerb{Token} struct definition.}, label={lst:token_simple}]{listings/token_simple.rs}
 %
 information about all input tokens with their respective locations, while the latter only stores the abstract program structure, focusing on just the relevant information for basic analysis and execution.
-Therefore, a CST is usually used for development tools like formatters, intricate linters, and analyzers, where it is important to preserve stylistic choices made by the programmer, for which knowing the exact location of every token is beneficial.
+Therefore, a CST is usually used for development tools like formatters and intricate linters\footnote{A linter is a tool which suggests how code quality might be improved.} where it is important to preserve stylistic choices made by the programmer, for which knowing the exact location of every token is beneficial.
 However, an AST is enough for interpretation and compilation as it preserves the semantic meaning of the program.
 Figure~\ref{fig:parser_simple_ast} shows an AST for the program \qVerb{1+2**3} in the language notated in Listing~\ref{lst:ebnf_reference_grammar} on page~\pageref{lst:ebnf_reference_grammar}.
 In the case of rush, an AST with limited location information is used because rush's semantic analyzer is basic enough to not require precise locations of every token, and, as discussed, execution and compilation requires no CST\@.
@@ -130,19 +130,19 @@ Bottom-up parsers instead construct the tree from the leafs at the bottom upward
 
 Top-down and bottom-up parsers are further categorized into many more subcategories.
 The two discussed here are so-called \emph{LL$(k)$} parsers and \emph{LR$(k)$} parsers.
-These are named after the direction in which the tokens are read, `L' being from left to right, and the kind of derivation they perform.
-`L' is the leftmost derivation and `R' the rightmost derivation~\cite[pp.~75f]{Watson2017}.
+These are named after the direction in which the tokens are read, \emph{L} being from left to right, and the kind of derivation they perform.
+\emph{L} is the leftmost derivation and \emph{R} the rightmost derivation~\cite[pp.~75f]{Watson2017}.
 The parenthesized $k$ represents a natural number with $k\in\mathbb{N}_0$, describing the number of tokens for \emph{lookahead}.
-Often, $k$ is either `1' or `0', forming a two or one wide window respectively.
+Often, $k$ is either `1' or `0', forming a window of width two or one respectively.
 This window moves just like previously explained for the lexer, and observes $k$ tokens, not characters, simultaneously.
-Since in most cases $k$ is `1', it is common to omit specifying it and to just speak of `LL' and `LR' parsers~\cite[pp.~86--88]{Watson2017}.
+Since in most cases $k$ is `1', it is common to omit specifying it and to just speak of \emph{LL} and \emph{LR} parsers~\cite[pp.~86--88]{Watson2017}.
 
 Alternatively to using lookahead tokens, it is possible to create parsers utilizing backtracking.
 With that approach, a parser has to guess which syntax construct follows if it cannot decide based on the first token.
 Later, when the parser detects an unexpected symbol, instead of throwing a syntax error, it cancels and returns to the point of decision-making to try the next possible construct.
 This usually comes with overhead and unclear error messages, which is why this method is rarely used and the superior lookahead method is preferable.
 
-An example for LR parsing is the \emph{shift-reduce} parsing approach, which is later outlined on page~\pageref{sec:parser_generators}.
+An example for LR parsing is the \emph{shift-reduce} parsing approach, which is outlined later.
 However, it is to be noted that LR parsers are generally very complicated to implement manually.
 On the contrary, LL parsers are usually much simpler to implement, but come with a limitation.
 By design, they must recognize a node by its first $n=k+1$ tokens, where $n$ is the window size.
@@ -152,10 +152,11 @@ An example for that is given in Listing~\ref{lst:ebnf_reference_pratt}.
 \Lirsting[float=h, caption={Example language a traditional LL$(1)$ parser cannot parse.}, label={lst:ebnf_reference_pratt}]{listings/ebnf_reference_pratt.ebnf}
 
 Here, the problem lies in the left recursion introduced by the \qVerb{Expression} rule.
-For instance, the input \qVerb{1 + 2 * 3} would already cause difficulties.
+For instance, the input \qVerb{1+2*3} would already cause difficulties.
 LL parsers must be able to determine which variant of a rule follows based on the first token they encounter.
 However, when encountering the \qVerb{Int(1)} token, both the \qVerb{integer} and \qVerb{Expression} variants would present valid substitutions, therefore introducing ambiguity.
-The left recursion causes the \qVerb{Expression} rule to include the same start tokens as the \qVerb{integer} rule since an \qVerb{Expression} can also start with an \qVerb{integer}~\cite[p.~85]{Watson2017}.
+The left recursion causes the \qVerb{Expression} rule to include the same start tokens as the \qVerb{integer} rule since an \qVerb{Expression} can also start with an \qVerb{integer}.
+In other words, the parser cannot determine whether the \qVerb{1} is an entire \qVerb{Expression} on its own, or whether it is just the start of another \qVerb{Expression}~\cite[p.~85]{Watson2017}.
 
 Most LL parsers, including rush's, are \emph{recursive-descent} parsers.
 Implementation of such a parser is rather uncomplicated.
@@ -183,18 +184,17 @@ Some examples are displayed in Table~\ref{tbl:ebnf_to_rust}.
 
 \subsubsection{Operator Precedence}
 
-As discussed previously, a traditional LL parser cannot parse the language from Listing~\ref{lst:ebnf_reference_pratt}.
-However, when comparing the grammar to Listing~\ref{lst:ebnf_reference_grammar}, it might become obvious that the two grammars notate the same language.
+As discussed previously, a traditional LL parser cannot parse the language described by the grammar in Listing~\ref{lst:ebnf_reference_pratt}.
+However, when comparing the grammar to the one shown in Listing~\ref{lst:ebnf_reference_grammar}, it might become obvious that the two grammars notate the same language.
 The first one simply provides additional information about the order of nesting different kinds of expressions, called \emph{precedence}.
 For example, when parsing the expression \qVerb{1+2*3}, the \qVerb{2*3} part should be nested deeper in the tree for it to be evaluated first.
 In Listing~\ref{lst:ebnf_reference_grammar}, this is achieved by recognizing multiplicative expressions as \qVerb{Term}s and having additive expressions be composed of multiple \qVerb{Term}s.
-Listing~\ref{lst:ebnf_reference_pratt} does not indicate the order of evaluation itself, so it must be provided externally.
+Listing~\ref{lst:ebnf_reference_pratt} does not indicate this order itself, so it must be provided externally.
 
 Additionally, a precedence may be either left- or right-associative.
-The input \qVerb{1*2*3} should be evaluated from left to right, so first \qVerb{1*2}, and then the result times `3'.
-Now consider \qVerb{1**2**3}\footnote{\qVerb{**} is the power operator here, so the input would be written as $1^{2^3}$ using mathematical notation.}.
-Here, the \qVerb{2**3} should be evaluated first, and afterwards `1' should be raised to the result.
-That means while most operators are evaluated from left to right, that is, they are left-associative, some operators, like the power operator, are evaluated from right to left and are therefore right-associative.
+The input \qVerb{1*2*3} should be evaluated from left to right, so first \qVerb{1*2}, and then the result times three.
+Now considering \qVerb{1**2**3}\footnote{\qVerb{**} is the power operator here, so the input would be written as $1^{2^3}$ using mathematical notation.}, the \qVerb{2**3} should be evaluated first, and afterward `1' should be raised to the power of the result.
+That means, while most operators are evaluated from left to right, that is, they are left-associative, some operators, like the power operator, are evaluated from right to left and are therefore right-associative.
 In Listing~\ref{lst:ebnf_reference_grammar}, left-associativity is achieved by allowing simple repetition of the operator for an indefinite amount of times.
 Right-associativity instead uses recursion on the right-hand side of the operator.
 
@@ -215,41 +215,41 @@ Right-associativity instead uses recursion on the right-hand side of the operato
 	\caption{Abstract syntax tree for `\texttt{1+2**3}' using Pratt parsing.}\label{fig:parser_simple_ast_pratt}
 \end{wrapfigure}
 
-For LR parsers, the precedence and associativity for each operator is encoded within the parser table.
-However, there is also a technique called \emph{Pratt parsing}\footnote{First introduced by Vaughan Pratt in 1973~\cite{Pratt1973}.} that allows slightly modified recursive-descent LL parsers to parse such languages, given a map from tokens to precedences and their associativity.
+For LR parsers, the precedence and associativity for each operator is encoded within the parser table, which is explained later.
+However, there is also a technique called \emph{Pratt parsing}\footnote{First introduced by Vaughan Pratt in 1973~\cite{Pratt1973}.} that allows slightly modified recursive-descent LL parsers to parse such languages, given a map of tokens with their respective precedence and associativity.
 Often, the grammars without included precedence are preferred, because they usually result in a simpler structure of the resulting syntax tree.
 This can be seen when comparing Figure~\ref{fig:parser_simple_ast} from earlier to Figure~\ref{fig:parser_simple_ast_pratt} which shows the resulting AST for the same input using the alternative language representation.
 Most notably, the rather long sequences of nodes with just a single child, like the path on the left simply resolving to a single \qVerb{Int(1)} token, are gone in Figure~\ref{fig:parser_simple_ast_pratt}.
 
 \subsubsection{Pratt Parsing}
 
-As the rush parser makes use of Pratt parsing, most of the following code snippets are taken from there.
+As the rush parser makes use of Pratt parsing, the following code snippets are taken from there.
 First, a mapping from a token kind to its precedence must be defined.
 The one for rush is found in Listing~\ref{lst:rush_tok_prec}.
 It shows the \qVerb{prec} method implemented on the \qVerb{TokenKind} enumeration.
 The return type is a tuple of two integers, one for left and one for right precedence.
 For all but one token kind, the left precedence is lower than the right one, resulting in left-associativity.
-The higher the precedences are, the deeper in the tree the resulting expressions will be, and the earlier they will be evaluated.
+The higher a precedence is, the deeper in the tree the resulting expression will be, and the earlier it will be evaluated.
 All unrelated tokens are simply assigned a precedence of `0' for left and right.
 
 \Lirsting[ranges={172-173, 194-201}, float=h, label={lst:rush_tok_prec}, caption={Token precedences in rush.}]{deps/rush/crates/rush-parser/src/token.rs}
 
 The \qVerb{expression} method on the \qVerb{Parser} struct is then modified to take a parameter for the current precedence as seen in Listing~\ref{lst:pratt_expr}.
-It then first matches on the current token kind to decide which expression to parse and stores the result in the \qVerb{lhs}\footnote{Short for \enquote{left-hand side}.} variable.
-Afterwards it checks whether the left precedence of the now current token is bigger than the \qVerb{prec} argument.
+It then first considers the current token kind to decide which expression to parse, and stores the result in the \qVerb{lhs}\footnote{Short for \enquote{left-hand side}.} variable.
+Afterward it checks whether the left precedence of the now current token is larger than the \qVerb{prec} argument.
 When called from elsewhere, like in the condition of a while-loop or in a grouped expression, the \qVerb{prec} argument has its minimum value of `0', as shown in Listing~\ref{lst:pratt_grouped_expr}.
 In that case, this check will only fail when the whole expression is over, as every non-operator token is assigned a precedence higher than 0.
-If it does not fail, the \qVerb{infix_expr} method is called with the matching operator and the \qVerb{lhs}.
-Afterwards, \qVerb{lhs} is overwritten with the returned value.
+If it does not fail, the \qVerb{infix_expr} method is called with the matching operator and \qVerb{lhs}.
+Afterward, \qVerb{lhs} is overwritten with the returned value.
 
-\Lirsting[ranges={551-555, 568-570, _574-583, 613-618}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: implementation for expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={551-555, 568-570, _574-583, 613-618}, float=h, label={lst:pratt_expr}, caption={Pratt-Parser: Implementation for expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
 
-\Lirsting[ranges={733-743, 749-749}, float=h, label={lst:pratt_grouped_expr}, caption={Pratt-Parser: implementation for grouped expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={733-743, 749-749}, float=h, label={lst:pratt_grouped_expr}, caption={Pratt-Parser: Implementation for grouped expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 The \qVerb{infix_expr} method in Listing~\ref{lst:pratt_infix_expr} simply stores the precedence for the right side of the operator token, advances to the next token, and calls the \qVerb{expression} method again for its right-hand side, but this time with the stored \qVerb{right_prec} as the minimum precedence.
 These simple calls and checks of precedences automatically result in correct grouping and nesting of the expressions.
 
-\Lirsting[ranges={751-751, _756-759, 770-770}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: implementation for infix expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
+\Lirsting[ranges={751-751, _756-759, 770-770}, float=h, label={lst:pratt_infix_expr}, caption={Pratt-Parser: Implementation for infix-expressions.}]{deps/rush/crates/rush-parser/src/parser.rs}
 
 \begin{figure}[hb]
 	\newcommand{\precs}[5][black]{
@@ -291,7 +291,7 @@ These simple calls and checks of precedences automatically result in correct gro
 \end{figure}
 
 In order to understand the concept better, Figure~\ref{fig:token_precs} can be considered.
-It shows the tokens with their respective left and right precedence for the input \qVerb{(1+2*3)/4**5}, which represents the mathematical expression $\frac{1+2\cdot3}{4^5}$.
+It shows the tokens with their respective left and right precedences for the input \qVerb{(1+2*3)/4**5}, which represents the mathematical expression $\frac{1+2\cdot3}{4^5}$.
 Precedences which are irrelevant for this example have been colored in gray.
 Starting from the left, the parser first encounters an \qVerb{LParen} token and therefore decides to parse a grouped expression.
 Inside the \qVerb{grouped_expr} method, \qVerb{expression} is called again, with \qVerb{prec} being `0' once more.
@@ -299,29 +299,27 @@ The difference is that now the current token is \qVerb{Int(1)}.
 That token is then parsed as a simple integer expression and stored in \qVerb{lhs}.
 Now, the left precedence of the \qVerb{Plus} token, `19', is higher than the value of \qVerb{prec}, `0', so the while-loop is entered.
 In there, the \qVerb{infix_expr} method is called, which queries the right precedence of the \qVerb{Plus} token and calls \qVerb{expression} again, this time with a precedence of `20'.
-Skipping to the precedence check, the current token's left precedence is higher than \qVerb{prec} again, them being `21' for the \qVerb{Star} token and `20' for \qVerb{prec}.
+Skipping to the precedence check, the current token's left precedence is higher than \qVerb{prec} again, that is, `21' for the \qVerb{Star} token is higher than `20' for \qVerb{prec}.
 Therefore, \qVerb{infix_expression} is called once again, which calls \qVerb{expression} again, but now during the next precedence check, the left precedence of the following \qVerb{RParen} token, `0', is not higher than the current precedence of `22'.
-That means, the innermost \qVerb{expression} call returns with a single `3'.
-This `3' is then used as the right-hand side for the multiplicative infix expression.
+That means, the innermost \qVerb{expression} call returns with a single \qVerb{3}.
+This \qVerb{3} is then used as the right-hand side for the multiplicative infix-expression.
 The same \qVerb{RParen} precedence check fails again for the \qVerb{expression} call with a precedence of `20'.
 Thus, the \qVerb{2*3} part together forms the right-hand side of the addition expression.
-Once more, the left precedence of \qVerb{RParen}, `0', is not larger than the initial precedence of `0', hence the parser returns to the \qVerb{grouped_expr} call with the entire contents in the parentheses.
+Once more, the left precedence of \qVerb{RParen}, `0', is not larger than the initial precedence of `0', hence the parser returns to the \qVerb{grouped_expr} call with the entire contents of the parentheses.
 Here, the right parenthesis is skipped, and the method returns to the outermost \qVerb{expression} call, assigning the entire grouped expression to \qVerb{lhs}.
 
 In order to understand the right-associativity of the \qVerb{Pow} token, the reader is advised to continue going through this procedure for the rest of the example input.
 A curious reader might additionally want to parse the inputs \qVerb{1*2*3}, \qVerb{1**2**3}, and \qVerb{1+(2+3)} by hand.
-It should then become clear how Pratt parsing achieves parsing with precedences without them being encoded in the Grammar, and with that, the node types.
+It should then become clear how Pratt parsing achieves parsing with precedences without them being encoded in the grammar, and with that, the node types.
 
 \subsubsection{Parser Generators}\label{sec:parser_generators}
 
 For most purposes, it is generally not necessary to implement parsers, and with that, lexers, manually.
 Instead, there are so-called \emph{parser generators} that generate parsers based on some specification of the desired syntax and the required precedences.
-Often, parser generators define a domain specific grammar notation for the syntax specification, although some parser generators also accept pre-existing grammar notations as input.
+Often, parser generators define a domain specific grammar notation for the syntax specification, although some parser generators also accept pre-existing grammar notations as their input.
 % As previously discussed, implementing table-driven parsers, like the shift-reduce LR parsers, is way too error-prone to be done by hand.
 % But because of the flexibility and greater language support they bring over LL parsers, it is still preferable to use such a parser for production ready languages.
 Most parser generators target some variation of \emph{table-driven} LR parsers.
 Table-driven parsers use a table, mapping all possible combinations of tokens on the parse stack and lookahead tokens to an action.
-For shift-reduce parsers, the possible actions are shifting, that is, reading the next input token and pushing it to the stack, and reducing, which pops some number of elements from the stack and in place pushes a node to it.
-The input syntax must therefore either be unambiguous or augmented by precedence rules, so that a complete parser table can be generated.
-\TODO{cite}
-\TODO{mention `nom'}
+For shift-reduce parsers, the possible actions are shifting, that is, reading the next input token and pushing it to the stack, and reducing, which pops some number of elements off the stack, and in place pushes a node to it.
+The input syntax must therefore either be unambiguous or augmented by precedence rules, so that a complete parser table can be generated~\cite[pp.~76--81]{Jeffery2021}.

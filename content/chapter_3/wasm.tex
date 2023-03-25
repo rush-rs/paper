@@ -113,7 +113,7 @@ The \qVerb{Self::section} helper function is used to add the section identifier,
 \Lirsting[ranges={70-70, 81-81, 104-109, 124-126}, float=h, label={lst:wasm_compiler_entry}, caption={Entry point of the WASM compiler.}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
 
 Inside the \qVerb{program} method, the global variables are defined and initialized, and all function signatures are added to the `Type' and `Function' sections and the \qVerb{functions} map.
-Afterwards, it calls \qVerb{function_definition} for every defined function.
+Afterward, it calls \qVerb{function_definition} for every defined function.
 This has to happen in these two steps, because rush allows a function to be called before its definition.
 \TODO{this was already explained in the tree interpreter section}
 For every function body, all statements and the optional trailing expression are compiled first, and then the values of \qVerb{function_body} and \qVerb{locals} along with their combined length are appended to the `Code' section.
@@ -134,7 +134,7 @@ Calling a declared function is as simple as compiling all argument expressions i
 
 \Lirsting[ranges={758-779, _796-798, 864-864}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, label={lst:wasm_logical_infix}, caption={Compilation of logical operators in WASM.}]{deps/rush/crates/rush-compiler-wasm/src/compiler.rs}
 
-One interesting special case to highlight is the compilation of logical operators\footnote{Operators that only operate on boolean values, typically \qVerb{&&} and \qVerb{||}.} in infix expressions.
+One interesting special case to highlight is the compilation of logical operators\footnote{Operators that only operate on boolean values, typically \qVerb{&&} and \qVerb{||}.} in infix-expressions.
 This comes down to the fact that in many programming languages, and likewise in rush, these operators evaluate \emph{lazily}, that is, they only evaluate their right-hand side if the result is not already clear by the left-hand side.
 Listing~\ref{lst:wasm_logical_infix} shows the relevant part of the \qVerb{infix_expr} method in the WASM compiler.
 At the start of this method, before the normal logic is reached, there are special cases for the \qVerb{&&} and \qVerb{||} operators.

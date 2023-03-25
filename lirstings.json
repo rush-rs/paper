@@ -127,6 +127,7 @@
     "symbol.grammar.camel": "$cyan",
     "symbol.grammar.upper": "$orange",
     "symbol.grammar.lower": "$red",
+    "storageclass": "$yellow",
     "storageclass.lifetime": "$red",
     "tag.attribute": "$yellow",
     "text.environment": "$fg",

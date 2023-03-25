@@ -285,101 +285,71 @@ Here, the instruction jumps to the instruction at index `14' of the current func
 The instructions in the lines~24 and 25 return `0' in case \qVerb{n} was equal to `0'.
 
 \subsection{Fetch-Decode-Execute Cycle of the VM}
-Now that the semantic meaning of the instructions in Listing~\ref{lst:tree_vs_vm_vm} has been explained, we will explain how the fetch-decode-execute cycle works in the VM\@.
-The code in Listing~\ref{lst:vm_run_meth} displays the `\texttt{run}' method of the rush VM\@.
+Now that the semantic meaning of the instructions in Listing~\ref{lst:tree_vs_vm_vm} has been explained, the fetch-decode-execute cycle of the VM will be explained\@.
+Listing~\ref{lst:vm_run_meth} displays the `\texttt{run}' method of the rush VM\@.
 
-\Lirsting[ranges={168-179}, caption={The \qVerb{run} method of the rush VM.}, label={lst:vm_run_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+\Lirsting[ranges={174-185}, caption={The \qVerb{run} method of the rush VM.}, label={lst:vm_run_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
 
 This method manages the entire fetch-decode-execute cycle of the VM\@.
 It is immediately apparent that this method looks relatively simple considering that it plays such of a vital role in the VM\@.
-Since the fetch-decode-execute cycle executes instructions repeatedly, the method's main construct is the while-loop beginning in line~169.
-The condition of the loop checks that the current instruction pointer refers to a legal instruction inside the current function.
+Since the fetch-decode-execute cycle executes instructions repeatedly, the method's main construct is the while-loop beginning in line~175.
+The condition of the loop checks whether the current instruction pointer refers to a legal instruction inside the current function.
 This way, the VM comes to a halt as soon as it reaches the end of an instruction sequence.
-In line~170, the next instruction to be interpreted is saved in the \qVerb{instruction} variable.
+In line~176, the next instruction to be interpreted is saved in the \qVerb{instruction} variable.
 This line represents the \emph{fetch} step because the next instruction is fetched from memory and placed in a spot where it is accessible to the later steps of the cycle.
 
 In the body of the loop, the current instruction is executed using the \qVerb{run_instruction} method.
 This method is responsible for executing the previously fetched instruction.
-If execution of the instruction fails, the method returns a runtime error, such as an \emph{integer-overflow} fault.
+If execution of the instruction fails, the method returns a runtime error, such as integer overflow.
 Furthermore, this method may return an optional integer, representing the exit code of the program.
 If such an integer is returned, instruction execution comes to a halt instantly and the VM exists using it as the exit code.
-In case the method returns none of these two possible enum variants, the fetch-decode-execute cycle continues as usual.
-However, one cannot observe how the instruction pointer is incremented, therefore suggesting that the VM stays in an endless loop without ever progressing to the next instruction.
-In order to answer the final question of how the current instruction is executed, and the instruction pointer is incremented, we will now examine the code in Listing~\ref{lst:vm_run_instr_meth}.
-
-\Lirsting[ranges={181-184,191-194,261-263,272-276,357-360}, caption={Parts of the \qVerb{run_instruction} method of the rush VM.}, label={lst:vm_run_instr_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
-
-The code in Listing~\ref{lst:vm_run_instr_meth} displays parts of the \qVerb{run_instruction} method.
-This method mainly consists of a match-expression that determines which code to run, depending on the current instruction.
+In case the method returns none of these two possible variants, the fetch-decode-execute cycle continues as usual.
+However, one cannot observe how the instruction pointer is incremented.
+Among other tasks, this is done by the code in Listing~\ref{lst:vm_run_instr_meth}.%
+%
+\Lirsting[ranges={187-190,197-200,267-269,278-282,363-366}, caption={Parts of the \qVerb{run_instruction} method of the rush VM.}, label={lst:vm_run_instr_meth}, float=h]{deps/rush/crates/rush-interpreter-vm/src/vm.rs}
+%
+It displays the \qVerb{run_instruction} method.
+This method mainly consists of a match-expression that determines which code to run depending on the current instruction.
 Here, the implementation of several instructions is visible.
-In line~183, the `\texttt{Nop}' instruction is matched.
-It is apparent that there is no instruction-specific code executed in this case since \enquote{nop} stands for \enquote{no operation}.
-Therefore, the VM will ignore any `\texttt{Nop}' instructions it encounters.
-Next, in line~184, the code for the `\texttt{Push}' instruction is displayed.
-This instruction pushes its first operand on the stack at runtime by calling the internal helper method `\texttt{push}'.
-Therefore, this method pushes the provided parameter on the `\texttt{stack}' field of the VM,
-first validating that the stack will not exceed its maximum capacity.
+In line~190, the `\texttt{push}' instruction is handled.
+This instruction pushes its first operand onto the stack by calling the internal `\texttt{push}' method, which first validates that the stack will not exceed its maximum capacity.
 If the push operation causes the capacity of the stack to be exceeded, the method returns a runtime error describing the issue.
-In line~191, the code responsible for executing the `\texttt{Jmp}' instruction can be seen.
-This instruction only sets the instruction pointer to the target index specified in the first operand.
-Therefore, a jump involves very little overhead and is implemented using very little effort.
-It is to be noted that this instruction does not perform any bound checks, therefore allowing illegal addresses.
-For some special instructions, such as this one, the instruction pointer should not be incremented since it would interfere with the jump.
-Since the instruction pointer is incremented at the end of the method, the \qVerb{return} statement in line~193 is used to terminate this method early, preventing the increase of \qVerb{ip} at the end.
+In line~197, the code responsible for executing the `\texttt{jmp}' instruction can be seen.
+This instruction only sets \qVerb{ip} to the target index specified by the first operand.
+It is to be noted that this instruction does not perform any bound checks, therefore allowing illegal jump destinations.
+For some special instructions, such as this one, \qVerb{ip} should not be incremented since it would interfere with the jump operation.
+Since the instruction pointer is incremented at the end of the method, the \qVerb{return} statement in line~199 is used to terminate this method early, preventing modification of \qVerb{ip} at the end.
 
-line~261 contains the implementation of the `\texttt{Exit}' instruction, which is inserted by the compiler if it encounters a call to the `\texttt{exit}' function.
+Line~267 contains the implementation of the `\texttt{exit}' instruction, which is inserted by the compiler if it encounters a call to the `\texttt{exit}' function.
 In this case, the instruction leads to the termination of the fetch-decode-execute cycle immediately.
-In line~272, the code responsible for executing the `\texttt{Add}' instruction can be observed.
-This instruction first pops two elements from the stack since they represent the operands of the underlying mathematical computation.
-Then, the `\texttt{add}' helper function is called on the left-hand side of the computation.
-This helper function then performs the actual addition computation.
+Line~278, handles the execution of `\texttt{add}' instruction.
+This instruction first pops two elements of the stack since they represent the operands of the underlying mathematical computation.
+Then, the `\texttt{add}' method is called on the left-hand side of the computation.
+It then performs the actual addition.
 This way, the \qVerb{run_instruction} method stays organized and simple.
 Although just the code for addition is shown, most of the other infix-expressions are implemented similarly.
-It is apparent that the execution of these instructions involves relatively little effort.
-Like hinted previously, after an instruction has been executed, \qVerb{ip} is incremented in line~358.
+As outlined previously, after an instruction has been executed, \qVerb{ip} is incremented in line~364.
 If no error occurred during the execution of these instructions, nothing is returned since execution should proceed with the next instruction.
-This method represents both the \emph{decode} and \emph{execute} step since it first matches (\emph{decode}) and then interprets (\emph{execute}) the current instruction.
-Surprisingly, the parts of the method shown in this example can all be understood using relatively little effort and show that the implementation of a VM is usually manageable.
-Now that we have explained how some important parts of the rush VM work, the question of how its input instructions are generated remains.
-Therefore, the compiler targeting the rush VM is presented in Section~\ref{sec:vm_compiler} on page \pageref{sec:vm_compiler}.
+This method represents both the \emph{decode} and \emph{execute} steps since it first matches (\emph{decodes}) and then evaluates (\emph{executes}) the current instruction.
+The compiler targeting the rush VM is presented in Section~\ref{sec:vm_compiler}.
 
 \subsection{Comparing the VM to the Tree-Walking Interpreter}
 
 One significant benefit of virtual machines is that they execute programs faster compared to tree-walking interpreters.
-A reason for this speedup is that tree traversal involves a lot of overhead which is omitted when instructions are interpreted.
-The code in Listing~\ref{lst:rush_vm_faster} displays a recursive function implemented in rush.
-Figure~\ref{fig:tree_vs_vm_tree} displays a heavily simplified syntax tree representing the function displayed in Listing~\ref{lst:rush_vm_faster}.
+A reason for this speedup is that tree traversal involves a lot of overhead which is omitted when instructions are executed directly.
+The aforementioned Listing~\ref{lst:rush_vm_faster} on page~\pageref{lst:rush_vm_faster} displayed a recursive function implemented in rush.
+Figure~\ref{fig:tree_vs_vm_tree} displays a heavily simplified syntax tree representing this function.
 The root node of the tree represents the \qVerb{rec} function.
 Since the function only contains a single expression, the if-expression node is the only child of the root node.
-The only direct child of the root node is the single if-expression present in the function's body.
 The if-expression contains a condition, an if-branch, and an else-branch.
 
-Since the function should not call itself again if \qVerb{n} is equal to 0, the if-branch returns 0.
-In the else-branch, the \texttt{rec} function calls itself recursively.
-When the above program is executed using the tree-walking interpreter, the algorithm traverses the entire tree of the \qVerb{rec} function every time it recurses.
-In this example, the AST of the program is relatively simple.
-However, the complexity of the tree grows as the source program evolves.
-Since loops and recursive functions execute the code in their bodies repeatedly, the repeated tree traversal of the body presents an inefficiency.
-Here, the inefficiency solely lies in the repeated tree traversal, not in the repetition introduced by an iterative or recursive algorithm.
-
-In order to improve efficiency, an algorithm could traverse the AST once, saving its semantic meaning in the process.
-Then, the semantic meaning of the previously traversed tree could be interpreted repeatedly without the additional overhead.
-This behavior is used in the rush VM since it interprets instructions previously generated by a compiler.
-The compiler only traverses the AST once, generating VM instructions during the process.
-The instructions in Listing~\ref{lst:tree_vs_vm_vm} represent the program in Listing~\ref{lst:rush_vm_faster}.
-Every time the \qVerb{call} instruction in line~23 is executed, the VM only needs to jump to the instruction in line~10 in order to execute the \qVerb{rec} function recursively.
-Since repeated traversal of the syntax tree is omitted, rush programs will run significantly faster using the VM compared to the tree-walking interpreter.
-Using the VM, executing the \qVerb{rec} function using an input of $n = 1000$ took around 160 $\mu$s.
-However, executing the identical code using the tree-walking interpreter took around 427 $\mu$s\footnote{Average from 10000 iterations. OS: Arch Linux, CPU: Ryzen 5 1500, RAM: 16 GB.}.
-The rush VM executed the identical code roughly 2.6 times faster than the tree-walking interpreter.
-However, the initial delay caused by compilation was not considered in this benchmark.
-
-\begin{wrapfigure}{R}{.56\textwidth}
+\begin{wrapfigure}{o}{.56\textwidth}
 	\begin{adjustbox}{max totalsize={\textwidth}{!},center}
 		\begin{tikzpicture}[
 				tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}},
 			]
-			\node{fn rec}
+            \node{function \qVerb{rec}}
 			child { node {if-expression}
 					child { node {condition} child {node {n == 0}} }
 					child [missing]
@@ -389,13 +359,33 @@ However, the initial delay caused by compilation was not considered in this benc
 				};
 		\end{tikzpicture}
 	\end{adjustbox}
-	\caption{Abstract syntax tree and VM instructions of a recursive rush program.}\label{fig:tree_vs_vm_tree}
+    \caption{AST and VM instructions of the recursive rush program in Listing~\ref{lst:rush_vm_faster}.}\label{fig:tree_vs_vm_tree}
 \end{wrapfigure}
 
+Since the function should not call itself again if \qVerb{n} is equal to `0', the if-branch returns `0'.
+In the else-branch, the \qVerb{rec} function calls itself recursively.
+When the above program is executed using the tree-walking interpreter, the algorithm traverses the entire tree of the \qVerb{rec} function every time it recurses.
+In this example, the AST of the program is relatively simple.
+However, the complexity of the tree grows as the source program evolves.
+Since loops and recursive functions execute the code in their bodies repeatedly, the repeated tree traversal causes inefficiency.
+Here, the inefficiency solely lies in the repeated tree traversal, not in the repetition introduced by an iterative or recursive algorithm.
+
+In order to improve efficiency, an algorithm could traverse the AST once, saving its semantic meaning in the process.
+Then, the semantic meaning of the previously traversed tree could be interpreted repeatedly without the additional overhead.
+This behavior is used in the rush VM since it interprets instructions previously generated by a compiler.
+The compiler only traverses the AST once, generating VM instructions during the process.
+As mentioned previously, the instructions in Listing~\ref{lst:tree_vs_vm_vm} on page~\pageref{lst:tree_vs_vm_vm} represent this recursive program.
+Every time the \qVerb{call} instruction in line~23 is executed, the VM only needs to jump to the instruction in line~10 in order to call the \qVerb{rec} function recursively.
+Since repeated traversal of the syntax tree is omitted, rush programs will run significantly faster when running on the VM compared to the tree-walking interpreter.
+Using the VM, executing the \qVerb{rec} function using an input of $\texttt{n} = 1000$ took around 160 \si{\microsecond}.
+However, executing the identical code using the tree-walking interpreter took around 427 \si{\microsecond}\footnote{Average from 10000 iterations. OS\@: Arch Linux, CPU\@: Ryzen 5 1500, RAM\@: 16 GB.}.
+The rush VM executed the identical code roughly 2.7 times faster than the tree-walking interpreter.
+However, the initial delay caused by compilation was not considered in this benchmark.
+
 As a conclusion, a VM is often a reasonable approach if an interpreted programming language is to be implemented.
-The main advantages of a VM are increased speed, reduced memory usage at runtime, and less runtime errors due to type-checking performed by its compiler.
-The main downsides include the need for a compiler targeting the VM, thus making its implementation more demanding compared to a tree-walking interpreter.
+The main advantages of a VM are increased speed, reduced memory usage at runtime, and fewer runtime errors due to type checking performed by its compiler.
+The main downsides include the need for a compiler targeting the VM, thus making its implementation more involved compared to a tree-walking interpreter.
 Furthermore, debugging the VM is often significantly more demanding than debugging a tree-walking interpreter.
-In the past, commercial software has shown that implementing a programming language to run on a virtual machine can indeed be used successfully and on a larger scale.
-For instance, the \emph{Java Virtual Machine} (\emph{JMV}) is the software component responsible for executing the compiled \emph{Java bytecode}.
-Through the JVM, the compiled Java program preserves its platform independence while using the benefits introduced by a VM~\cite[Chapter~1.2]{Lindholm2014-jb}. %TODO: is chapter the right noun (use section?)
+In the past, commercial software has shown that implementing a programming language leveraging a virtual machine can indeed be successful and on a larger scale.
+For instance, the \emph{Java Virtual Machine} (\emph{JVM}) is the software component responsible for executing the compiled \emph{Java bytecode}.
+Through the JVM, the compiled Java program preserves its platform independence while using the benefits introduced by a VM~\cite[Section~1.2]{Lindholm2014-jb}.

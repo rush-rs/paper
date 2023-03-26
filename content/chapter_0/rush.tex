@@ -1,3 +1,4 @@
+% chktex-file -2
 \newpage %TODO: remove this force newpage?
 \section{The rush Programming Language}
 
@@ -34,39 +35,6 @@ The language provides many features which are meant to increase developer produc
 For instance, a program might use a \qVerb{loop} to implement code repetition easily.
 For reference, Table~\ref{tbl:rush_features} shows some features of the rush programming language.
 
-\begin{table}[p]
-	\caption{Most important features of the rush programming language.}\label{tbl:rush_features}
-	\rowcolors{2}{gray!15}{}
-	\begin{tabularx}{0.95\textwidth}{lLl}
-		\rowcolor{gray!25} Name & Description                                                             & Example                                          \\
-		\hline
-		unconditional loop      & Executes code repeatedly.                                               & \LirstInline{rush}{loop { }}                     \\
-		while-loop              & Like \qVerb{loop}, but checks a condition before each iteration.            & \LirstInline{rush}{while x < 5 { }}              \\
-		for-loop                & Like \qVerb{while}, but executes an update-expression after each iteration. & \LirstInline{rush}{for i = 0; i < 5; i += 1 { }} \\
-		if-expression           & Executes different code based on a condition.                           & \LirstInline{rush}{if true { } else { }}         \\
-		function definition     & Defines a function, which can be called later.                           & \LirstInline{rush}{fn foo(n: int) { }}           \\
-		infix-expression        & Performs mathematical and logical operations using two values.                           & \LirstInline{rush}{1 + n; 5 ** 2}                \\
-		prefix-expression       & Performs mathematical and logical operations using one value.                           & \LirstInline{rush}{!false; -n}                   \\
-		let-statement           & Defines a variable with an initial value.                               & \LirstInline{rush}{let mut answer = 42;}          \\
-		cast-expression         & Converts a value into a different type.                                 & \LirstInline{rush}{42 as float}                  \\
-	\end{tabularx}
-\end{table}
-
-\begin{table}[p]
-	\caption{Data types in the rush programming language.}\label{tbl:rush_types}
-	\rowcolors{2}{gray!15}{}
-	\begin{tabularx}{0.95\textwidth}{llL}
-		\rowcolor{gray!25} Notation & Example                                  & Description                                                                                                                                                                                       \\
-		\hline
-        \qVerb{int}                 & \LirstInline{rush}{let a: int = 0;}      & Values of the \emph{int} type can represent 64-bit signed integers, that is, $\left[-2^{63};\ 2^{63}-1\right]$.                                                                                                                           \\
-		\qVerb{float}               & \LirstInline{rush}{let b: float = 3.14;} & Values of the \emph{float} type can represent 64-bit double precision floating-point numbers, as defined by the \emph{IEEE 754--2008} standard.                                                                                                             \\
-        \qVerb{bool}                & \LirstInline{rush}{let c: bool = true;}  & Values of the \emph{bool} type can represent either `true' or `false'.                                                                                                                 \\
-		\qVerb{char}                & \LirstInline{rush}{let d: char = 'a';}   & Values of the \emph{char} type can be any integer in the range $\left[0;\ 127\right]$, representing any valid ASCII character.                                                                                             \\
-		\qVerb{()}                  & \LirstInline{rush}{let e: () = main();}  & The \emph{unit} type is an empty tuple representing nothing, comparable to \emph{void} in other languages. It is the implicit return type of functions in rush and is commonly used in functional languages like Haskell~\cite[p.~208]{Mena2019}. \\
-		\qVerb{!}                   & \LirstInline{rush}{let f = exit(42);}    & The \emph{never} type can never be materialized, it exists to express that an expression diverges and therefore yields no value.                                                                                  \\
-	\end{tabularx}
-\end{table}
-
 Just like most other compiled languages, rush also includes a \emph{static type system},
 meaning that every variable has a type, which cannot change during runtime.
 For instance, after a new variable, which can hold integers, was defined,
@@ -81,12 +49,13 @@ Table~\ref{tbl:rush_types} provides an overview of all the data types rush provi
 	\caption{Lines of code of the project's components in commit \protect\rushCommit{}.}\label{tbl:rush_loc_components}
 	\begin{tabularx}{\linewidth}{|L|l|}
 		\hline
-		\rowcolor{gray!20} Component & Lines\\ \hline
-		lexer and parser               & \tokei{./deps/rush/crates/rush-parser}           \\ \hline
+		\rowcolor{gray!20} Component & Lines                                            \\ \hline
+		lexer and parser             & \tokei{./deps/rush/crates/rush-parser}           \\ \hline
 		tree-walking interpreter     & \tokei{./deps/rush/crates/rush-interpreter-tree} \\ \hline
-		VM compiler and runtime        & \tokei{./deps/rush/crates/rush-interpreter-vm}   \\ \hline
+		VM compiler and runtime      & \tokei{./deps/rush/crates/rush-interpreter-vm}   \\ \hline
 		Wasm compiler                & \tokei{./deps/rush/crates/rush-compiler-wasm}    \\ \hline
 		LLVM compiler                & \tokei{./deps/rush/crates/rush-compiler-llvm}    \\ \hline
+		C transpiler                 & \tokei{./deps/rush/crates/rush-transpiler-c}     \\ \hline
 		\riscv{} compiler            & \tokei{./deps/rush/crates/rush-compiler-risc-v}  \\ \hline
 		x64 compiler                 & \tokei{./deps/rush/crates/rush-compiler-x86-64}  \\ \hline
 	\end{tabularx}
@@ -105,6 +74,39 @@ However, the fact that the never type is returned is relevant as this informatio
 Furthermore, \qVerb{break}, \qVerb{continue}, and \qVerb{return} also result in the never type.
 It is to be noted that the type cannot be used explicitly.
 That means the usage of syntax like `\LirstInline{rush}{let a: ! = exit(0);}' is illegal.
+
+\begin{table}[p]
+	\caption{Most important features of the rush programming language.}\label{tbl:rush_features}
+	\rowcolors{2}{gray!15}{}
+	\begin{tabularx}{0.95\textwidth}{lLl}
+		\rowcolor{gray!25} Name & Description                                                                 & Example                                          \\
+		\hline
+		unconditional loop      & Executes code repeatedly.                                                   & \LirstInline{rush}{loop { }}                     \\
+		while-loop              & Like \qVerb{loop}, but checks a condition before each iteration.            & \LirstInline{rush}{while x < 5 { }}              \\
+		for-loop                & Like \qVerb{while}, but executes an update-expression after each iteration. & \LirstInline{rush}{for i = 0; i < 5; i += 1 { }} \\
+		if-expression           & Executes different code based on a condition.                               & \LirstInline{rush}{if true { } else { }}         \\
+		function definition     & Defines a function, which can be called later.                              & \LirstInline{rush}{fn foo(n: int) { }}           \\
+		infix-expression        & Performs mathematical and logical operations using two values.              & \LirstInline{rush}{1 + n; 5 ** 2}                \\
+		prefix-expression       & Performs mathematical and logical operations using one value.               & \LirstInline{rush}{!false; -n}                   \\
+		let-statement           & Defines a variable with an initial value.                                   & \LirstInline{rush}{let mut answer = 42;}         \\
+		cast-expression         & Converts a value into a different type.                                     & \LirstInline{rush}{42 as float}                  \\
+	\end{tabularx}
+\end{table}
+
+\begin{table}[p]
+	\caption{Data types in the rush programming language.}\label{tbl:rush_types}
+	\rowcolors{2}{gray!15}{}
+	\begin{tabularx}{0.95\textwidth}{llL}
+		\rowcolor{gray!25} Notation & Example                                  & Description                                                                                                                                                                                                                                       \\
+		\hline
+		\qVerb{int}                 & \LirstInline{rush}{let a: int = 0;}      & Values of the \emph{int} type can represent 64-bit signed integers, that is, $\left[-2^{63};\ 2^{63}-1\right]$.                                                                                                                                   \\
+		\qVerb{float}               & \LirstInline{rush}{let b: float = 3.14;} & Values of the \emph{float} type can represent 64-bit double precision floating-point numbers, as defined by the \emph{IEEE 754--2008} standard.                                                                                                   \\
+		\qVerb{bool}                & \LirstInline{rush}{let c: bool = true;}  & Values of the \emph{bool} type can represent either `true' or `false'.                                                                                                                                                                            \\
+		\qVerb{char}                & \LirstInline{rush}{let d: char = 'a';}   & Values of the \emph{char} type can be any integer in the range $\left[0;\ 127\right]$, representing any valid ASCII character.                                                                                                                    \\
+		\qVerb{()}                  & \LirstInline{rush}{let e: () = main();}  & The \emph{unit} type is an empty tuple representing nothing, comparable to \emph{void} in other languages. It is the implicit return type of functions in rush and is commonly used in functional languages like Haskell~\cite[p.~208]{Mena2019}. \\
+		\qVerb{!}                   & \LirstInline{rush}{let f = exit(42);}    & The \emph{never} type can never be materialized, it exists to express that an expression diverges and therefore yields no value.                                                                                                                  \\
+	\end{tabularx}
+\end{table}
 
 In the rush project, most of the previously presented stages of compilation are implemented as their own individual crates\footnote{A crate is a software library in Rust terms.}.
 This way, each component of the programming language can be developed, tested, and maintained separately.

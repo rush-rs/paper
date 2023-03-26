@@ -1,42 +1,43 @@
+\newpage
 \section{Transpilers}
 
-Another, possible target for compilers is another high-level programming language.
-A compiler translating one language to another language is usually called a \emph{transpiler}.
+One more possible target for compilers is another high-level programming language.
+A compiler translating one language to another high-level language is usually called a \emph{transpiler}.
 Historically, the very first version of the C++ compiler was a transpiler which translated C++ into C.
 The main advantage of a transpiler is that its implementation is usually very simple, as low-level compilation steps can be omitted.
 A significant downside of a transpiler is that it often generates very inefficient code.
 Furthermore, the entire project would also depend on the target language~\cite[p.~5]{Jeffery2021}.
 
-For this paper, we have implemented a transpiler which generates \emph{C} from rush source programs.
+For this paper, we have implemented a transpiler which generates C code from rush source programs.
 Listing~\ref{lst:rush_transpiler_block} shows a rush program which terminates with the code `42`.
-For this, the value of the block-expression in the lines~2--5 is saved in the variable \qVerb{num}.
+For this, the value of the block-expression in lines~2--5 is saved in the variable \qVerb{num}.
 In the block, a temporary variable with a value of `40` is created.
 The block results in a value of `42` since `2` is added to this variable.
 In line~6, the \qVerb{exit} function is called, using \qVerb{num} as its argument.
 Listing~\ref{lst:c_transpiler_block} shows the identical program represented using C.
 The code was generated from the rush program in Listing~\ref{lst:rush_transpiler_block} using the rush C transpiler\footnote{Generated using rush (Git commit \rushCommit{}).}.
 
-\begin{minipage}{.34\textwidth}
-	\center
+\noindent
+\begin{minipage}{.45\textwidth}
+	\centering
 	\Lirsting[caption={A rush program containing a block-expression.}, label={lst:rush_transpiler_block}, float=H]{listings/simple_scope.rush}
 \end{minipage}%
-\hspace{3cm}%
+\hfill%
 \begin{minipage}{.45\textwidth}
-	\center
-	\Lirsting[caption={C transpiler output of rush program in Listing~\ref{lst:rush_transpiler_block}.}, label={lst:c_transpiler_block}, float=H]{listings/generated/rush_simple_scope.c}
+	\centering
+	\Lirsting[caption={Transpiler output of the rush program in Listing~\ref{lst:rush_transpiler_block}.}, label={lst:c_transpiler_block}, float=H]{listings/generated/rush_simple_scope.c}
 	\vspace{.1cm}
 \end{minipage}
 
 When examining the C output, it becomes apparent that the structure of the code has changed slightly.
-In the lines~1 and 2, the file contains `\texttt{\#include}' directives in order to import certain functions and types from the current C standard library.
-In line 4, the \qVerb{main} function is declared, but not yet defined.
-Although this might not seem very reasonable in this example,
-C requires functions to be declared before their use, even if the definition follows later.
+In lines~1 and 2, the file contains `\texttt{\#include}' directives in order to import certain functions and types from a C standard library.
+In line~4, the \qVerb{main} function is declared, but not yet defined.
+The transpiler inserts function declarations at the start in order to allow rush's arbitrary order of function definitions.
 Furthermore, the C program also does not include the aforementioned block because C does not have a structure comparable to rush's block-expressions.
-The lines 2--5 in the rush code are represented by the lines 7 and 8 in the C code.
+Lines~2--5 in the rush code are represented by lines~7--8 in the C code.
 This examples demonstrates how a transpiler often alters the program's structure in order to represent the source program in another language with different semantic rules.
 Since transpilers are often not the best way of implementing a compiler, the internals of this transpiler will not be discussed further.
-It is to be mentioned that some successful and popular transpilers exist.
-For instance, the popular programming language \emph{Typescript} uses a transpiler to generate Javascript~\cite[Chapter~2]{Cherny2019-rd}.
 To conclude, transpilers can present an easy but often impractical way of implementing a compiler.
 Due to its disadvantages, a transpiler is often only considered during the prototype phase of compiler implementation~\cite[p.~5]{Jeffery2021}.
+It is to be mentioned that some successful and popular transpilers exist.
+For instance, the popular programming language \emph{Typescript} uses a transpiler to generate Javascript~\cite[Chapter~2]{Cherny2019-rd}.

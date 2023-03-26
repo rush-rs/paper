@@ -49,18 +49,16 @@ Next, the `\texttt{break}' statement is used to terminate loop execution.
 Therefore, the total amount of iterations is `1'.
 
 \noindent
-\begin{figure}[h]
-	\begin{minipage}{.44\textwidth}
-		\centering
-        \Lirsting[float=H, caption={A rush program containing a loop.}, label={lst:vm_loops_rush}]{listings/vm_basic_loop.rush}
-	\end{minipage}%
-	\hfill
-	\begin{minipage}{.44\textwidth}
-		\centering
-        \Lirsting[float=H, caption={Compiler output for the rush program in Listing~\ref{lst:vm_loops_rush}}, label={lst:vm_loops_vm}]{listings/vm_basic_loop_instructions.s}
-	\end{minipage}
-	\vspace{.1cm}
-\end{figure}
+\begin{minipage}{.44\textwidth}
+    \centering
+    \Lirsting[float=H, caption={A rush program containing a loop.}, label={lst:vm_loops_rush}]{listings/vm_basic_loop.rush}
+\end{minipage}%
+\hfill
+\begin{minipage}{.44\textwidth}
+    \centering
+    \Lirsting[float=H, caption={Compiler output for the rush program in Listing~\ref{lst:vm_loops_rush}}, label={lst:vm_loops_vm}]{listings/vm_basic_loop_instructions.s}
+    \vspace{.1cm}
+\end{minipage}
 
 In lines~2 and 3 of Listing~\ref{lst:vm_loops_vm} the variable \qVerb{n} is initialized.
 The instructions in lines~4--9 are used to increment `\texttt{n}' by `1'.

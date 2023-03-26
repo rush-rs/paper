@@ -293,13 +293,14 @@ In the lines 27--31, inside the epilogue, the aforementioned task of restoring r
 
 \subsection{Supporting Pointers}
 
+\noindent
 \begin{minipage}{.34\textwidth}
-	\center
+	\centering
 	\Lirsting[float=H, fancyvrb={frame=none}, caption={Example rush program containing a pointer.}, label={lst:rush_simple_pointer}]{listings/rush_simple_pointer.rush}
 \end{minipage}%
 \hspace{3cm}
 \begin{minipage}{.45\textwidth}
-	\center
+	\centering
 	\Lirsting[float=H, fancyvrb={frame=none}, ranges={10-10,18-24}, caption={\riscv{} assembly output generated from Listing~\ref{lst:rush_simple_pointer}.}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
 	\vspace{.1cm}
 \end{minipage}
@@ -392,13 +393,14 @@ In order to understand the implementation, Listing~\ref{lst:rush_riscv_simple_su
 The former contains a rush program which adds two integer variables together and uses the result as its exit code
 The latter shows a part of the assembly output representing the logic in the \qVerb{main} function.
 
+\noindent
 \begin{minipage}{.45\textwidth}
-	\center
+	\centering
 	\Lirsting[caption={A rush program calculating the sum of two integers.}, label={lst:rush_riscv_simple_sum}, float=H]{listings/simple_add.rush}
 \end{minipage}%
 \hfill%
 \begin{minipage}{.45\textwidth}
-	\center
+	\centering
 	\Lirsting[ranges={18-25},caption={Assembly output of the rush program in Listing~\ref{lst:rush_riscv_simple_sum}.}, label={lst:asm_riscv_simple_sum}, float=H]{listings/generated/rush_simple_add.s}
 	\vspace{.1cm}
 \end{minipage}
@@ -736,13 +738,14 @@ a compiler targeting assembly has to generate code which reproduces the behaviou
 Listing~\ref{lst:rush_while_loop} shows a rush program containing a while-loop.
 Next to it, Listing~\ref{lst:asm_riscv_while_loop} shows the part of the compiler output that represents the loop and the \qVerb{exit} call.
 
+\noindent
 \begin{minipage}{.45\textwidth}
-	\center
+	\centering
 	\Lirsting[caption={A rush program containing a while-loop.}, label={lst:rush_while_loop}, float=H]{listings/while_loop.rush}
 \end{minipage}%
 \hfill
 \begin{minipage}{.45\textwidth}
-	\center
+	\centering
 	\Lirsting[ranges={21-36},caption={Compiler output of the rush program in Listing~\ref{lst:rush_while_loop}.}, label={lst:asm_riscv_while_loop}, float=H]{listings/generated/rush_while_loop.s}
 	\vspace{.1cm}
 \end{minipage}

@@ -41,7 +41,7 @@ It begins with the \qVerb{.intel_syntax} directive, indicating that the followin
 Then, similar to the \riscv{} assembly code shown in the previous section, the \qVerb{_start} label is marked as global, as it again represents the entry point.
 The sections are also the same, as these are defined by the ELF format which is independent of ISAs.
 
-\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.6\textwidth, label={lst:x64_asm_example}, caption={Compiler output from the rush program in Listing~\ref{lst:x64_example}.}]{listings/x64_simple.s}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.6\textwidth, label={lst:x64_asm_example}, caption={Compiler output of the rush program in Listing~\ref{lst:x64_example}.}]{listings/x64_simple.s}
 
 The main differences between x64 assembly and the previously shown \riscv{} assembly, and also the other x64 assembly dialects, are the instruction mnemonics and the register names.
 When using the Intel syntax for x64, register names are always prepended by a percentage sign.
@@ -247,7 +247,7 @@ Therefore, the function's prologue begins with pushing \qreg{rbp} onto the stack
 Afterward, the base pointer's value is set to the current stack pointer.
 The stack pointer itself is then decremented by the amount of bytes needed for the function, which is saved in \qVerb{frame_size}, rounded up to a multiple of 16.
 
-\Lirsting[ranges={11-31}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Trimmed compiler output for the rush program in Listing~\ref{lst:x64_functions_rush}.}, label={lst:x64_functions_asm}]{listings/x64_functions.s}
+\Lirsting[ranges={11-31}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Trimmed compiler output of the rush program in Listing~\ref{lst:x64_functions_rush}.}, label={lst:x64_functions_asm}]{listings/x64_functions.s}
 
 The epilogue ranges from line~29 to line~31.
 It defines a label where \qVerb{return} statements\label{x64_return} can jump to, releases the stack frame using the \qVerb{leave} instruction, and returns control to the caller with the \qVerb{ret} instruction.
@@ -285,7 +285,7 @@ Again, the way x64 handles conditions differs from \riscv{}.
 It provides a set of \emph{flags}\footnote{A flag is a boolean value, typically stored in batch with one bit per flag.} indicating various relations between two values, which are set by dedicated compare instructions like \qVerb{cmp} for integers, \qVerb{test} for booleans, and \qVerb{ucomisd} for floats.
 A conditional jump instruction like \qVerb{je} (\textbf{j}ump if \textbf{e}qual) then only has to query the flag that indicates equality, and optionally performs a jump based on its value.
 
-\Lirsting[ranges={17-56}, float=htb, caption={Trimmed compiler output for the rush function in Listing~\ref{lst:x64_control_flow_rush}.}, label={lst:x64_control_flow_asm}]{listings/x64_control_flow.s}
+\Lirsting[ranges={17-56}, float=htb, caption={Trimmed compiler output of the rush function in Listing~\ref{lst:x64_control_flow_rush}.}, label={lst:x64_control_flow_asm}]{listings/x64_control_flow.s}
 
 \begin{wrapfigure}{o}{0.5\textwidth}
 	\begin{tikzpicture}[every node/.style={minimum size=1.5ex}]

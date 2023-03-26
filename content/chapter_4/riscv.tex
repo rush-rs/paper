@@ -235,7 +235,7 @@ In \riscv{}, the \qVerb{addi} instruction's operands are one destination registe
 Since this immediate value can be negative, an additional instruction for immediate subtraction would be redundant~\cite[Reference Card]{Patterson2017}.
 In this case, 16 bytes are allocated since two 8-byte values are stored on the stack in lines~13--14.
 
-\Lirsting[wrap=r, fancyvrb={numbers=right}, wrap width=0.41\textwidth, caption={Compiler output from the rush program in Listing~\ref{lst:riscv_simple2}.}, label={lst:riscv_simple_asm}, ranges={1-30, -4 51-53}]{listings/riscv_simple.s}
+\Lirsting[wrap=r, fancyvrb={numbers=right}, wrap width=0.41\textwidth, caption={Compiler output of the rush program in Listing~\ref{lst:riscv_simple2}.}, label={lst:riscv_simple_asm}, ranges={1-30, -4 51-53}]{listings/riscv_simple.s}
 
 The comment in line~17 indicates the start of the function's body.
 First, the previously explained \qVerb{li} instruction in line~18 places a constant `1' in the register \qVerb{a0}.
@@ -387,7 +387,7 @@ this one does not emphasize the performance of the output program.
 All variables are saved on the stack in order to keep as many registers as possible free for temporary use in calculations and operations like this one.
 Since this algorithm only performs rudimentary register allocation, its implementation is also significantly simpler.
 
-\Lirsting[ranges={175-186}, float=h, label={lst:riscv_get_int_reg}, caption={The \qVerb{get_int_reg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}%
+\Lirsting[ranges={175-186}, float=h, label={lst:riscv_get_int_reg}, caption={The \qVerb{get_int_reg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
 
 Listing~\ref{lst:riscv_get_int_reg} shows the method called \qVerb{get_int_reg} which is called every time a register is required by the compiler.
 The method returns the first available register from the register pool that contains either integer or float registers.
@@ -397,7 +397,7 @@ The for-loop in line~176 is used to iterate over the entire \qVerb{INT_REGISTERS
 This array represents the pool containing integer registers.
 For each register in that pool, the if-expression in the lines~177--180 checks whether the current register \qVerb{reg} is contained in the \qVerb{used_registers} vector.
 If this is not the case, the current register is still unused and can therefore be returned for usage.
-Since the \qVerb{return} statement causes the function to return immediate,
+Since the \qVerb{return} statement causes the function to return immediately,
 the loop only iterates until a free register has been found.
 
 Due to the fact that the register allocator only uses as few registers as required,
@@ -407,11 +407,11 @@ However, one can see that this method does not mark the returned register as use
 This is because doing so is only required in some places, where overwriting a register would introduce a bug in the output program.
 Therefore, if this method was called repeatedly, it would always yield the same register.
 In order to mark a register as used, it is appended to the \qVerb{used_registers} vector.
-For this, a helper method called \qVerb{use_reg}, which only performs this one operation, is implemented.
+For this, the \qVerb{use_reg} method, which only performs this one operation, is implemented.
 When a register is no longer used, and can be overwritten again, it must be removed from the \qVerb{used_registers} vector.
-For this, another simple helper method, called \qVerb{release_reg}, is implemented.
+For this, another simple method, called \qVerb{release_reg}, is implemented.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\begin{tikzpicture}
 		\node(stack)[stack=6, rectangle split part align=center,
@@ -431,117 +431,112 @@ For this, another simple helper method, called \qVerb{release_reg}, is implement
 \end{figure}
 
 Figure~\ref{fig:riscv_iregister_pool} shows an abstract representation of the compiler's integer register pool.
-Only the first section of the pool, which contains the \qVerb{an} registers, can be seen.
+Only the first section of the pool, which contains the `\Verb{a}$n$' registers, can be seen.
 The gray cells specify registers that are currently in use by the compiler.
 The arrow points to \qVerb{a2}, which is the first free register, meaning the one which follows \qVerb{a1}, the last used register.
 Therefore, if the \qVerb{get_int_reg} method was called when the state of the registers is equivalent to the one displayed in Figure~\ref{fig:riscv_iregister_pool}, it would return the register \qVerb{a2}.
 
-\Lirsting[float=h, ranges={596-602,662-663}, caption={Parts of the \qVerb{expression} method in the \riscv{} rush compiler.}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={590-596,656-657}, caption={Parts of the \qVerb{expression} method in the \riscv{} rush compiler.}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 In order to understand how expressions are compiled, Listing~\ref{lst:riscv_expression}, which shows parts of the \qVerb{expression} method, is to be considered.
 This method is responsible for compiling expressions.
 As the method's signature suggests, it takes an analyzed expression and returns an \qVerb{Option<Register>},
 which is \qVerb{None} if the expression results in the \qVerb{!} or \qVerb{()} types.
 Otherwise, the method returns the register in which the result of its computation will be contained at runtime.
-The code in the lines~598--602 is executed if the expression is an integer literal.
+The code in lines~593--596 is executed if the expression is an integer literal.
 First, a target register is retrieved by calling the previously shown \qVerb{get_int_reg} method.
 Now, the \qVerb{dest_reg} variable holds the register which will contain the result of the expression.
 Next, an \qVerb{li} instruction is inserted which loads the integer contained in the variable \qVerb{value} into the register specified by \qVerb{dest_reg}.
 Finally, this register is then returned.
 For more complex expressions, the specified methods are called, just like in the other compilers.
 
-However, the question of \emph{when} the compiler marks certain registers as used still remains.
-For this, the compilation of the rush expression \qVerb{n+m} is to be considered.
-The Rust code in Listing~\ref{lst:riscv_infix_expr} shows a part of the \qVerb{infix_expr} method of the rush compiler.%
-%
 \Lirsting[float=h, ranges={755-755,791-791,841-858}, caption={Parts of the \qVerb{infix_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
-%
+
+However, it is still not apparent \emph{when} the compiler marks certain registers as used.
+For this, the compilation of the rush expression \qVerb{n+m} is to be considered.
+Listing~\ref{lst:riscv_infix_expr} shows a part of the \qVerb{infix_expr} method of the rush compiler.
 It consumes an annotated tree-node representing an analyzed infix-expression.
-In line~853, the left-hand side expression is compiled, and its result register is saved in the variable \qVerb{lhs_reg}.
-Next, in line~854, the previously discussed \qVerb{use_reg} method is used in order to mark the register specified by \qVerb{lhs_reg} as used.
+In line~845, the left-hand side expression is compiled, and its result register is saved in the variable \qVerb{lhs_reg}.
+Next, in line~846, the previously discussed \qVerb{use_reg} method is used in order to mark the register specified by \qVerb{lhs_reg} as used.
 The second argument to the method specifies the size of the data which the register holds, 64 bits for \qVerb{int}, 8 bits for \qVerb{char} and \qVerb{bool}.
 This information is also saved in the \qVerb{used_registers} vector and is accessed in case used registers need to be spilled.
 
-In line~856, the right-hand side expression is compiled and its result register is saved in the variable \qVerb{rhs_reg}.
+In line~848, the right-hand side expression is compiled and its result register is saved in the variable \qVerb{rhs_reg}.
 After this, \qVerb{lhs_reg} is marked as unused again.
-Finally, in line~861, the \qVerb{infix_helper} method is called in order to insert the instructions for the actual calculation.
+Finally, in line~853, the \qVerb{infix_helper} method is called in order to insert the instructions for the actual calculation.
 As discussed previously, calling the \qVerb{get_int_reg} or \qVerb{get_float_reg} methods
-repeatedly, without marking registers as used, results in same registers every time.
+repeatedly, without marking registers as used, results in the same register every time.
 In this scenario, this would create an issue since both the left-hand side and the right-hand side expressions would use the identical register.
 In order to mitigate this issue, the register of the left-hand side is marked as used before compilation of the right-hand side.
 Now, the right-hand side will respect that the register returned by the left-hand side is currently in use and will instead use the next free one.
 
-Next, the implementation of the \qVerb{infix_helper} helper method shall be considered.
-This method exists because translation of the underlying mathematical or logical operation
-is required during compilation of both infix-expressions and certain assign-expressions, \qVerb{a+=1} for instance.
-Listing~\ref{lst:riscv_infix_helper} shows parts of this method.%
-%
 \Lirsting[
 	float=h,
 	ranges={861-861,864-871,977-980,990-991},
 	caption={Parts of the \qVerb{infix_helper} method of the \riscv{} rush compiler.},
 	label={lst:riscv_infix_helper}
 ]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
-%
-It takes the registers of the left- and right-hand side, the operator, and a type.
+
+Next, the implementation of the \qVerb{infix_helper} helper method shall be considered.
+This method exists because translation of the underlying mathematical or logical operation
+is required during compilation of both infix-expressions and certain assign-expressions, \mbox{\qVerb{a += 1}} for instance.
+Listing~\ref{lst:riscv_infix_helper} shows parts of this method.
+It takes the registers of the left- and right-hand sides, the operator, and a type.
 As the registers do not specify one concrete type, it has to be provided additionally.
 The analyzer guarantees equal types on both sides, hence only one type parameter is needed.
-In the lines~874--875, an integer and a floating-point destination register are created, even though only one of them is used later .
+In lines~864--865, an integer and a floating-point destination register are created, even though only one of them is used later.
 However, both are defined beforehand in order to avoid code duplication.
-In the lines~878--881, the code responsible for inserting an integer addition instruction can be seen.
+In lines~868--871, the code responsible for inserting an integer addition instruction can be seen.
 For this, the \qVerb{insert} method is used.
 It inserts a new instruction into the current block.
 Here, the \qVerb{add} instruction is used with the integer destination register specified in \qVerb{dest_regi} and the left- and right-hand side registers as operands.
-Since the \qVerb{add} instruction demands it, the operand registers are converted to integer registers via the \qVerb{into} method.
-In the lines~987--990, the code for inserting a float subtraction instruction can be seen.
+Since the \qVerb{add} instruction demands it, the operand registers are asserted to be integer registers via the \qVerb{into} method.
+In lines~977--980, the code for inserting a float subtraction instruction can be seen.
 Since floating-point operations require different instructions from the ones used for integers, the additional type information is passed to this method.
-Here, the \qVerb{fsub} instruction is used for subtraction.
+Here, the \qVerb{fsub} (\textbf{f}loat \textbf{sub}tract) instruction is used for subtraction.
 In this case, the variable \qVerb{dest_regf} is used as the first operand because the resulting value is a float,
-and these \qVerb{into} calls convert the registers into float ones.
+and these \qVerb{into} calls assert the registers to be float registers.
 
 \subsubsection{Functions}
 
-However, before the infix-expression in Listing~\ref{lst:rush_riscv_simple_sum} on page~\ref{lst:rush_riscv_simple_sum} is compiled, the compiler iteretes over the functions of the program.
+However, before the infix-expression in Listing~\ref{lst:rush_riscv_simple_sum} on page~\pageref{lst:rush_riscv_simple_sum} is compiled, the compiler iterates over the functions of the program.
 In this case, only the \qVerb{main} function is present.
-Listing~\ref{lst:riscv_define_main_fn} shows the \qVerb{define_main_fn} method of the rush \riscv{} compiler.%
-%
+Listing~\ref{lst:riscv_define_main_fn} shows the \qVerb{define_main_fn} method.
+It is only responsible for compilation of the \qVerb{main} function.
+All other rush functions are compiled by the method \qVerb{function_definition}.
+However, these two methods only mainly differ in two ways.
+Firstly, the latter contains code which handles function parameters.
+Secondly, the special instructions for calling the \qVerb{main} and \qVerb{exit} functions are not required.
+
 \Lirsting[
 	float=h,
 	ranges={123-156},
 	caption={The \qVerb{define_main_fn} method of the \riscv{} rush compiler.},
 	label={lst:riscv_define_main_fn}
 ]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
-%
-This method is only responsible for compilation of the \qVerb{main} function.
-All other rush functions are compiled by the method \qVerb{function_definition}.
-However, these two methods only mainly differ in two ways:
-Firstly, the latter contains code which handles function parameters.
-Secondly, the special instructions for calling to the \qVerb{main} and \qVerb{exit} functions are not required.
 
 The method takes a block, that is, a list of statements as its input.
-In the lines~124--126, the \qVerb{_start} label is created and exported so that the linker will later be able to refer to it.
-Next, in the lines~128--129, a new block with the \qVerb{main..main} label is created.
+In lines~124--126, the \qVerb{_start} label is created and exported so that the linker will later be able to refer to it.
+Next, in lines~128--129, a new block with the \qVerb{main..main} label is created.
 As explained previously, this block represents the start of the body of the \qVerb{main} function.
-Next, the line~132 inserts a \qVerb{call} instruction, which is responsible for calling the \qVerb{main} function at the start of program execution, after the \qVerb{_start} label.
-In the lines~134--135, instructions for calling the \qVerb{exit} function using `0' as the exit code are inserted.
-Next, in the lines~137--139, a new epilogue label is generated.
-Then, the \qVerb{curr_fn} field is updated so that it contains this newly created epilogue label.
-However, this label is not directly added to the \qVerb{blocks}  vector since it should appear after function body.
+In line~132, a \qVerb{call} instruction, which is responsible for calling the \qVerb{main} function at the start of program execution, is inserted.
+In lines~133--135, instructions for calling the \qVerb{exit} function using `0' as the exit code are inserted.
+Next, in lines~137--139, a new epilogue label is generated, and the \qVerb{curr_fn} field is updated so that it contains this newly created epilogue label.
+However, this label is not directly added to the \qVerb{blocks} vector since it should appear after the function body.
 
 Next, the \qVerb{main} function's body is compiled.
 For this, the current insertion position is first updated to the end of the previously created \qVerb{main..main} block by calling the method \qVerb{insert_at}.
 Following that, a new variable scope is added for the function body.
-Then, the function body's content is compiled by calling the \qVerb{function_body} method.
+Then, the function body's contents are compiled by calling the \qVerb{function_body} method.
 After the body's compilation, the previously added scope is removed again.
 
 In line~148, the \qVerb{prologue} method returns the instructions for the prologue.
-It is only inserted \emph{after} the function body was compiled, even though it will execute \emph{before} the function during runtime.
+It is only inserted \emph{after} the function body was compiled, even though it will execute \emph{before} the body during runtime.
 This is because the prologue needs to allocate a certain amount of stack space, which the compiler can only determine after the code for the body has been generated.
 Next, in line~149, the insertion position is moved back to the end of the \qVerb{main..main} label.
 The lines~150--151 are then responsible for prepending the generated prologue instructions to the instructions representing the function body.
-This is achieved by first appending the contents of the current block to the end of the prologue instructions.
-Then, the current block's instructions are overwritten with the result.
-In the lines 153--154, the code responsible for inserting the trailing epilogue code can be seen.
+This is achieved by first appending the contents of the current block to the end of the prologue instructions, and then overwriting the current block with the result.
+Finally, in lines~153--154, the code responsible for inserting the trailing epilogue code can be seen.
 For this, the previously created epilogue label is now appended to the \qVerb{blocks} vector, and the \qVerb{epilogue} method of the compiler is called.
 
 \Lirsting[
@@ -551,55 +546,59 @@ For this, the previously created epilogue label is now appended to the \qVerb{bl
 	label={lst:riscv_epilogue}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
-Listing~\ref{lst:riscv_epilogue} shows the \qVerb{epilogue} method of the rush \riscv{} compiler.
-This method generates the instructions for a function's epilogue.
-First, in the lines~67--68, the insertion position of the compiler is set to the epilogue block.
+Listing~\ref{lst:riscv_epilogue} shows this \qVerb{epilogue} method.
+It generates the instructions for a function's epilogue.
+First, in lines~67--68, the insertion position of the compiler is set to the epilogue block.
 The epilogue must exist in a separate label in order to be used when \qVerb{return} statements are encontered.
-The instruction insertion in line~70 is responsible for an \qVerb{ld} instruction.
+The instruction insertion in lines~69--73 is responsible for an \qVerb{ld} instruction.
 Here, the \qVerb{ld} instruction is used to restore the previously saved \qVerb{fp} register.
-In line~75, another \qVerb{ld} instruction for restoring the \qVerb{ra} register is inserted.
-In line~80, an \qVerb{addi} instruction is inserted in order to free the memory used for the function's stack frame.
+In lines~74--78, another \qVerb{ld} instruction for restoring the \qVerb{ra} register is inserted.
+In lines~79--84, an \qVerb{addi} instruction is inserted in order to free the memory used for the function's stack frame.
 Finally, a \qVerb{ret} instruction is inserted which is responsible for transferring control back to the caller.
 
 \subsubsection{Let Statements}
 
-In the lines~2--3 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum} on page~\pageref{lst:rush_riscv_simple_sum}, let statements are used in order to save values on the stack.
+In lines~2--3 of the rush program in Listing~\ref{lst:rush_riscv_simple_sum} on page~\pageref{lst:rush_riscv_simple_sum}, let-statements are used in order to save values on the stack.
 The method responsible for compiling these statements is called \qVerb{let_statement}.
 It saves the initializing expression on the stack and saves the resulting pointer in the current scope.
 The main work is accomplished by the \qVerb{save_expr_on_stack} method.
-The Rust code in Listing~\ref{lst:riscv_save_on_stack} displays parts of this method.%
-%
+Listing~\ref{lst:riscv_save_on_stack} displays parts of this method.
+The method takes an expression in order to compile it and save the resulting value on the stack.
+It returns an \qVerb{Option<Pointer>}, where \qVerb{None} again represents the \qVerb{!} and \qVerb{()} types.
+A \qVerb{Pointer} stores a relative memory address given a base register, \qVerb{fp} in this case.
+
 \Lirsting[
 	float=h,
 	ranges={557-557,_561-567,580-587},
 	caption={The \qVerb{save_expr_on_stack} method in the \riscv{} rush compiler.},
 	label={lst:riscv_save_on_stack}
 ]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
-%
-This method takes an expression in order to compile it and save the resulting value on the stack.
-The method returns an \qVerb{Option<Pointer>}, where \qVerb{None} again represents the \qVerb{!} and \qVerb{()} types.
-A \qVerb{Pointer} stores a relative memory address and an arbitrary base register, \qVerb{fp} in this case.
 
-In line~569, the expression is compiled, and the resulting register is saved in the variable \qVerb{reg}.
-In line~571, the \qVerb{get_offset} method is used in order to calculate the frame pointer offset of a variable.
+In line~563, the expression is compiled, and the resulting register is saved in the variable \qVerb{reg}.
+In line~565, the \qVerb{get_offset} method is used in order to calculate the frame pointer offset of a variable.
 Since types like \qVerb{char} or \qVerb{bool} require less memory compared to \qVerb{int}, the size of the expressions's data type must also be available to this method.
 Now, the \qVerb{offset} variable contains the frame pointer offset at which the variable should be saved.
 Since the \qVerb{get_offset} method is used every time values need to be saved on the stack,
 it also increments the \qVerb{stack_allocs} variable, so that the prologue and epilogue are aware of this stack allocation.
 
-The \qVerb{match} block in line~573 executes different code based on the register type which the expression yielded.
-In the lines~586--589, the code responsible for float registers can be seen.
-Here, the \qVerb{fsd} (\enquote{\textbf{f}loat \textbf{s}tore \textbf{d}ouble}) instruction is used in order to save the resulting register at the memory position relative to \qVerb{fp} which is specified in the variable \qVerb{offset}.
-The code for integer registers is similar, but was omitted since it also differentiates between 8-bit and 64-bit data.
-In line~592, the \qVerb{Pointer} abstraction representing the memory location of the expression is returned.
+The \qVerb{match} block in line~567 executes different code based on the register type which the expression yielded.
+In lines~580--583, the code responsible for float registers can be seen.
+Here, the \qVerb{fsd} (\textbf{f}loat \textbf{s}tore \textbf{d}ouble) instruction is used in order to save the resulting register at the memory position relative to \qVerb{fp} which is specified in the variable \qVerb{offset}.
+The code for integer registers is similar, but also differentiates between 8-bit and 64-bit data.
+In line~586, the \qVerb{Pointer} abstraction representing the memory location of the expression is returned.
 Here, it is apparent that this variant of a \qVerb{Pointer} only saves a register and an offset to this register.
 In this case, \qVerb{fp} is specified as the register and the value of \qVerb{offset} is used as the offset.
 
 \subsubsection{Function Calls and Returns}
 
 For compiling call-expressions, also the ones of builtin functions, the compiler uses the \qVerb{call_expr} method.
-The Rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of this method.%
-%
+Listing~\ref{lst:riscv_call_expr} shows the first part of this method.
+Due to the aforementioned low-level calling conventions,
+its implementation has proven to be very complex and demanding.
+The part of code shown here is only preparing the compilation of the function call.
+The method consumes an analyzed call-expression and optionally returns a register representing the call return value.
+For instance, if the \qVerb{exit} function was called, this method would return no register as the \qVerb{exit} function results in the \qVerb{!} type.
+
 \Lirsting[
 	float=h,
 	ranges={92-113,189-189},
@@ -607,100 +606,91 @@ The Rust code in Listing~\ref{lst:riscv_call_expr} shows the first part of this 
 	caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.},
 	label={lst:riscv_call_expr}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
-%
-Due to the aforementioned low-level calling conventions,
-its implementation has proven to be very complex and demanding.
-The part of code shown here is only preparing the compilation of the function call.
-The method consumes an analyzed call-expression and optionally returns a register representing the call return value.
-For instance, if the \qVerb{exit} function was called, this method would return no register as the \qVerb{exit} function results in the \qVerb{!} type.
 
-In the lines~93--99, all registers which are used at the time of the function call are spilled and then marked as unused.
-This is required since the register allocator of this compiler is so simple that it only considers one function at the time.
+In lines~93--99, all registers which are used at the time of the function call are spilled and then marked as unused.
+This is required since the register allocator of this compiler is so simple that it only considers one function at a time.
 In production-ready compiler systems, a register allocation algorithm could also work interprocedurally.
 It becomes apparent that saving \emph{all} used registers does not produce very efficient output code.
 However, throughout the extensive testing conducted on the rush backends, this approach has presented itself as simple and reliable\footnote{For each new commit, \rushCountTests integration tests are conducted on every backend}.
-In the lines~93--99, the register spilling is performed by iterating over the currently used registers and calling the \qVerb{spill_reg} method for each register.
+The register spilling is performed by iterating over the currently used registers and calling the \qVerb{spill_reg} method for each register.
 That method is structured very similarly to the aforementioned \qVerb{save_expr_on_stack} method.
 After the register spilling, the contents of the \qVerb{used_registers} vector are moved into the local \qVerb{used_regs_prev} variable.
 Therefore, after the assignment, the \qVerb{used_registers} vector will be empty.
 
 \Lirsting[
-	float=H,
+	float=h,
 	ranges={92-92, 115-133:59, _133:84-139, 160-161, 189-189},
 	caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
 	label={lst:riscv_call_expr_2},
-	fancyvrb={firstline=2, lastline=30},
+	fancyvrb={firstline=2, lastline=31},
 	continued=true,
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
+The next part of the \qVerb{call_expr} method is shown is Listing~\ref{lst:riscv_call_expr_2}.
 In line~136, the \qVerb{spill_param_size} variable is incremented.
 It specifies the additional storage required for placing arguments on the stack.
-For instance, a call with nine integer arguments would need eight additional bytes of memory since the \nth{9} argument would have to be placed on the stack.
+For instance, a call with nine integer arguments would need eight additional bytes of memory since the ninth argument would have to be placed on the stack.
 The optional placement of arguments on the stack is performed by the loop in line~115.
 It iterates over each argument expression of the call, and for each expression, the match-block in line~116 executes different code depending on the expression's result data type.
 For instance, expressions which yield in \qVerb{()} or \qVerb{!} do not require registers and can thus be compiled without further consideration.
-However, for float values, the code in the lines~121--136 is executed.
+However, for float values, the code in lines~120--139 is executed.
 Firstly, the argument's expression is compiled and the resulting register is saved in the variable \qVerb{res_reg}.
 Next, the \qVerb{nth_param} method is called on the \qVerb{FloatRegister} enumeration.
 This method associates an index of a parameter to a register.
-For instance, the index 2 represents the third parameter, which is represented by the register \qVerb{fa2}.
+For instance, the index `2' represents the third parameter, which is represented by the register \qVerb{fa2}.
 For unsupported indices, the method returns \qVerb{None}.
-Therefore, the if-expression in line~123 of Listing~\ref{lst:riscv_call_expr} checks whether there still is a register which could represent the current argument position.
+Therefore, the if-expression in line~123 checks whether there still is a register which could represent the current argument position.
 This position is saved in the \qVerb{float_cnt} and \qVerb{int_cnt} variables which are incremented whenever an argument of the respective type is encountered, in line~138 for instance.
-If there is no register left, the \qVerb{spill_param_size} variable is incremented by 8 bytes as floats require eight bytes of information.
-Otherwise, in case a register is available, the code in the lines~124--125 is executed.
+In case a register is available, the code in lines~124--125 is executed.
 Here, \qVerb{res_reg} is only marked as used and pushed in the \qVerb{param_regs} vector.
 There is no code validating that the correct register for the argument position is returned.
 This check is redundant since all registers have been marked as unused prior to this block.
-Therefore, the resulting value of argument expressions will always be in the correct registers.
-However, if there is no register for the current argument, the value has to be spilled to the stack.
-For this, a \qVerb{fsd} instruction (or \qVerb{sd} instruction for integers) is inserted in order to save the result of the current argument on the stack.
-As described in a previous section about the \riscv{} calling convention, spilled arguments are placed on the stack in a way so that the first spilled argument is at the lowest memory position.
-For reference, this process is described in detail in Figure~\ref{fig:riscv_call_spill} in Section~\ref{sec:riscv_calling_conv} on page~\pageref{sec:riscv_calling_conv}.
-In order to calculate this increasing offset easily, the \qVerb{spill_cnt} variable was declared in line~113 of Listing~\ref{lst:riscv_call_expr}
-Every time an argument is spilled, this counter increases.
-In line~131 of Listing~\ref{fig:riscv_call_expr_2}, the code calculating the offset relative to \qVerb{sp} can be seen.
-Here, the value of \qVerb{spill_cnt} is simply multiplied by 8 in order to obtain the correct offset.
-Therefore, the memory offset $o$ is calculated like this: $o = \text{count}_\text{spilled} \times 8$.
-In line 169, the \qVerb{spill_cnt} variable is incremented like described previously.
-Although just the code for floats is shown here, the algorithm for integer-based types only deviates slightly from the one for floats.
+Therefore, the register allocator will always return the registers for the argument expressions in the correct order.
+Otherwise, if there is no register for the current argument, the value has to be spilled to the stack.
+For this, an \qVerb{fsd} instruction (or \qVerb{sd} for integers) is inserted in order to save the result of the current argument on the stack.
+As described in Section~\ref{sec:riscv_calling_conv} about the \riscv{} calling convention, spilled arguments are placed on the stack in a way so that the first spilled argument is at the lowest memory position.
+In order to calculate this increasing offset easily, the \qVerb{spill_cnt} variable was declared in line~113 of Listing~\ref{lst:riscv_call_expr}.
+Every time an argument is spilled, this counter is increased.
+In line~131 of Listing~\ref{lst:riscv_call_expr_2}, the code calculating the offset relative to \qVerb{sp} can be seen.
+Here, the value of \qVerb{spill_cnt} is simply multiplied by eight in order to obtain the correct offset, as each argument should use eight bytes.
+In line~135, the \qVerb{spill_cnt} variable is incremented as described previously.
+Lastly, the \qVerb{spill_param_size} variable is incremented by eight bytes, as floats require eight bytes of storage.
+Although just the code for floats is shown here, the algorithm for integer-based types only deviates slightly.
 
-The Rust code in Listing~\ref{lst:riscv_call_expr_2} shows the last part of the method.%
-%
 \Lirsting[
 	continued=true,
-	float=H,
+	float=h,
 	ranges={92-92, 163-189},
 	fancyvrb={firstline=2},
 	caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
-	label={lst:riscv_call_expr_2}
+	label={lst:riscv_call_expr_3}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
-%
-The code in the lines~165--173 is responsible for mangling the name of the called function so that it includes the \qVerb{main..} prefix.
+
+The final part of the \qVerb{call_expr} method is shown in Listing~\ref{lst:riscv_call_expr_3}.
+The code in lines~165--173 is responsible for mangling the name of the called function so that it includes the \qVerb{main..} prefix.
 However, if the \qVerb{exit} function is called, the name is not mangled.
 In line~174, the \qVerb{call} instruction responsible for performing the actual call is inserted.
 At this point, the arguments are in their correct places so that the called function will be able to access them.
 In line~177, the previously emptied \qVerb{used_registers} vector is restored to its state before the call.
 This is done in order to allow the register allocation for the call arguments to happen independently of the rest of the compiled code.
-The code in the lines~179--185 is responsible for selecting an appropriate output register based on the function's return type, storing it in \qVerb{res_reg}.
-For instance, functions which return \qVerb{float} values place their return value inside the register \qVerb{fa0}, and for functions which return the \qVerb{()} or \qVerb{!} types, no register is selected and \qVerb{None} is returned.
 In line~188, the method \qVerb{restore_regs_after_call} later reloads the old register values from the stack.
-However, that method also requires the return register of the called function as its first argument.
-The reasons why \qVerb{restore_regs_after_call} has to access the return register is that this register might habe been in use before the call.
-However, restoring the register would result in the function's return value to be overwritten, therefore creating a bug.
-In order to mitigate this issue, the method will alter the result register by inserting a \qVerb{mv} instruction if necessary.
-Since the method returns the final output register which contains the call's result, it is used as the last expression of the block,
-thus making it the return value of the \qVerb{call_expr} method.
+The code in lines~179--185 is responsible for selecting an appropriate output register based on the function's return type, storing it in \qVerb{res_reg}.
+For instance, functions which return \qVerb{float} values place their return value inside the register \qVerb{fa0}, and for functions which return the \qVerb{()} or \qVerb{!} types, no register is selected and \qVerb{None} is returned.
+This return register is required as an argument to the following \qVerb{restore_regs_after_call} method call.
+The reasons why that method has to access the return register is that this register might have been in use before the call.
+In that case, restoring the register would result in the function's return value to be overwritten.
+In order to mitigate this issue, the method will alter the result register by inserting a \qVerb{mv} (\textbf{m}o\textbf{v}e) instruction if necessary.
+Since the method returns the final output register which contains the call's result, it is used as the last expression of the block, thus also making it the return value of the \qVerb{call_expr} method.
 
 The last thing to mention is how a called function returns a value.
 Whenever an explicit or implicit return in a function is encountered,
 the compiler checks whether the expression already saved its result in the appropriate return register.
-In case it did not, a \qVerb{mv} (\enquote(\textbf{m}o\textbf{v}e)) instruction is used to move it there.
-Afterwards, a jump to the function's epilogue is issued, causing the function to return.
+In case it did not, a \qVerb{mv} instruction is used to move it there.
+Afterward, a jump to the function's epilogue is issued, causing the function to return.
 
 \subsubsection{Loops}
 
-Since assembly dialects does not provide high-level control-flow constructs like loops,
+Since assembly dialects do not provide high-level control-flow constructs like loops,
 a compiler targeting assembly has to generate code which reproduces the behaviour.
 Listing~\ref{lst:rush_while_loop} shows a rush program containing a while-loop.
 Next to it, Listing~\ref{lst:asm_riscv_while_loop} shows the part of the compiler output that represents the loop and the \qVerb{exit} call.
@@ -720,19 +710,19 @@ Next to it, Listing~\ref{lst:asm_riscv_while_loop} shows the part of the compile
 The rush program contains a while-loop which iterates ten times.
 At the beginning of the program, the integer variable \qVerb{count} is declared.
 Before each iteration, the while-loop checks whether \qVerb{count} is less than `10'.
-If it is, count is incremented by \qVerb{1}, and the loop begins its next iteration.
+If it is, count is incremented by `1', and the loop begins its next iteration.
 Otherwise, the execution of the loop stops and the code after the loop is executed.
 In the assembly code, the content of the loop is represented by the instructions below the \qVerb{while_head_0} label.
 As the comment in line 22 suggests, the first four instructions represent the loop control code.
-These instructions are executed every time time loop begins a new iteration, therefore they check if the condition is true before any of the code inside the loop's body is executed.
+These instructions are executed every time the loop begins a new iteration.
+They check the condition before any of the code inside the loop's body is executed.
 If it results in `false', the execution of the loop should stop.
-This is accomplished by the \qVerb{beqz} (\enquote{\textbf{b}ranch (if) \textbf{eq}ual (to) \textbf{z}ero}) instruction in line 26.
-It is a pseudoinstruction which jumps to the specified label if the value inside the first operand is zero~\cite[p.~105]{Waterman2019}.
+This is accomplished by the \qVerb{beqz} (\textbf{b}ranch if \textbf{eq}ual to \textbf{z}ero) instruction which jumps to the specified label if the value inside the first operand is zero~\cite[p.~105]{Waterman2019}.
 Here, this means that the instruction would jump to the \qVerb{after_while_0} label if the condition of the loop evaluated to `false'.
 
-This label contains code which follows the while-statement, here only the call to the \qVerb{exit} function.
+This label starts a block with the code that follows the while-statement, here only the call to the \qVerb{exit} function.
 Otherwise, if the condition evaluated to `true', the \qVerb{beqz} instruction would not perform a jump and the CPU would just continue to the following instruction.
-The instructions following that conditional jump represent the loop body, i.e., the statement \qVerb{count +=1}
-In line~32, and unconditional jump, which jumps back to the beginning of the \qVerb{while_head_0} label, follows.
+The instructions following that conditional jump represent the loop body, i.e., the statement \qVerb{count += 1}.
+In line~32, and unconditional jump, which jumps back to the \qVerb{while_head_0} label, follows.
 Therefore, the loop begins its next iteration.
-Using this appropriate, the compiler is able to generate instructions for the \qVerb{loop}, \qVerb{while}, and \qVerb{for} statements.
+Using this approach, the compiler is able to generate instructions for the \qVerb{loop}, \qVerb{while}, and \qVerb{for} statements.

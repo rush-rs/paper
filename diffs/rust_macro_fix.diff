@@ -1,0 +1,13 @@
+diff --git a/queries/rust/highlights.scm b/queries/rust/highlights.scm
+index 1a9330a7..b4eea8c4 100644
+--- a/queries/rust/highlights.scm
++++ b/queries/rust/highlights.scm
+@@ -300,8 +300,3 @@
+ (inner_attribute_item ["!" "#"] @punctuation.special)
+ (macro_invocation "!" @function.macro)
+ (empty_type "!" @type.builtin)
+-
+-(macro_invocation macro: (identifier) @_ident @exception "!" @exception
+- (#eq? @_ident "panic"))
+-(macro_invocation macro: (identifier) @_ident @exception "!" @exception
+- (#contains? @_ident "assert"))

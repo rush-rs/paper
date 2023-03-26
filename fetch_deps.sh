@@ -13,27 +13,33 @@ fetch_repo() {
         git pull
         cd ../..
     fi
+
+    if [ -f "diffs/$3" ]; then
+        cd "deps/$2"
+        git apply "../../diffs/$3"
+        cd ../..
+    fi
 }
 
 # TODO: create a Dockerfile
 #install_pacman ttf-fira-sans
 
 # tree-sitter
-fetch_repo nvim-treesitter nvim-treesitter
+fetch_repo nvim-treesitter nvim-treesitter rust_macro_fix.diff &
 
-fetch_repo tree-sitter tree-sitter-rust
-fetch_repo tree-sitter tree-sitter-bash
-fetch_repo tree-sitter tree-sitter-c
-fetch_repo RubixDev ebnf
-# fetch_repo benwilliamgraham tree-sitter-llvm
-fetch_repo RubixDev tree-sitter-llvm
-fetch_repo rush-rs tree-sitter-rush
-fetch_repo rush-rs tree-sitter-asm
-fetch_repo rush-rs tree-sitter-hexdump
-fetch_repo wasm-lsp tree-sitter-wasm
-fetch_repo rush-rs tree-sitter-wasm-queries
+fetch_repo tree-sitter tree-sitter-rust &
+fetch_repo tree-sitter tree-sitter-bash &
+fetch_repo tree-sitter tree-sitter-c &
+fetch_repo RubixDev ebnf &
+# fetch_repo benwilliamgraham tree-sitter-llvm &
+fetch_repo RubixDev tree-sitter-llvm &
+fetch_repo rush-rs tree-sitter-rush &
+fetch_repo rush-rs tree-sitter-asm &
+fetch_repo rush-rs tree-sitter-hexdump &
+fetch_repo wasm-lsp tree-sitter-wasm &
+fetch_repo rush-rs tree-sitter-wasm-queries &
 
 # rush dependencies
-fetch_repo rush-rs rush
+fetch_repo rush-rs rush &
 
 wait

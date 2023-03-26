@@ -113,7 +113,7 @@ Nevertheless, it is sometimes accessed manually, as seen in the lines 15 and 17.
 In these lines, read and write operations on the global variable \qVerb{a}, defined at the \qVerb{main..a} label, are performed.
 Pointers to such global variables and constants in the \qVerb{.data} and \qVerb{.rodata} sections require the instruction pointer as their base in x64 Assembly.
 
-In addition to these general purpose registers, x64 also defines 16 registers for floating-point numbers, each being 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}.
+In addition to these general-purpose registers, x64 also defines 16 registers for floating-point numbers, each being 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}.
 For the purposes of rush, only the lower 64 bits are ever used, as this is enough to represent double precision floating-point numbers.
 The additional 64 bits are provided for \emph{single instruction multiple data} (\emph{SIMD}) instructions.
 They can be used by more optimized compilers to operate on multiple values at a time.
@@ -226,7 +226,7 @@ Finally, a \qVerb{mov} instruction for inserting the value at the location of th
 
 The register allocation algorithm of the x64 compiler differs quite a lot from the \riscv{} version, too.
 Instead of marking individual registers as used or unused and then searching through a specified order for the first free one, this compiler uses an almost stack-like behavior.
-Again, one specific order of registers is defined, starting with the return register \qreg{rax}, followed by the argument registers in their correct order, and ending with the remaining general purpose registers.
+Again, one specific order of registers is defined, starting with the return register \qreg{rax}, followed by the argument registers in their correct order, and ending with the remaining general-purpose registers.
 Whenever a free register is required, the \qVerb{next} method, seen in Listing~\ref{lst:x64_intregister_next}, is called on the last used register, returning the next register in line, which is then added to the \qVerb{used_registers} field.
 For freeing a register, the compiler just removes the last register from this list.
 This only works because the rest of the compiler guarantees used registers to be freed in exactly the reverse order they were acquired in.

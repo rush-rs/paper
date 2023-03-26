@@ -39,7 +39,7 @@ The framework represents the \emph{backend} component of a compiler.
 		\node (ir_generation) [rec, align=center, right=of semantic_analysis] {LLVM IR\\generation};
 		\draw [arrow] (semantic_analysis) -- (ir_generation);
 
-		\node (llvm) [rec, align=center, fill=gray!20, right=of ir_generation] {LLVM\\backend};
+		\node (llvm) [rec, align=center, fill=gray!15, right=of ir_generation] {LLVM\\backend};
 		\draw [arrow] (ir_generation) -- (llvm);
 	\end{tikzpicture}
 	\caption{Steps of compilation when using LLVM.}\label{fig:compilation_steps_llvm}

@@ -151,7 +151,7 @@ For analyzing this type of statement, the \qVerb{let_stmt} method, which is show
 \Lirsting[ranges={612-612,617-617,644-646,_656-657,_680-680,682-688}, caption={Analyzer: The \qVerb{let_stmt} method.}, label={lst:analyzer_let_stmt}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 In line~617, the initializing expression of the let-statement is analyzed first in order to obtain information about its result data type.
-The analyzer now inserts a new entry for the variable's name (e.g., \qVerb{two}) into its current scope in line 644.
+The analyzer now inserts a new entry for the variable's name (e.g., \qVerb{two}) into its current scope in line~644.
 Even though the contents of the pushed variable are hidden, among other information, it includes the variable's type and span.
 Since the span includes the location of where the variable was defined, it can later be used in error messages, like the one previously displayed in Listing~\ref{lst:analyzer_imutable_err}.
 Furthermore, the inserted information includes whether the variable was declared as mutable.
@@ -174,7 +174,7 @@ For more complex types of expressions, like if-expressions, this method calls ap
 
 In this function, the recursive tree traversal algorithm used in the analyzer is clearly visible.
 For instance, if the current expression is a grouped expression, like \qVerb{(1 + 2)}, the code in lines~1034--1040 is called.
-In line 1035, the \qVerb{expression} method calls itself recursively using the inner expression of the grouped expression as the call argument.
+In line~1035, the \qVerb{expression} method calls itself recursively using the inner expression of the grouped expression as the call argument.
 Most of the other tree traversing methods implement a similar recursive behavior.
 
 \Lirsting[ranges={130-134,142-146}, caption={Analyzer: Obtaining the type of expressions.}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
@@ -224,13 +224,13 @@ Now that the analysis of the argument expression has completed, its compatibilit
 Listing~\ref{lst:analyzer_call_exit} shows the \qVerb{arg} function, which is responsible for validating that a function call argument is compatible with the declared parameter.
 This code will produce an error message if the type of the call argument deviates from the expected one.
 In order to validate the compatibility between the provided argument and the declared parameter, the method differentiates between several possible scenarios.
-In line 1818, the method detects the scenario in which the type of either the argument or the parameter is \qVerb{Unknown}.
+In line~1818, the method detects the scenario in which the type of either the argument or the parameter is \qVerb{Unknown}.
 Here, the method should ignore this argument without producing another error.
 
-The next match-arm in line 1819 presents the scenario in which the provided argument has the \qVerb{Never} type.
+The next match-arm in line~1819 presents the scenario in which the provided argument has the \qVerb{Never} type.
 In that case, the analyzer should only add a warning that the call-expression is unreachable.
 Furthermore, the result type of the entire call-expression is updated to reflect the never type.
-Line 1823 handles the scenario in which the type of the argument differs from the expected type of the parameter.
+Line~1823 handles the scenario in which the type of the argument differs from the expected type of the parameter.
 In that case, the method will generate an error describing the situation.
 Again, the concrete error message is omitted for better readability.
 
@@ -263,8 +263,8 @@ Listing~\ref{lst:redundant_while} displays part of a rush program which uses a w
 A \qVerb{loop} implementation is more efficient since the condition check before each iteration is omitted.
 However, this is only the case because the condition of the while-loop is a constant `true'.
 If the analyzer detects such a scenario during analysis of a while-loop, the output node will be converted into an unconditional loop.
-Detection of this scenario is implemented in line 855 of Listing~\ref{lst:analyzer_loops}.
-In line 853, the match-arm is called if the analyzed loop will never iterate; it deletes the entire loop from the AST\@.
+Detection of this scenario is implemented in line~855 of Listing~\ref{lst:analyzer_loops}.
+In line~853, the match-arm is called if the analyzed loop will never iterate; it deletes the entire loop from the AST\@.
 This optimization improves runtime efficiency by a small amount since the code performing the very first condition check will not be compiled.
 Furthermore, the resulting output code will also be slightly smaller in size since the entire loop compilation can be omitted.
 The last match-arm in line~860 represents the unoptimized fallback case in which the loop is returned without modification.

@@ -282,7 +282,7 @@ Since functions also return values by placing them on top of the stack, the retu
 Next, the VM interprets the \qVerb{jmp} (\textbf{j}u\textbf{mp}) instruction in line~18.
 Unlike \qVerb{jmpfalse}, this instruction performs its jump without any condition.
 Here, the instruction jumps to the instruction at index `14' of the current function, meaning \qVerb{setmp} in line~24.
-The instructions in the lines~24 and 25 return `0' in case \qVerb{n} was equal to `0'.
+The instructions in lines~24 and 25 return `0' in case \qVerb{n} was equal to `0'.
 
 \subsection{Fetch-Decode-Execute Cycle of the VM}
 Now that the semantic meaning of the instructions in Listing~\ref{lst:tree_vs_vm_vm} has been explained, the fetch-decode-execute cycle of the VM will be explained\@.

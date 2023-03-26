@@ -123,7 +123,7 @@ In this case, registers would be required in nearly all computations.
 In order to understand how register management can present a challenge, Listing~\ref{lst:register_alloc} should be considered.
 It displays \riscv{} assembly instructions which calculate the sum of the two integers `40' and `2'.
 In line~4, the integer value `40' is placed in the register \qVerb{a0}.
-Next, in line~5, the integer `2` is placed in \qVerb{a1}.
+Next, in line~5, the integer `2' is placed in \qVerb{a1}.
 In line~6, the \qVerb{add} instruction is used to calculate the sum of these two integers.
 Since the first operand of the instruction specifies the register in which the result should be placed,
 the original value of `40' in the register \qVerb{a0} would be overwritten by the instruction~\cite[Reference Card]{Patterson2017}.
@@ -282,12 +282,12 @@ Leveraging pointers often leads to more efficient and compact code.
 Furthermore, pointers are sometimes mandatory for solving a specific problem~\cite[p.~93]{Ritchie1988}.
 A problem which can only be solved by using pointers is displayed in Listing~\ref{lst:rush_increment_by_value}.
 This program contains the \qVerb{main} and \qVerb{modify} functions.
-In line~2, in the \qVerb{main} function, the mutable variable \qVerb{answer} is defined with an initial value of `42`.
+In line~2, in the \qVerb{main} function, the mutable variable \qVerb{answer} is defined with an initial value of `42'.
 Next, the \qVerb{modify} function is called, passing the variable as the call argument.
 In line~4, the program exits with the value of \qVerb{answer}.
 In the signature of the \qVerb{modify} function, the \qVerb{n} parameter is declared as mutable.
-Next, in line~8, the value of the parameter is incremented by `1`.
-One might expect that the function call in line~3 causes the variable \qVerb{answer} to be incremented by `1`.
+Next, in line~8, the value of the parameter is incremented by `1'.
+One might expect that the function call in line~3 causes the variable \qVerb{answer} to be incremented by `1'.
 This seems likely since both the parameter and the variable are declared as mutable using the \qVerb{mut} keyword.
 However, since rush passes function arguments by value\footnote{Passing by value means that the value of the argument is copied for the function call.} and not by reference, the called function has no direct way of altering the variable behind the passed parameter.
 In order to solve this problem, pointers are required.

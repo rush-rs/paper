@@ -239,7 +239,7 @@ In this case, 16 bytes are allocated since two 8-byte values are stored on the s
 
 The comment in line~17 indicates the start of the function's body.
 First, the previously explained \qVerb{li} instruction in line~18 places a constant `1' in the register \qVerb{a0}.
-Next, the \qVerb{ld} (\textbf{l}oad \textbf{d}word\footnote{Here, \enquote{dword} indicates that 64 bits of data shall be loaded.}) instruction in line 19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
+Next, the \qVerb{ld} (\textbf{l}oad \textbf{d}word\footnote{Here, \enquote{dword} indicates that 64 bits of data shall be loaded.}) instruction in line~19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
 Global variables, like \qVerb{m}, are saved under the \qVerb{.rodata} or the \qVerb{.data} section, depending on their mutability.
 Since \qVerb{m} is declared as mutable, the compiler saves it under the \qVerb{.data} section.
 The start of the \qVerb{.data} section is marked by the \qVerb{.section} assembler directive in line~51.
@@ -261,12 +261,12 @@ This instruction will cause the CPU to jump to the address of the specified labe
 here \qVerb{epilogue_0} would be targeted~\cite[p.~17]{Patterson2017}.
 The rush compiler emits the \qVerb{call} and \qVerb{ret} (\textbf{ret}urn) instructions for jumps between functions,
 while the \qVerb{j} instruction is used for jumps between blocks of the current function.
-In the lines~26--30, inside the epilogue, the aforementioned task of restoring register values and returning to the caller are performed.
+In lines~26--30, inside the epilogue, the aforementioned task of restoring register values and returning to the caller are performed.
 
 \subsection{Supporting Pointers}
 
 Listing~\ref{lst:rush_simple_pointer} shows a rush program in which a variable is referenced to create a pointer which is then dereferenced.
-In line 3, the previously created variable \qVerb{a} is referenced in order to create the variable \qVerb{to_a} which saves a pointer to \qVerb{a}.
+In line~3, the previously created variable \qVerb{a} is referenced in order to create the variable \qVerb{to_a} which saves a pointer to \qVerb{a}.
 Listing~\ref{lst:rush_simple_pointer_asm} includes the relevant part of the compiler output which represents this rush program\footnote{Generated using rush (Git commit \rushCommit{}).}.
 In line~18, the integer value `42' is placed in the register \qVerb{a0}.
 Next, \qVerb{a0} is saved on the stack at \qVerb{-24(fp)} using the \qVerb{sd} instruction.
@@ -327,7 +327,7 @@ An equivalent enumeration called \qVerb{FloatRegister} is defined for the float 
 
 The \qVerb{curr_block} field, defined in line~19 of Listing~\ref{lst:riscv_compiler_attr},
 saves the index of the block which is currently being inserted into.
-Next, the \qVerb{data_section} and \qVerb{rodata_section} fields are declared in the lines~20--23.
+Next, the \qVerb{data_section} and \qVerb{rodata_section} fields are declared in lines~20--23.
 They represent the ELF sections \qVerb{.data} and \qVerb{.rodata}, respectively.
 Here, each vector might contain global variables, which are represented by the type \qVerb{DataObj}.
 Each \qVerb{DataObj} consists of a label, saved as a string, and the initial data.
@@ -394,7 +394,7 @@ Each register pool contains all possible registers for either integer or floatin
 In line~175, in the method's signature, one can see that it returns a value of type \qVerb{IntRegister}.
 The for-loop in line~176 is used to iterate over the entire \qVerb{INT_REGISTERS} array.
 This array represents the pool containing integer registers.
-For each register in that pool, the if-expression in the lines~177--180 checks whether the current register \qVerb{reg} is contained in the \qVerb{used_registers} vector.
+For each register in that pool, the if-expression in lines~177--180 checks whether the current register \qVerb{reg} is contained in the \qVerb{used_registers} vector.
 If this is not the case, the current register is still unused and can therefore be returned for usage.
 Since the \qVerb{return} statement causes the function to return immediately,
 the loop only iterates until a free register has been found.
@@ -449,7 +449,7 @@ Next, an \qVerb{li} instruction is inserted which loads the integer contained in
 Finally, this register is then returned.
 For more complex expressions, the specified methods are called, just like in the other compilers.
 
-\Lirsting[float=h, ranges={755-755,791-791,841-858}, caption={\riscv{} Parts of the \qVerb{infix_expr} method.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={755-755,791-791,841-858}, caption={\riscv{}: Parts of the \qVerb{infix_expr} method.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 However, it is still not apparent \emph{when} the compiler marks certain registers as used.
 For this, the compilation of the rush expression \qVerb{n+m} is to be considered.
@@ -713,7 +713,7 @@ Before each iteration, the while-loop checks whether \qVerb{count} is less than 
 If it is, count is incremented by `1', and the loop begins its next iteration.
 Otherwise, the execution of the loop stops and the code after the loop is executed.
 In the assembly code, the content of the loop is represented by the instructions below the \qVerb{while_head_0} label.
-As the comment in line 22 suggests, the first four instructions represent the loop control code.
+As the comment in line~22 suggests, the first four instructions represent the loop control code.
 These instructions are executed every time the loop begins a new iteration.
 They check the condition before any of the code inside the loop's body is executed.
 If it results in `false', the execution of the loop should stop.

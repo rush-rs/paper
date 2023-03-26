@@ -309,11 +309,11 @@ A conditional jump instruction, like \qVerb{je} (\textbf{j}ump if \textbf{e}qual
 \Lirsting[ranges={17-56}, float=htb, caption={Trimmed compiler output of the rush function in Listing~\ref{lst:x64_control_flow_rush}.}, label={lst:x64_control_flow_asm}]{listings/x64_control_flow.s}
 
 Listing~\ref{lst:x64_control_flow_rush} shows an example rush function containing if-expressions and a loop with one \qVerb{break} and one \qVerb{continue} statement. The resulting assembly code is displayed in Listing~\ref{lst:x64_control_flow_asm}.
-This function serves no purpose, and the semantic analyzer rightfully warns about unreachable statements and unused variables, but it still serves to show the translation of these constructs to assembly.
+The displayed function serves no purpose, and the analyzer rightfully warns about unreachable statements and unused variables, but it still serves to show the translation of these constructs.
 
 Compiled if-expressions always follow the same outline, as it is shown in Figure~\ref{fig:asm_if}.
 First, the condition is compiled and an initial jump instruction that jumps to the else-block in case the condition evaluates to `false' is emitted.
-Following that are the instructions for the if-block, concluded by an unconditional jump to behind the else-block.
+The instructions for the if-block, terminated by an unconditional jump to behind the else-block, follow.
 Now, the first label is inserted, here \qVerb{.block_x}, followed by the else-block.
 The entire construct ends with the second label, here \qVerb{.block_y}.
 Any following code goes after that.

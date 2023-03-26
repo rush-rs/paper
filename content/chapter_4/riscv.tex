@@ -1,14 +1,12 @@
 % chktex-file -2
-\newpage
 \section{\riscv{}: Compiling to a Modern RISC Architecture}
 
-The \emph{\riscv{}} \emph{ISA}\footnote{Short for: \enquote{instruction set architecture}, it specifies an abstract model of a CPU.} is a new and modern \emph{reduced instruction set} architecture focussing on simplicity and expandability.
+The \emph{\riscv{}} \emph{ISA}\footnote{Short for: \enquote{instruction set architecture}, it specifies an abstract model of a CPU.} is a modern \emph{reduced instruction set} architecture focussing on simplicity and expandability.
 The initial version was developed at \emph{UC Berkely} in the context of another related research project.
-Since its introduction in 2011, the architecture has been rapidly growing in popularity while being managed and led by the \emph{\riscv{} foundation}.
+Since its introduction in~2011, the architecture has been rapidly growing in popularity while being managed and led by the \riscv{} foundation.
 Today, corporate members of the \riscv{} foundation include companies like \emph{Google}, \emph{Microsoft}, \emph{Samsung}, and \emph{IBM}.
 Therefore, the general popularity and commercial attraction of the technology is apparent.
 However, unlike most previous ISAs, the \riscv{} architecture is a completely \emph{open source} project and is therefore not controlled by a single large corporate entity.
-This can be regarded as a large competitive advantage over other popular RISC architectures like \emph{ARM}.
 In the past, many ISAs have failed due to them being too restrictive with their licensing, thus preventing widespread commercial adoption.
 However, \riscv{} is completely open and free to use, so that many companies can leverage the technology commercially while contributing to the project.
 Unlike most of the previous ISAs, which were developed during the 1970s and 80s, \riscv{} is one of the few which were developed in the last decade.
@@ -38,34 +36,32 @@ Therefore, it seems like \riscv{} could be a significant architecture to be used
 
 Compared to popular CISC architectures, RISC architectures typically have a large count of registers~\cite[Chapter~2]{Dandamudi2005}.
 For instance, while the 32-bit variant of the x86 architecture has 8 registers,
-the popular RISC architecture \emph{ARM-32} provides twice that amount, meaning 16 registers.
-However, a \riscv{} CPU includes 32 registers, which is drastically more than the aforementioned architectures.
-Moreover, these 32 registers only include the general purpose ones.
+the RISC architecture \emph{ARM-32} provides twice that amount, that is, 16 registers.
+However, a \riscv{} CPU includes 32 registers, only counting the general purpose ones.
 Just for floating-point numbers, the ISA provides another 32 registers.
 Due to this difference, a register allocator targeting the \riscv{} architecture could be more aggressive compared to one targeting a CISC architecture~\cite[p.~10]{Patterson2017}.
 
-The Table~\ref{tbl:riscv_regs} shows most of the registers provided by the \riscv{} architecture.
+Table~\ref{tbl:riscv_regs} shows most of the registers provided by the \riscv{} architecture.
 For this table, the official ABI names of the registers have been used.
 The special \qVerb{zero} register always holds a constant `0'
-Unlike other registers, it is read-only, meaning that it can never be overwritten.
+Unlike other registers, it is read-only, meaning that it can never be overwritten~\cite[pp.~18f,p.~34]{Patterson2017}.
 The \qVerb{ra} register saves the \emph{return address} of a procedure.
 If a return instruction is used, the value in \qVerb{ra} is used as the address to jump back to.
 The \qVerb{sp} and \qVerb{fp} registers are used for managing stack memory.
 The registers \qVerb{a0} and \qVerb{a1} both serve as call arguments and return values of functions.
 The remaining `\Verb{a}$n$' registers (\qVerb{a2}--\qVerb{a7}) should be primarily used as function call arguments.
-How functions are called using registers will be explained in Section~\ref{sec:riscv_calling_conv}.
-The next row contains the \emph{saved} registers \qVerb{s1}-\qVerb{s11}.
-These registers are meant to be preserved across function calls, meaning a called function must not overwrite them.
-What the previously explained registers have in common is that they all hold integer values.
+How functions are called will be explained in Section~\ref{sec:riscv_calling_conv}.
+The \emph{saved} registers \qVerb{s1}-\qVerb{s11} are meant to be preserved across function calls, that is, a called function must not overwrite them.
+What the previously explained registers have in common is that they all hold integer values~\cite[p.~34]{Patterson2017}.
 Depending on the used \riscv{} extensions, all registers, including floating-point registers, either hold 32 or 64 bits of information.
+For this project, the \emph{RV64I} base extension is used, meaning that each register may hold 64 bits.
 The float registers are able to hold floating-point numbers according to the \emph{IEEE 754--2008} standard~\cite[Chapter~11]{Waterman2019}.
 Just like their integer counterparts, the floating-point registers \qVerb{fa0} and \qVerb{fa1} are used as function call arguments and as return values.
-However, the other `\Verb{fa}$n$' registers (\qVerb{fa2}--\qVerb{fa7}) are meant to be used as float function arguments.
+The other `\Verb{fa}$n$' registers (\qVerb{fa2}--\qVerb{fa7}) are meant to be used as float function arguments.
 Just like the `\Verb{s}$n$' registers, the \qVerb{fs0}--\qVerb{fs11} registers are usually preserved across function calls.
-Lastly, the \qVerb{ft0}--\qVerb{ft11} registers can be used as temporary registers for floating-point numbers.
 It is apparent that the floating-point registers are provisioned very similarly to the integer registers.
 Therefore, a compiler targeting the architecture can utilize roughly the same principles,
-regardless of the data-type~\cite[pp.~18f,p.~34]{Patterson2017},~\cite[p.~155]{Waterman2019}.
+regardless of the data-type~\cite[p.~52]{Patterson2017}.
 
 Now, it has become apparent that \riscv{} includes many registers grouped into semantic categories.
 Every category is meant to be used in the specified manner, however, these groups are mostly only a suggestion of how each register should be used.

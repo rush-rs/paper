@@ -23,7 +23,7 @@ Therefore, the compiler can avoid slow disk operations by keeping intermediate s
 		\node (codegen) [rec, right=of semantic_analysis] {code generation};
 		\draw [arrow] (semantic_analysis) -- (codegen);
 	\end{tikzpicture}
-    \caption[Different steps of compilation.]{Different steps of compilation~\cite[pp.~6--7]{wirth_compiler_construction_2005}.}\label{fig:compilation_steps}
+    \caption[Steps of compilation.]{Steps of compilation~\cite[pp.~6--7]{wirth_compiler_construction_2005}.}\label{fig:compilation_steps}
 \end{figure}
 
 Usual steps of modern compilers, as shown in Figure~\ref{fig:compilation_steps}, are as follows~\cite[pp.~6--7]{wirth_compiler_construction_2005}:
@@ -60,6 +60,6 @@ Figure~\ref{fig:compilation_steps_altered} shows an altered chart considering th
 		\node (codegen) [rec, right=of semantic_analysis] {code generation};
 		\draw [arrow] (semantic_analysis) -- (codegen);
 	\end{tikzpicture}
-	\caption{Different steps of compilation. (altered)}
+	\caption{Steps of compilation. (altered)}
 	\label{fig:compilation_steps_altered}
 \end{figure}

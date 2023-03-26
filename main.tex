@@ -2,6 +2,7 @@
 \input{preamble/tabularx}
 \input{|lirstings include-tex}
 \captionsetup{indention=-1cm}
+\renewcommand{\theContinuedFloat}{\alph{ContinuedFloat}} % include letter in continued float references
 \input{preamble/tikz}
 \input{preamble/drawstack}
 % \input{preamble/pgfplots.tex}
@@ -51,8 +52,12 @@
 \input{content/chapter_5/conclusions}
 \input{content/acknowledgements}
 
+\let\oldClearpage\clearpage
+\let\clearpage\relax
 \listoffigures
 \listoftables
+\let\clearpage\oldClearpage
+
 \listof{listing}{List of Listings}
 % \nocite{*}
 \printbibliography[heading=bibintoc]

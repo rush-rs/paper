@@ -1,40 +1,39 @@
-Chapter~\ref{chap:analyzing_source}, explained how the syntactical and semantic analysis play a vital role before program execution can start.
+Chapter~\ref{chap:analyzing_source} explained how the syntactical and semantic analysis play a vital role before program execution can start.
 It has been explained how the \emph{parser} is used for analyzing the program's syntax in order to construct an \emph{abstract syntax tree},
 and how the \emph{semantic analyzer} validates the program's semantic rules.
 
-Next, in Chapter~\ref{chap:interpreting}, we have explained how a tree walking interpreter can be used to interpret the AST directly.
+Next, in Chapter~\ref{chap:interpreting}, we have explained how a tree-walking interpreter can be used to interpret the AST directly.
 Furthermore, a virtual machine has been presented as a way to leverage some advantages of interpreters while
 achieving greater runtime speed.
-Here, the tree walking-interpreter has presented itself as the easier solution, both in planning and implementation.
-Instead, the virtual machine's implementation was slightly more demanding as it also requires a small compiler.
+Here, the tree-walking interpreter has presented itself as the easier solution, both in planning and implementation.
+The virtual machine's implementation instead was slightly more demanding as it also required a small compiler.
 
 Chapter~\ref{chap:high_level_targets} provided an overview of compilation to high-level targets.
-As examples for high-level targets, \emph{Webassembly} and \emph{LLVM} have been used.
+Here, \emph{WebAssembly} and \emph{LLVM} have been used as examples.
 Although the former is one specific architecture, it is very portable and provides many high-level constructs by itself.
 This, combined with the fact that it is stack-based rather than register-based, resulted in a rather simple compiler.
-The more difficult aspects are mostly caused by our decision to target Webassembly's binary format directly, which could have been avoided by targeting the text format instead.
-
+The more difficult aspects are mostly caused by our decision to target WebAssembly's binary format directly, which could have been avoided by targeting the text format instead.
 Leveraging LLVM has proven itself to make implementation of a high-performance, multi-target compiler both feasible and easy.
 Due to helpful literature and guides on LLVM being rather sparse, we have used the implementation of some other Rust LLVM compilers
 in order to learn about its principles and concepts.
-To summarize, writing a compiler targeting these high-level targets presented a relatively easily accomplishable task.
-If we were to construct a compiler for a more complicated language, LLVM (or a similar solution) would present an attractive solution considering its current relevance in the software industry.
+To summarize, writing a compiler targeting these high-level targets presented a relatively accomplishable task.
+If we were to construct a compiler for a more complicated language, LLVM (or a similar framework) would present an attractive solution considering its current relevance in the software industry.
 
 In Chapter 5, low-level programming concepts and compilation to low-level targets have been covered.
 During the research and software implementation phase of this project,
 this chapter has proven itself to be the most demanding by far.
 Reasons for this are that writing a compiler targeting a low-level architecture
-requires detailed knowledge about the target machine, as assembly is used to represent programs.
+requires detailed knowledge about the target machine.
 Programming in assembly allows for many subtle bugs which are hard to track down later.
 As a result of this, we have both spent many hours trying to locate subtle bugs which were rooted in the assembly program.
 Moreover, creating a compiler that emits efficient code has proven to be very difficult.
 Therefore, our compilers only focus on the minimal principles without regarding optimization techniques.
-Like initially expected, implementation of the x86-64 compiler has proven to be more demanding than the implementation of the \riscv{} compiler.
+Like initially expected, implementation of the x86\_64 compiler has proven to be more demanding than the implementation of the \riscv{} compiler.
 
 To summarize, this paper has presented two entirely different means of program execution: interpreters and compilers.
 In order to demonstrate the differences using practical examples,
 we have implemented our own programming language called \emph{rush}.
-In summary, two interpreters, one transpiler, and four compilers were developed.
-Additionally, we have created additional tooling like a language server, a web playground, and a command line interface for the backends.
+In total, two interpreters, one transpiler, and four compilers were developed.
+Furthermore, we have created additional tooling like a language server, a web playground, and a command line interface for the backends.
 Production-ready programming languages often implement a lot more tooling, including dependency managers, build systems, intricate analyzers, and formatters.
 Since this paper is primarily about methods of program execution, a reader interested in this tooling might browse the rush GitHub organization at `\url{https://github.com/rush-rs}'.

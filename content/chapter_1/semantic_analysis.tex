@@ -166,7 +166,7 @@ Here, the analyzer should display some additional hints or warnings, depending o
 In order to understand how type determination and annotation work, the traversal of expressions should be considered.
 The code in Listing~\ref{lst:analyzer_expr} is part of the method responsible for analyzing expressions.
 
-\Lirsting[ranges={1007-1011,1032-1035,1040-1040,1046-1049}, caption={Analysis of expressions during semantic analysis.}, label={lst:analyzer_expr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={1007-1011,1032-1035,1040-1040,1046-1049}, caption={Analyzer: Analysis of expressions during semantic analysis.}, label={lst:analyzer_expr}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 This method consumes a non-analyzed expression and transforms it into an analyzed one.
 For simple types of expressions, like integer, float, or boolean literals, further analysis is omitted, and an \qVerb{AnalyzedExpression} can be constructed directly.
@@ -177,7 +177,7 @@ For instance, if the current expression is a grouped expression, like \qVerb{(1 
 In line 1035, the \qVerb{expression} method calls itself recursively using the inner expression of the grouped expression as the call argument.
 Most of the other tree traversing methods implement a similar recursive behavior.
 
-\Lirsting[ranges={130-134,142-146}, caption={Obtaining the type of expressions.}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
+\Lirsting[ranges={130-134,142-146}, caption={Analyzer: Obtaining the type of expressions.}, label={lst:expr_type_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
 
 Listing~\ref{lst:expr_type_impl} shows how the type of any analyzed expression can be obtained.
 For constant expressions, like \qVerb{Int(_)}, the determination of its type is straight-forward, as seen in line~132.
@@ -219,7 +219,7 @@ After the infix-expression's result type has been determined, it is saved in its
 Infix-expressions are another example for tree nodes that save their result type as a struct field on their own.
 Now that the analysis of the argument expression has completed, its compatibility with the declared parameter must be validated.
 
-\Lirsting[ranges={1807-1807,_1813-1822,1823-1823,_1828-1833}, caption={Validation of argument type compatibility in the analyzer.}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={1807-1807,_1813-1822,1823-1823,_1828-1833}, caption={Analyzer: Validation of argument type compatibility.}, label={lst:analyzer_call_exit}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 Listing~\ref{lst:analyzer_call_exit} shows the \qVerb{arg} function, which is responsible for validating that a function call argument is compatible with the declared parameter.
 This code will produce an error message if the type of the call argument deviates from the expected one.
@@ -248,7 +248,7 @@ This evaluation of expressions during compile time is referred to as constant fo
 It is typically used in order to avoid the emission of otherwise redundant arithmetic instructions.
 As a result of this, the compiled program will run slightly faster since less computation is being performed when the program is executed~\cite[p.~54]{wirth_compiler_construction_2005}.
 
-\Lirsting[ranges={148-153}, caption={Method for determining whether an expression is constant.}, label={lst:expr_constant_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
+\Lirsting[ranges={148-153}, caption={Analyzer: Determining whether an expression is constant.}, label={lst:expr_constant_impl}, float=H]{deps/rush/crates/rush-analyzer/src/ast.rs}
 
 \Lirsting[ranges={3-5}, caption={Redundant \qVerb{while} loop inside a rush program.}, wrap=l, wrap width=.35\textwidth, label={lst:redundant_while}]{listings/constant_true_while.rush}
 
@@ -269,7 +269,7 @@ This optimization improves runtime efficiency by a small amount since the code p
 Furthermore, the resulting output code will also be slightly smaller in size since the entire loop compilation can be omitted.
 The last match-arm in line~860 represents the unoptimized fallback case in which the loop is returned without modification.
 
-\Lirsting[ranges={771-771:18, _771:50-771,851-865,866-866}, caption={Loop optimization in the analyzer.}, label={lst:analyzer_loops}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
+\Lirsting[ranges={771-771:18, _771:50-771,851-865,866-866}, caption={Analyzer: Loop optimization.}, label={lst:analyzer_loops}, float=H]{deps/rush/crates/rush-analyzer/src/analyzer.rs}
 
 Implementing such trivial optimizations can significantly contribute to a more efficient output program without relying on the nuances of a target architecture.
 However, compiler writers often implement significantly more of those early optimizations than the aforementioned examples.

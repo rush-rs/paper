@@ -133,9 +133,9 @@ Instead, the first floating-point argument register \qVerb{fa0} is used.
 In this case, all arguments can be held in registers and spilling would not be required.
 
 In case the function accepted nine or more integer arguments,
-all further integer arguments starting with the ninth one would have to be spilled to the stack.
+all further integer arguments starting with the ninth one would have to be spilled onto the stack.
 Here, the successive registers \qVerb{a0}--\qVerb{a7} would contain the first eight integer arguments of the called function.
-However, the argument at position nine is spilled to the stack since there are no registers left which could contain the additional argument~\cite[p.~8]{RiscvABI2022}.
+However, the argument at position nine is spilled onto the stack since there are no registers left which could contain the additional argument~\cite[p.~8]{RiscvABI2022}.
 
 In the second step, the underlying procedure call is made using a specialized instruction.
 In \riscv{} assembly, one typically uses the \qVerb{call} \emph{pseudoinstruction}\footnote{A macro generating one or more instructions from one pseudoinstruction. This way, the actual count of ISA instructions remains low while convenience features can be used in assembly~\cite[p.~68]{Dandamudi2005}.}.
@@ -239,7 +239,7 @@ In this case, 16 bytes are allocated since two 8-byte values are stored on the s
 
 The comment in line~17 indicates the start of the function's body.
 First, the previously explained \qVerb{li} instruction in line~18 places a constant `1' in the register \qVerb{a0}.
-Next, the \qVerb{ld} (\textbf{l}oad \textbf{d}ouble word\footnote{Here, \enquote{double word} indicates that 64 bits of data shall be loaded.}) instruction in line 19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
+Next, the \qVerb{ld} (\textbf{l}oad \textbf{d}word\footnote{Here, \enquote{dword} indicates that 64 bits of data shall be loaded.}) instruction in line 19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
 Global variables, like \qVerb{m}, are saved under the \qVerb{.rodata} or the \qVerb{.data} section, depending on their mutability.
 Since \qVerb{m} is declared as mutable, the compiler saves it under the \qVerb{.data} section.
 The start of the \qVerb{.data} section is marked by the \qVerb{.section} assembler directive in line~51.
@@ -250,7 +250,7 @@ The initializer value of the global variable is `42' and is represented as \qVer
 
 At this point, the register \qVerb{a0} contains `1', while \qVerb{a1} contains `42'.
 In line~20, the \qVerb{add} instruction is used to save the sum of \qVerb{a0} and \qVerb{a1} in the register \qVerb{a2}.
-Next, in line~21, the \qVerb{sd} (\textbf{s}tore \textbf{d}ouble word) instruction saves the value of the register \qVerb{a2} at the memory location of the global variable \qVerb{m},
+Next, in line~21, the \qVerb{sd} (\textbf{s}tore \textbf{d}word) instruction saves the value of the register \qVerb{a2} at the memory location of the global variable \qVerb{m},
 meaning that \qVerb{m} is updated to reflect its new value `43'.
 It now becomes apparent that these instructions are responsible for the add-assign expression in line~4 of the rush program.
 Another observation is that the last operand of the \qVerb{sd} instruction specifies the temporary register \qVerb{t6}.
@@ -646,7 +646,7 @@ Here, \qVerb{res_reg} is only marked as used and pushed in the \qVerb{param_regs
 There is no code validating that the correct register for the argument position is returned.
 This check is redundant since all registers have been marked as unused prior to this block.
 Therefore, the register allocator will always return the registers for the argument expressions in the correct order.
-Otherwise, if there is no register for the current argument, the value has to be spilled to the stack.
+Otherwise, if there is no register for the current argument, the value has to be spilled onto the stack.
 For this, an \qVerb{fsd} instruction (or \qVerb{sd} for integers) is inserted in order to save the result of the current argument on the stack.
 As described in Section~\ref{sec:riscv_calling_conv} about the \riscv{} calling convention, spilled arguments are placed on the stack in a way so that the first spilled argument is at the lowest memory position.
 In order to calculate this increasing offset easily, the \qVerb{spill_cnt} variable was declared in line~113 of Listing~\ref{lst:riscv_call_expr}.

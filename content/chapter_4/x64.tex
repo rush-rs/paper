@@ -2,18 +2,18 @@
 \newpage
 \section{x86\_64: Compiling to a CISC Architecture}
 
-In addition to \emph{reduced instruction set computers} (\emph{RISC}), there are also \emph{complex instruction set computers}, short \emph{CISC}.
+In addition to \emph{reduced instruction set computers} (\emph{RISC}), there are also \emph{complex instruction set computers} (\emph{CISC}).
 The main differences lie in the instruction count and complexity.
 For the purposes of this paper, the still widely used CISC architecture \emph{x86\_64}\footnote{Later shortened to \emph{x64}.} is used as an example, just like \riscv{} was used to represent RISC architectures in the previous section.
 While \riscv{} with all extensions used by rush\footnote{The used extensions are RV32I, RV64I, RV32M, RV64M, RV32D, and RV64D.} provides about 100 different instructions~\cite[Chapter~24]{Waterman2019}, x64 is estimated to have about 3600 instructions~\cite{Rodgers2017}.
-This is due to the fact that at the time when most CISC architectures were developed, many developers still programmed in assembly languages by hand, without the help of compilers.
-Additional instructions for higher level concepts were therefore very helpful~\cite[p.~9]{Dandamudi2005Risc}.
+This is due to the fact that at the time when most CISC architectures were developed, many programmers still created assembly programs by hand, without the help of compilers.
+Additional instructions for higher-level concepts were therefore very helpful~\cite[p.~9]{Dandamudi2005Risc}.
 
 One example for such an instruction is the x64 \qVerb{leave} instruction.
 It is used to release the current stack frame at the end of a procedure.
 Listing~\ref{lst:riscv_epilogue} on page~\pageref{lst:riscv_epilogue} shows how multiple \riscv{} instructions are used to accomplish the same manually.
 First, the frame pointer register is copied into the stack pointer register, freeing the stack space allocated at the start of the procedure.
-Then, the old frame pointer that was saved on the stack is loaded from the stack back into the frame pointer register.
+Then, the old frame pointer, that was saved on the stack, is loaded from the stack back into the frame pointer register.
 Restoring the return address and returning to the caller is both done by the \qVerb{ret} instruction in x64.
 
 Another similar example is the \qVerb{call} instruction.
@@ -21,32 +21,33 @@ Although it is also usable in \riscv{} assembly, it is a pseudoinstruction provi
 In x64 however, \qVerb{call} is a conventional instruction.
 
 For x64 specifically, there are also some instructions that only operate on certain specific registers.
-For instance, the \qVerb{idiv}\label{x64_idiv} instruction divides a signed 128-bit integer stored in the two 64-bit registers \qreg{rdx} and \qreg{rax} by the given operand, storing the result in the \qreg{rax} register and the remainder in the \qreg{rdx} register. This makes usage of such instructions significantly more demanding, as values in these registers must be spilled to the stack in case they must be preserved.
+For instance, the \qVerb{idiv}\label{x64_idiv} instruction divides a signed 128-bit integer stored in the two 64-bit registers \qreg{rdx} and \qreg{rax} by the given operand, storing the result in the \qreg{rax} register and the remainder in the \qreg{rdx} register. This makes usage of such instructions significantly more demanding, as values in these registers must be spilled onto the stack in case they have to be preserved.
 
 The substantial growth of the x64 instruction set and its commitment to backwards compatibility have also led to a number of instructions that have long become obsolete.
 For example, \qVerb{aaa} (ASCII Adjust after Addition) is used in the context of adding two \emph{Binary Coded Decimal} (\emph{BCD}) values, but that technology is rarely used nowadays~\cite[p.~4]{Patterson2017}.
-\TODO{maybe explain what BCD is?}
 
 \subsection{x64 Assembly}
 
-\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.4\textwidth, label={lst:x64_example}, caption={Example rush program.}]{listings/x64_simple.rush}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.3\textwidth, label={lst:x64_example}, caption={Example rush program.}]{listings/x64_simple.rush}
 
 There are multiple different dialects of x64 assembly and multiple assemblers each supporting a different set of dialects.
-The rush x64 compiler emits assembly code using Intel syntax that can be assembled by the \emph{GNU Assembler} (GAS).
+The rush x64 compiler emits assembly code using Intel syntax that can be assembled by the \emph{GNU Assembler} (\emph{GAS}).
 
 Listing~\ref{lst:x64_example} contains another simple rush program.
-It defines a global variable called \qVerb{a} and assigns it the integer 2, increments it by one, defines a local boolean called \qVerb{b}, using \qVerb{true} as its initial value, and exits with the sum of \qVerb{a} and \qVerb{b}.
+It defines a global variable called \qVerb{a} and assigns it the integer `2', increments it by one, defines a local boolean called \qVerb{b}, using `true' as its initial value, and exits with the sum of \qVerb{a} and \qVerb{b}.
 The corresponding assembly code generated by the x64 rush compiler is shown in Listing~\ref{lst:x64_asm_example}.
 It begins with the \qVerb{.intel_syntax} directive, indicating that the following assembly code uses the Intel syntax.
-Then, similar to the \riscv{} assembly code shown in the previous section, the \qVerb{_start} label is marked as global, as it again represents the entry point.
+Then, similar to the \riscv{} assembly code shown in the previous section, the \qVerb{_start} symbol is marked as global, as it again represents the entry point.
 The sections are also the same, as these are defined by the ELF format which is independent of ISAs.
 
-\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width=0.6\textwidth, label={lst:x64_asm_example}, caption={Compiler output of the rush program in Listing~\ref{lst:x64_example}.}]{listings/x64_simple.s}
-
 The main differences between x64 assembly and the previously shown \riscv{} assembly, and also the other x64 assembly dialects, are the instruction mnemonics and the register names.
-When using the Intel syntax for x64, register names are always prepended by a percentage sign.
+When using the Intel syntax for x64, register names are always prepended by a%
+%
+\Lirsting[wrap=l, wrap width=0.6\textwidth, label={lst:x64_asm_example}, caption={Compiler output of the rush program in Listing~\ref{lst:x64_example}.}]{listings/x64_simple.s}
+%
+percentage sign.
 Another difference is the syntax used for pointers.
-While \riscv{} assembly uses \qVerb{-1(fp)} to specify the value in the \qVerb{fp} register as a memory address with an offset of `-1', Intel x64 uses \qVerbCmd{byte ptr [\%rbp-1]}, as seen in line~16.
+While \riscv{} assembly uses \qVerb{-1(fp)} to specify the value in the \qVerb{fp} register as a memory address with an offset of `$-1$', Intel x64 uses \qVerbCmd{byte ptr [\%rbp-1]}, as seen in line~16.
 It is obvious that the latter provides an additional constraint, the size of the value pointed to, here \qVerb{byte}.
 \riscv{} assembly instead encodes this information in the instruction mnemonic.
 To store a byte, one would use \qVerb{sb} (\textbf{s}tore \textbf{b}yte), whereas for storing a 64-bit integer, \qVerb{sd} (\textbf{s}tore \textbf{d}word) is used instead.
@@ -62,13 +63,15 @@ For instance, a double word is called \emph{dword}.
 In some instances, like in line~28, alternative short forms are used.
 Here, the directive \qVerb{.quad} denotes a quadruple word.
 
-Another important difference between x64 and \riscv{} is the typical operand structure of instructions.
-\riscv{} requires three operands for \qVerb{add}, \qVerb{sub}, and many other instructions, these being the destination, the first source, and the second source location.
+Another difference between x64 and \riscv{} is the typical operand structure of instructions.
+\riscv{} requires three operands for \qVerb{add}, \qVerb{sub}, and alike, these being the destination, the first source, and the second source location.
 The norm in x64 is using just two operands where the first represents both the first source and the destination~\cite[pp.~14--20]{Dandamudi2005Risc}.
+
+\subsection{Registers}
 
 \begin{table}[h]
 	\centering
-	\caption[x64 Integer Registers]{Integer registers on the x64 architecture~\cite[pp.~20,26]{Lu2022}.}\label{tbl:x64_registers}
+	\caption[x64 Integer Registers]{Integer registers of the x64 architecture~\cite[pp.~20,26]{Lu2022}.}\label{tbl:x64_registers}
 	\rowcolors{2}{gray!15}{}
 	\begin{tabular}{c|ccc|c|l}
 		\rowcolor{gray!25} 64-bit & 32-bit     & 16-bit     & 8-bit      & Caller-Saved & Purpose                                    \\
@@ -92,15 +95,13 @@ The norm in x64 is using just two operands where the first represents both the f
 	\end{tabular}
 \end{table}
 
-\subsection{Registers}
-
 The base x64 ISA provides 16 general-purpose registers capable of holding 64-bit integers.
 These are shown in Table~\ref{tbl:x64_registers}.
-Additionally, three more sets of 16 registers are defined, each half the size as the previous one.
+Additionally, three more sets of 16 registers are defined, each half the size of the previous one.
 However, instead of these being additional storage, they simply provide an alias to the lower half of the respective larger register.
 For instance, when writing the byte $(2a)_{16}$ into \qreg{al}, the least significant byte of \qreg{ax}, \qreg{eax}, and \qreg{rax} changes to $(2a)_{16}$, too.
 
-Considering line~18 from Listing~\ref{lst:x64_asm_example}, the move of the value behind the \qVerb{byte ptr} requires the destination register to be one byte in size, too.
+Considering line~18 of Listing~\ref{lst:x64_asm_example}, the move of the value behind the \qVerb{byte ptr} requires the destination register to be one byte in size, too.
 For this reason, the compiler uses the \qreg{sil} register here, instead of its 64-bit equivalent \qreg{rsi}.
 Line~19 then performs the cast from the boolean, saved as a byte, to a 64-bit integer.
 It does this by taking the 64-bit variant of the register, in this case \qreg{rsi}, and assuring that all bits, except for the least significant eight, are zeros.
@@ -109,9 +110,9 @@ The latter is done using the \emph{bitwise AND} operation with the number $2^8-1
 Another special register is \qreg{rip}.
 It stores the instruction pointer, that is, the address of the current instruction being executed.
 The register is usually not modified directly, as branching can be achieved with instructions like \qVerb{call}, \qVerb{ret}, or \qVerb{jmp}.
-Nevertheless, it is sometimes accessed manually, as seen in the lines 15 and 17.
+Nevertheless, it is sometimes accessed manually, as seen in lines~15 and 17.
 In these lines, read and write operations on the global variable \qVerb{a}, defined at the \qVerb{main..a} label, are performed.
-Pointers to such global variables and constants in the \qVerb{.data} and \qVerb{.rodata} sections require the instruction pointer as their base in x64 Assembly.
+Pointers to such global variables and constants in the \qVerb{.data} and \qVerb{.rodata} sections require the instruction pointer as their base in x64 assembly.
 
 In addition to these general-purpose registers, x64 also defines 16 registers for floating-point numbers, each being 128 bits in size and labelled \qreg{xmm0} through \qreg{xmm15}.
 For the purposes of rush, only the lower 64 bits are ever used, as this is enough to represent double precision floating-point numbers.
@@ -119,9 +120,10 @@ The additional 64 bits are provided for \emph{single instruction multiple data} 
 They can be used by more optimized compilers to operate on multiple values at a time.
 Any single one of these registers would then for instance hold two 64-bit values or four 32-bit values~\cite[pp.~5--7]{Kusswurm2018-nd}.
 
+\newpage
 \subsection{Stack Layout and Calling Convention}
 
-\begin{wrapfigure}{O}{0.55\textwidth}
+\begin{wrapfigure}{r}{0.52\textwidth}
 	\hspace{-1.75cm}
 	\begin{tikzpicture}[xscale=0.9, yscale=0.7]
 		\footnotesize
@@ -180,15 +182,14 @@ A matching \qVerb{Display} implementation\footnote{In Rust, implementing the \qV
 
 Line~20 shows the definition of the \qVerb{.section} directive, simply holding an instance of another enumeration describing the valid sections.
 Line~21 defines an assembly label, holding its name and a boolean indicating whether a blank line should be added above.
-\TODO{we might still have to explicitly state what labels are}
 
-The normal instructions, e.g., \qVerb{add} and \qVerb{sub}, also cannot simply take registers as operands, as x64 often allows memory pointers and immediate values as operands.
+Instructions, e.g., \qVerb{add} and \qVerb{sub}, also cannot simply take registers as operands, as x64 often allows memory pointers and immediate values as operands.
 Instead, another enumeration, called \qVerb{IntValue}, is introduced to allow these three variants.
 Listing~\ref{lst:x64_intvalue} shows its definition.
 
 \subsubsection{Struct Fields}
 
-\Lirsting[ranges={33-37}, wrap=o, wrap width={0.45\textwidth}, fancyvrb={numbers=\OuterEdge}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
+\Lirsting[ranges={33-37}, wrap=r, wrap width={0.45\textwidth}, fancyvrb={numbers=right}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
 
 The compiler struct itself, shown in Listing~\ref{lst:x64_compiler}, is also a bit different.
 Both compilers have a \qVerb{used_registers} field, but this compiler does not need to store the size for each register because the registers themselves already have a defined size (line~19).
@@ -200,10 +201,10 @@ And both compilers have one field for accumulating the final assembly code, but 
 \Lirsting[ranges={15-19, 25-31, 43-48, 55-60, 69-71}, float=htb, caption={Overview of the x64 \qVerb{Compiler} struct definition.}, label={lst:x64_compiler}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
 Additional fields of this compiler are \qVerb{function_body}, \qVerb{stack_pointer}, and \qVerb{frame_size}.
-The \qVerb{function_body} field stores the instructions of the currently compiled function.
+The \qVerb{function_body} field stores the instructions of the current function.
 During compilation of statements and expressions, emitted instructions are always appended to this vector.
-The method for compiling a function body then produces the prologue and afterward appends the vector contents to \qVerb{text_section}.
-This is required because some values that are needed in the prologue, like the \qVerb{frame_size}, cannot be known before compilation of the function body, but must appear before the body in the assembly code.
+The method for compiling a function body then produces the prologue, and afterward appends the vector contents to \qVerb{text_section}.
+This is required because some values that are needed in the prologue, like the \qVerb{frame_size}, cannot be known before compilation of the function body has completed, but must appear before the body in the assembly code.
 
 \subsubsection{Memory Management}
 
@@ -211,23 +212,21 @@ The \qVerb{stack_pointer} field is used to keep track of the current stack frame
 Every time a variable definition is encountered, or a register is spilled, stack space for it is reserved by increasing this pointer.
 This process is done by the \qVerb{push_to_stack} method visible in Listing~\ref{lst:x64_push_to_stack}.
 It takes a value, its size, and an optional comment as parameters.
-At first, it aligns the stack pointer to a multiple of the values' size by the \qVerb{align} function.
-Then, it adds the number of bytes required for the value to it, and increases the frame size in case it is not big enough yet.
+At first, it aligns the stack pointer to a multiple of the values' size by using the \qVerb{align} function.
+Then, it adds the number of bytes required for the value to the stack pointer, and increases the frame size in case it is not big enough yet.
 Now, the pointer to this value is constructed using \qreg{rbp} as the base and the negated stack pointer as the offset.
 Finally, a \qVerb{mov} instruction for inserting the value at the location of the pointer is added to the assembly code, and the pointer is returned for further use.
 
 \Lirsting[ranges={254-271, 277-277, _280-283}, float=htb, caption={Stack space reservation for values.}, label={lst:x64_push_to_stack}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
-\TODO{example?}
-
 \subsubsection{Register Allocation}
 
-\Lirsting[ranges={257-265, 270-272:26, _272:59-274}, wrap=0, wrap width=0.5\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Register allocation in the rush x64 compiler.}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+\Lirsting[ranges={257-261, 271-272:26, _272:59-274}, wrap=o, wrap width=0.5\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Register allocation in the rush x64 compiler.}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
 
-The register allocation algorithm of the x64 compiler differs quite a lot from the \riscv{} version, too.
+The register allocation algorithm of the x64 compiler differs quite a lot from the \riscv{} version.
 Instead of marking individual registers as used or unused and then searching through a specified order for the first free one, this compiler uses an almost stack-like behavior.
 Again, one specific order of registers is defined, starting with the return register \qreg{rax}, followed by the argument registers in their correct order, and ending with the remaining general-purpose registers.
-Whenever a free register is required, the \qVerb{next} method, seen in Listing~\ref{lst:x64_intregister_next}, is called on the last used register, returning the next register in line, which is then added to the \qVerb{used_registers} field.
+Whenever a free register is required, the \qVerb{next} method, displayed in Listing~\ref{lst:x64_intregister_next}, is called on the last used register, returning the next register in line, which is then added to the \qVerb{used_registers} field.
 For freeing a register, the compiler just removes the last register from this list.
 This only works because the rest of the compiler guarantees used registers to be freed in exactly the reverse order they were acquired in.
 With this guarantee, it is apparent that at any point in time during compilation, the registers in the \qVerb{used_registers} field are in the exact order specified by Listing~\ref{lst:x64_intregister_next} without gaps.
@@ -235,37 +234,42 @@ The same is done separately for the float registers.
 
 \subsubsection{Functions}
 
-\Lirsting[wrap=o, wrap width=0.3\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Another example rush program with two functions.}, label={lst:x64_functions_rush}]{listings/x64_functions.rush}
+\Lirsting[wrap=o, wrap width=0.4\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Another example rush program with two functions.}, label={lst:x64_functions_rush}]{listings/x64_functions.rush}
 
-To explain the process of compiling functions and function calls, there is another example program to be considered in Listing~\ref{lst:x64_functions_rush}, along with the produced assembly code in Listing~\ref{lst:x64_functions_asm}.
-Although not explicitly labelled, the x64 compiler also uses the concept of a function prologue, body, and epilogue.
+To explain the process of compiling functions and function calls, there is another example program to consider in Listing~\ref{lst:x64_functions_rush}, along with the produced assembly code in Listing~\ref{lst:x64_functions_asm}.
+Although not explicitly separated by comments, the x64 compiler also uses the concept of a function prologue, body, and epilogue.
 Since the \qVerb{main} function in this example does not require any stack space for variables or register spilling, the prologue is automatically omitted, and the epilogue does not contain a \qVerb{leave} instruction for deallocating the memory.
 The \qVerb{foo} function however does declare a local variable and thus requires stack space to be allocated in the prologue.
 The lines~20--22 are responsible for this.
-As previously shown in Figure~\ref{fig:x64_stack}, the stack should first contain the return address and then the previous base pointer, the former of which is already handled by the \qVerb{call} instruction.
+As previously shown in Figure~\ref{fig:x64_stack}, the stack should first contain the return address and then the previous%
+%
+\setlength\parfillskip{0pt}\par\setlength\parfillskip{0pt plus 1fil}%
+\Lirsting[ranges={11-31}, wrap=l, wrap width=0.5\textwidth, caption={Trimmed compiler output of the rush program in Listing~\ref{lst:x64_functions_rush}.}, label={lst:x64_functions_asm}]{listings/x64_functions.s}
+\noindent%
+%
+base pointer, the former of which is already handled by the \qVerb{call} instruction.
 Therefore, the function's prologue begins with pushing \qreg{rbp} onto the stack.
 Afterward, the base pointer's value is set to the current stack pointer.
 The stack pointer itself is then decremented by the amount of bytes needed for the function, which is saved in \qVerb{frame_size}, rounded up to a multiple of 16.
 
-\Lirsting[ranges={11-31}, wrap=o, wrap width=0.7\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Trimmed compiler output of the rush program in Listing~\ref{lst:x64_functions_rush}.}, label={lst:x64_functions_asm}]{listings/x64_functions.s}
-
 The epilogue ranges from line~29 to line~31.
-It defines a label where \qVerb{return} statements\label{x64_return} can jump to, releases the stack frame using the \qVerb{leave} instruction, and returns control to the caller with the \qVerb{ret} instruction.
-Usage of the return label can be seen in line~26, which does an unconditional jump to there, rendering all intermediate instructions as unreachable.
+It defines a label where \qVerb{return} statements\label{x64_return} can jump to, releases the stack frame using the \qVerb{leave} instruction, and returns control back to the caller with the \qVerb{ret} instruction.
+Usage of the return label can be seen in line~26, which performs an unconditional jump to that label, rendering all intermediate instructions unreachable.
 This is the expected behavior because the jump instruction was emitted due to the \qVerb{return} statement in line~6 of the rush program, which should skip to the end of the function.
-The return value was moved into the \qreg{rax} register, or its correspondingly sized variant, in advance.
-
-\TODO{\qVerb{function_body} definition?}
+The return value was moved into the \qreg{rax} register, or its appropriately sized variant, in advance.
 
 \subsubsection{Function Calls}
 
 % \Lirsting[ranges={37-44}, wrap=o, wrap width=0.61\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Definition of the parameter registers and their order. \TODO{this listing could be removed}}, label={lst:x64_int_param_regs}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
 
 To support function calls, two main aspects must be considered: passing arguments from the caller, and retrieving arguments in the callee.
-
-Generally, for passing arguments, the compiler simply iterates over the argument expressions, compiles each one, and moves its result into the appropriate register, or onto the stack if no registers are left.
+Generally, for passing arguments, the compiler simply iterates over the argument expressions, compiles each one, and moves its%
+%
+\Lirsting[ranges={5-13}, wrap=l, wrap width=0.51\textwidth, caption={A rush example function containing if-expressions and a loop.}, label={lst:x64_control_flow_rush}]{listings/x64_control_flow.rush}
+%
+result into the appropriate register, or onto the stack if no registers are left.
 As the first six integer arguments are always passed through the same registers, a function call always requires access to these exact registers, or at least a subset of them.
-That means, if some of the registers happen to be in use already, their content has to be spilled to the stack and replaced with the argument value.
+That means if some of the registers happen to be in use already, their contents have to be spilled onto the stack and replaced with the argument value.
 An example for when this might happen is a function call as a non-first argument to another function call, like in `\LirstInline{rush}{foo(42, bar('x'))}'.
 When the compiler has to move the first argument for the inner function call into \qreg{rdi}, here the argument \qVerb{'x'} for the function \qVerb{bar}, it notices this register is already used for the first argument of the outer function call, \qVerb{42}.
 
@@ -275,18 +279,9 @@ More optimized compilers can of course try to keep the arguments in the register
 
 \subsubsection{Control Flow}
 
-\Lirsting[ranges={5-13}, wrap=o, wrap width=0.55\textwidth, fancyvrb={numbers=\OuterEdge}, caption={A rush example function containing if-expressions and a loop.}, label={lst:x64_control_flow_rush}]{listings/x64_control_flow.rush}
-
-Just as with \riscv{}, control flow constructs, like loops and if-branches, must be represented using simple jumps in assembly.
-There are both conditional and unconditional jumps, the latter of which was already outlined during explanation of \qVerb{return} statements on page~\pageref{x64_return}.
-An unconditional jump, done in x64 with the \qVerb{jmp} instruction, only takes a label to jump to, and does so, as the name implies, without checking for any condition.
-Conditional jumps are rather a set of different instructions, each testing a different condition.
-Again, the way x64 handles conditions differs from \riscv{}.
-It provides a set of \emph{flags}\footnote{A flag is a boolean value, typically stored in batch with one bit per flag.} indicating various relations between two values, which are set by dedicated compare instructions like \qVerb{cmp} for integers, \qVerb{test} for booleans, and \qVerb{ucomisd} for floats.
-A conditional jump instruction like \qVerb{je} (\textbf{j}ump if \textbf{e}qual) then only has to query the flag that indicates equality, and optionally performs a jump based on its value.
-
-\Lirsting[ranges={17-56}, float=htb, caption={Trimmed compiler output of the rush function in Listing~\ref{lst:x64_control_flow_rush}.}, label={lst:x64_control_flow_asm}]{listings/x64_control_flow.s}
-
+Just as with \riscv{}, control flow constructs, like loops and if-expressions, must be represented using simple jumps in assembly.
+There are both conditional and unconditional jumps, the latter of which was already outlined during explanation of \qVerb{return} statements.
+%
 \begin{wrapfigure}{o}{0.5\textwidth}
 	\begin{tikzpicture}[every node/.style={minimum size=1.5ex}]
 		\node(s)[vstack=8, rectangle split part align=left]{%
@@ -304,6 +299,14 @@ A conditional jump instruction like \qVerb{je} (\textbf{j}ump if \textbf{e}qual)
 	\end{tikzpicture}
 	\caption{Structure of if-expressions in assembly.}\label{fig:asm_if}
 \end{wrapfigure}
+%
+An unconditional jump, done in x64 with the \qVerb{jmp} instruction, only takes a label to jump to, and does so, as the name implies, without checking for any condition.
+Conditional jumps are rather a set of different instructions, each testing a different condition.
+Again, the way x64 handles conditions differs from \riscv{}.
+It provides a set of \emph{flags}\footnote{A flag is a boolean value, typically stored in batch with one bit per flag.} indicating various relations between two values, which are set by dedicated compare instructions like \qVerb{cmp} for integers, \qVerb{test} for booleans, and \qVerb{ucomisd} for floats.
+A conditional jump instruction, like \qVerb{je} (\textbf{j}ump if \textbf{e}qual), then only has to query the flag that indicates equality, and optionally performs a jump based on its value.
+
+\Lirsting[ranges={17-56}, float=htb, caption={Trimmed compiler output of the rush function in Listing~\ref{lst:x64_control_flow_rush}.}, label={lst:x64_control_flow_asm}]{listings/x64_control_flow.s}
 
 Listing~\ref{lst:x64_control_flow_rush} shows an example rush function containing if-expressions and a loop with one \qVerb{break} and one \qVerb{continue} statement. The resulting assembly code is displayed in Listing~\ref{lst:x64_control_flow_asm}.
 This function serves no purpose, and the semantic analyzer rightfully warns about unreachable statements and unused variables, but it still serves to show the translation of these constructs to assembly.
@@ -328,8 +331,6 @@ However, since x64 provides additional jump instructions for basic conditions li
 This can be seen in lines~30--33 of the assembly code, which represent the condition of the if-expression in line~7 of the rush code.
 The compiler detects the condition to be a simple equality check between two floats, and therefore issues a \qVerb{ucomisd} instruction in line~31 to compare the floats, and a \qVerb{jne} instruction in line~33 to jump if the floats are not equal.
 The reason for the \qVerb{jp}\label{x64_ucomisd} instruction in between is explained later.
-
-\TODO{show Rust snippets?}
 
 The representation of the loop is much simpler.
 Only two labels must be defined, one before and one after the loop's contents, and an unconditional jump back to the former must be performed at the end of every iteration.

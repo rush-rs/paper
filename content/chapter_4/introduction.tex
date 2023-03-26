@@ -254,7 +254,7 @@ If the number of call arguments exceeds the number of available argument registe
 For instance, a target architecture might plan for four registers (\qVerb{r0}--\qVerb{r3}) to be used as call arguments.
 Now, a function is called using six arguments.
 Due to the fact that there are two more arguments than registers, register spilling is now required.
-In that case, the registers \qVerb{r0}--\qVerb{r3} would contain the first four argument values while the fifth and sixth argument are spilled to the stack.
+In that case, the registers \qVerb{r0}--\qVerb{r3} would contain the first four argument values while the fifth and sixth argument are spilled onto the stack.
 % Like hinted previously, most assembly procedures contain a \emph{prologue} and an \emph{epilogue}.
 % These blocks of the function are responsible for allocating and deallocating resources which the function might use.
 % For instance, the stack- and frame-pointer is often adjusted in the prologue.

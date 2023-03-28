@@ -1,7 +1,7 @@
 \documentclass[english]{article}
 
 \usepackage{babel}
-\usepackage[margin=2.5cm]{geometry}
+\usepackage[margin=1.5cm]{geometry}
 \usepackage{amssymb}
 \usepackage{caption}
 \captionsetup[table]{skip=10pt}
@@ -10,78 +10,82 @@
 \usepackage{float}
 \usepackage{multirow}
 \usepackage{makecell}
+\usepackage{tikz}
 \renewcommand{\arraystretch}{1.2}
 \newcolumntype{L}{X}
-\newcolumntype{C}{>{\centering\arraybackslash}X}
-\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
 
-\newcommand\mik{\cellcolor{green!9} Mik Müller}
-\newcommand\silas{\cellcolor{blue!7} Silas Groh}
+\newcommand\mik{\cellcolor{green!5} Mik Müller}
+\newcommand\silas{\cellcolor{blue!5} Silas Groh}
+\newcommand\both{\cellcolor{gray!5} Mik Müller and Silas Groh}
 \newcommand{\chap}[1]{Chapter & \texttt{#1}}
 \newcommand{\sect}[1]{Section & \texttt{#1}}
 \newcommand{\subsec}[1]{Subsection & \texttt{#1}}
 \newcommand{\riscv}{RISC\babelhyphen{nobreak}V}
 
 \begin{document}
-\section{Authors}
+\begin{tikzpicture}[y=0.80pt, x=0.80pt, yscale=-0.2, xscale=0.2]
+	\path[draw,fill] (117.1730,11.6540)arc(280.998:294.998:90.000) .. controls (133.4500,44.2213) and (142.7120,50.9507) .. (165.8220,38.6200)arc(317.000:331.000:90.000) .. controls (159.8473,74.5357) and (163.3850,85.4240) .. (189.3290,89.0320)arc(-7.000:7.000:90.000) .. controls (163.3850,114.5760) and (159.8473,125.4643) .. (178.7160,143.6330)arc(29.000:43.000:90.000) .. controls (142.7120,149.0493) and (133.4500,155.7787) .. (138.0360,181.5680)arc(65.002:79.002:90.000) .. controls (105.7243,164.7873) and (94.2757,164.7873) .. (82.8270,188.3460)arc(100.998:114.998:90.000) .. controls (66.5500,155.7787) and (57.2880,149.0493) .. (34.1780,161.3800)arc(137.000:151.000:90.000) .. controls (40.1527,125.4643) and (36.6150,114.5760) .. (10.6710,110.9680)arc(173.000:187.000:90.000) .. controls (36.6150,85.4240) and (40.1527,74.5357) .. (21.2840,56.3670)arc(209.000:223.000:90.000) .. controls (57.2880,50.9507) and (66.5500,44.2213) .. (61.9640,18.4320)arc(245.002:259.002:90.000) .. controls (94.2757,35.2127) and (105.7243,35.2127) .. (117.1730,11.6540) -- cycle(100.0000,55.0000)arc(270.000:90.000:45.000)arc(90.000:-90.000:45.000) -- cycle;
+	\path[draw,fill] (220.0000,120.0000)(220.0000,112.5000)arc(270.000:90.000:7.500) -- (520.0000,127.5000)arc(90.000:-90.000:7.500) -- cycle;
+	\path[draw,fill] (215.0000,150.0000)(215.0000,142.5000)arc(270.000:90.000:7.500) -- (515.0000,157.5000)arc(90.000:-90.000:7.500) -- cycle;
+	\path[draw,fill] (190.0000,180.0000)(190.0000,172.5000)arc(270.000:90.000:7.500) -- (490.0000,187.5000)arc(90.000:-90.000:7.500) -- cycle;
+	\path[shift={(220.0,20.0)},draw,fill] (167.9000,73.0000) -- (152.4000,73.0000) -- (163.9000,0.0000) -- (179.4000,0.0000) -- (175.5000,24.1000) -- (175.4000,24.8000) .. controls (177.7333,23.2667) and (180.0333,22.1667) .. (182.3000,21.5000) .. controls (184.5667,20.8333) and (186.7333,20.5000) .. (188.8000,20.5000)arc(269.659:282.076:23.700)arc(282.064:300.132:17.922) .. controls (202.0500,24.7500) and (204.2833,27.0667) .. (205.8500,30.0000)arc(332.208:353.301:19.893)arc(-7.060:0.109:25.198)arc(0.111:3.633:23.403) .. controls (208.1197,42.0780) and (208.0687,42.6487) .. (208.0000,43.2500)arc(6.506:7.210:134.386) .. controls (207.7357,45.4220) and (207.6680,45.9260) .. (207.6000,46.4000) -- (203.3000,73.0000) -- (187.8000,73.0000) -- (192.1000,45.8000)arc(13.858:6.609:8.503)arc(6.758:2.989:10.559) .. controls (192.3833,43.4167) and (192.4000,42.8000) .. (192.4000,42.2000)arc(0.333:-11.043:10.757)arc(349.057:330.767:7.795) .. controls (190.6500,36.5167) and (189.6500,35.5833) .. (188.3500,34.9500)arc(295.635:278.978:9.202)arc(279.168:269.787:12.297) .. controls (181.9333,34.0000) and (180.2000,34.4167) .. (178.6000,35.2500) .. controls (177.0000,36.0833) and (175.6667,37.2333) .. (174.6000,38.7000) .. controls (173.5333,40.1667) and (172.8333,41.8333) .. (172.5000,43.7000) -- (167.9000,73.0000) -- cycle(125.7000,72.9000) -- (99.2000,72.9000) -- (101.2000,60.6000) -- (126.2000,60.6000)arc(90.284:81.166:6.245) .. controls (127.6407,60.4533) and (128.0440,60.3280) .. (128.4000,60.1500) .. controls (129.0000,59.8500) and (129.4833,59.4167) .. (129.8500,58.8500) .. controls (130.2167,58.2833) and (130.4000,57.6667) .. (130.4000,57.0000)arc(0.508:-15.767:3.831)arc(344.104:313.271:2.917)arc(312.990:284.505:3.127) .. controls (127.7850,53.7733) and (127.4393,53.7220) .. (127.0640,53.7060)arc(272.543:270.061:6.096) -- (118.9000,53.7000)arc(89.707:102.159:21.410)arc(102.286:114.858:17.492) .. controls (108.2167,50.8667) and (106.3167,49.2167) .. (104.9500,47.0500)arc(148.112:169.887:13.015)arc(169.632:180.270:17.652) .. controls (102.9000,36.0667) and (103.6833,33.1667) .. (105.2500,30.5000)arc(210.658:238.547:16.710)arc(237.954:241.676:20.394) .. controls (115.0167,22.5000) and (118.5333,21.7000) .. (122.6000,21.7000) -- (146.5000,21.7000) -- (144.5000,34.0000) -- (122.5000,34.0000)arc(270.291:259.027:5.419)arc(259.046:243.689:4.111)arc(243.815:229.363:3.624)arc(229.235:211.083:2.895) .. controls (118.7500,36.1500) and (118.5667,36.7000) .. (118.5000,37.3000)arc(180.407:168.034:4.239) .. controls (118.7167,38.7783) and (118.9693,39.2420) .. (119.3500,39.6000) .. controls (119.9167,40.1333) and (120.7333,40.4000) .. (121.8000,40.4000) -- (129.6000,40.4000)arc(269.728:279.009:24.099) .. controls (134.9260,40.9323) and (136.2433,41.3073) .. (137.4400,41.8220)arc(293.200:296.834:14.093) .. controls (140.6167,43.4000) and (142.4500,45.0500) .. (143.7500,47.1500) .. controls (145.0500,49.2500) and (145.7000,51.7000) .. (145.7000,54.5000) .. controls (145.7000,57.9000) and (144.8333,60.9833) .. (143.1000,63.7500) .. controls (141.3667,66.5167) and (139.0000,68.7333) .. (136.0000,70.4000)arc(61.232:83.973:19.882)arc(83.575:90.090:24.843) -- cycle(80.3000,21.7000) -- (95.7000,21.7000) -- (91.1000,51.8000)arc(8.321:29.977:27.627)arc(30.240:34.855:26.431)arc(34.987:64.400:23.931)arc(63.726:64.144:28.062)arc(64.565:80.411:27.774)arc(80.277:90.261:38.042)arc(89.697:101.002:31.197)arc(100.979:116.737:23.438)arc(116.540:136.702:20.486)arc(137.053:148.542:18.953) .. controls (41.0500,61.1500) and (40.1000,57.6667) .. (40.1000,53.8000) .. controls (40.1000,53.1333) and (40.1500,52.4000) .. (40.2500,51.6000) .. controls (40.3500,50.8000) and (40.4333,50.0667) .. (40.5000,49.4000) -- (44.9000,21.7000) -- (60.4000,21.7000) -- (56.0000,50.0000) .. controls (55.9333,50.4000) and (55.8833,50.8000) .. (55.8500,51.2000) .. controls (55.8167,51.6000) and (55.8000,51.9333) .. (55.8000,52.2000) .. controls (55.8000,54.7333) and (56.6000,56.8000) .. (58.2000,58.4000)arc(134.793:99.108:8.033)arc(99.857:89.745:11.455)arc(90.449:70.601:10.733)arc(70.251:60.076:9.947) .. controls (71.4167,58.5500) and (72.7333,57.3167) .. (73.8000,55.7500) .. controls (74.8667,54.1833) and (75.5333,52.4667) .. (75.8000,50.6000) -- (80.3000,21.7000) -- cycle(15.5000,73.0000) -- (0.0000,73.0000) -- (5.7000,36.4000)arc(188.614:203.167:20.977)arc(203.175:228.979:15.762)arc(229.371:260.952:15.712)arc(260.350:270.235:21.778) -- (38.0000,21.7000) -- (36.1000,34.4000) -- (25.0000,34.4000)arc(270.029:231.045:3.881)arc(231.958:230.335:4.896) .. controls (21.6833,35.9833) and (21.2333,36.8000) .. (21.1000,37.8000) -- (15.5000,73.0000) -- cycle;
+\end{tikzpicture}
+
+\section{Original Authors}
 \begin{table}[H]
-	\caption{Authors of the Parts of the Paper}
-	\begin{tabularx}{\linewidth}{|l|l|L|}
-		\hline
-		\rowcolor{gray!20} Kind & Number & Author \\ \hline
-		\chap{1}                & \mik            \\ \hline
-		\sect{2.1}              & \silas          \\ \hline
-		\sect{2.2}              & \mik            \\ \hline
-		\sect{3.1}              & \silas          \\ \hline
-		\sect{3.2}              & \mik            \\ \hline
-		\sect{4.1}              & \mik            \\ \hline
-		\sect{4.2}              & \silas          \\ \hline
-		\sect{4.3}              & \mik            \\ \hline
-		\subsec{5.1.1}          & \mik            \\ \hline
-		\subsec{5.1.2}          & \mik            \\ \hline
-		\subsec{5.1.3}          & \mik            \\ \hline
-		\subsec{5.1.4}          & \silas          \\ \hline
-		\subsec{5.1.5}          & \mik            \\ \hline
-		\subsec{5.1.6}          & \mik            \\ \hline
-		\sect{5.2}              & \mik            \\ \hline
-		\sect{5.3}              & \silas          \\ \hline
-	\end{tabularx}
+	\begin{minipage}{.5\textwidth}
+		\caption{Authors of the parts of the paper.}
+		\begin{tabularx}{\linewidth}{|l|l|L|}
+			\hline
+			\rowcolor{gray!15} Kind & Number & Author \\ \hline
+			\chap{1}                & \mik            \\ \hline
+			\sect{2.1}              & \silas          \\ \hline
+			\sect{2.2}              & \mik            \\ \hline
+			\sect{3.1}              & \silas          \\ \hline
+			\sect{3.2}              & \mik            \\ \hline
+			\sect{4.1}              & \mik            \\ \hline
+			\sect{4.2}              & \mik            \\ \hline
+			\sect{4.3}              & \silas          \\ \hline
+			\sect{4.4}              & \mik            \\ \hline
+			\sect{4.5}              & \mik            \\ \hline
+			\subsec{5.1.1}          & \mik            \\ \hline
+			\subsec{5.1.2}          & \mik            \\ \hline
+			\subsec{5.1.3}          & \mik            \\ \hline
+			\subsec{5.1.4}          & \silas          \\ \hline
+			\subsec{5.1.5}          & \mik            \\ \hline
+			\subsec{5.1.6}          & \mik            \\ \hline
+			\sect{5.2}              & \mik            \\ \hline
+			\sect{5.3}              & \silas          \\ \hline
+			\sect{5.4}              & \mik            \\ \hline
+			\chap{6}                & \both           \\ \hline
+		\end{tabularx}
+	\end{minipage}
 \end{table}
 
 \begin{table}[H]
-	\caption{Authors of the Shown rush Components}
-	\begin{tabularx}{\linewidth}{|l|L|}
-		\hline
-		\rowcolor{gray!20} Component & Main author \\ \hline
-		Lexer                        & \mik        \\ \hline
-		Parser                       & \silas      \\ \hline
-		Semantic Analyzer            & \mik        \\ \hline
-		Tree-walking interpreter     & \silas      \\ \hline
-		VM interpreter               & \mik        \\ \hline
-		Wasm compiler                & \silas      \\ \hline
-		LLVM compiler                & \mik        \\ \hline
-		\riscv{} compiler            & \mik        \\ \hline
-		X86\_64 compiler             & \silas      \\ \hline
-		ANSI C transpiler            & \mik        \\ \hline
-	\end{tabularx}
+	\begin{minipage}{.5\textwidth}
+		\caption{Authors of the shown rush components.}
+		\begin{tabularx}{\linewidth}{|l|L|}
+			\hline
+			\rowcolor{gray!15} Component & Main author \\ \hline
+			lexer                        & \mik        \\ \hline
+			parser                       & \silas      \\ \hline
+			semantic analyzer            & \mik        \\ \hline
+			tree-walking interpreter     & \silas      \\ \hline
+			VM interpreter               & \mik        \\ \hline
+			Wasm compiler                & \silas      \\ \hline
+			LLVM compiler                & \mik        \\ \hline
+			\riscv{} compiler            & \mik        \\ \hline
+			X86\_64 compiler             & \silas      \\ \hline
+			C transpiler                 & \mik        \\ \hline
+		\end{tabularx}
 
-	\vspace{.3cm}
+		\vspace{.3cm}
 
-	\fbox{\begin{tabular}{ll}
-			\textcolor{green!65}{$\blacksquare$} & Mik Müller \\
-			$\textcolor{blue!50}\blacksquare$    & Silas Groh
-		\end{tabular}}
+		\fbox{\begin{tabular}{ll}
+				\textcolor{green!30}{$\blacksquare$} & Mik Müller \\
+				$\textcolor{blue!30}\blacksquare$    & Silas Groh
+			\end{tabular}}
+	\end{minipage}
 \end{table}
-
-\newpage
-
-\section{Selbstständigkeitserklärung}
-Hiermit versicheren wir, dass wir diese Arbeit selbstständig angefertigt, keine anderen als die von uns angegebenen Quellen und Hilfsmittel benutzt und die Stellen der Arbeit, die im Wortlaut oder dem Inhalt nach aus anderen Werken entnommen wurden, in jedem einzelnen Fall mit genauer Quellenangabe kenntlich gemacht habe. Verwendete Informationen aus dem Internet sind der Arbeit als Ausdruck im Anhang beigefügt. Wir sind damit einverstanden, dass die von uns verfasste Arbeit der schulinternen Öffentlichkeit in der Bibliothek der Schule zugänglich gemacht wird.
-
-\vspace{2cm}
-\noindent Wuppertal, 31. März 2023
-\vspace{10pt}
-\hrule width \textwidth \relax
-\vspace{.35cm}
-\noindent Ort, Datum \hspace{4cm} Unterschrift {\small Mik Müller} \hspace{2cm} Unterschrift {\small Silas Groh}
 \end{document}

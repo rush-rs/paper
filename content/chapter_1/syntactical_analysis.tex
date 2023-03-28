@@ -238,7 +238,7 @@ The \qVerb{expression} method on the \qVerb{Parser} struct is then modified to t
 It then first considers the current token kind to decide which expression to parse, and stores the result in the \qVerb{lhs}\footnote{Short for \enquote{left-hand side}.} variable.
 Afterward it checks whether the left precedence of the now current token is larger than the \qVerb{prec} argument.
 When called from elsewhere, like in the condition of a while-loop or in a grouped expression, the \qVerb{prec} argument has its minimum value of `0', as shown in Listing~\ref{lst:pratt_grouped_expr}.
-In that case, this check will only fail when the whole expression is over, as every non-operator token is assigned a precedence higher than 0.
+In that case, this check will only fail when the whole expression is over, as every operator token is assigned a precedence higher than `0'.
 If it does not fail, the \qVerb{infix_expr} method is called with the matching operator and \qVerb{lhs}.
 Afterward, \qVerb{lhs} is overwritten with the returned value.
 

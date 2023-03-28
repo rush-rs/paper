@@ -9,10 +9,10 @@ A significant downside of a transpiler is that it often generates very inefficie
 Furthermore, the entire project would also depend on the target language~\cite[p.~5]{Jeffery2021}.
 
 For this paper, we have implemented a transpiler which generates C code from rush source programs.
-Listing~\ref{lst:rush_transpiler_block} shows a rush program which terminates with the code `42`.
+Listing~\ref{lst:rush_transpiler_block} shows a rush program which terminates with the code `42'.
 For this, the value of the block-expression in lines~2--5 is saved in the variable \qVerb{num}.
-In the block, a temporary variable with a value of `40` is created.
-The block results in a value of `42` since `2` is added to this variable.
+In the block, a temporary variable with a value of `40' is created.
+The block results in a value of `42' since `2' is added to this variable.
 In line~6, the \qVerb{exit} function is called, using \qVerb{num} as its argument.
 Listing~\ref{lst:c_transpiler_block} shows the identical program represented using C.
 The code was generated from the rush program in Listing~\ref{lst:rush_transpiler_block} using the rush C transpiler\footnote{Generated using rush (Git commit \rushCommit{}).}.

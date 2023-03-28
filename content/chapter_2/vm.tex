@@ -165,7 +165,7 @@ This instruction calculates the absolute address of its operand and pushes the r
 Here, the operand is the relative address of the variable to be referenced.
 Listing~\ref{lst:rush_pointer_simple_vm_instructions} shows the VM instructions generated from the rush program in Listing~\ref{lst:rush_pointer_simple}.
 
-\Lirsting[caption={VM Instructions for the minimal Pointer Example}, label={lst:rush_pointer_simple_vm_instructions}, fancyvrb={numbers=right}, wrap=R, wrap width={.3\textwidth}]{listings/vm_instructions_simple_pointer.s}
+\Lirsting[caption={VM instructions for the minimal pointer example.}, label={lst:rush_pointer_simple_vm_instructions}, fancyvrb={numbers=right}, wrap=R, wrap width={.3\textwidth}]{listings/vm_instructions_simple_pointer.s}
 
 The first instruction \qVerb{setmp} (\textbf{set m}emory \textbf{p}ointer) increases the memory pointer by two since the operand is a positive number.
 This is because the \qVerb{main} function contains two local variables whose space is to be allocated at the start of the function.
@@ -238,7 +238,7 @@ In this call frame, `\texttt{ip}' still points to the `\texttt{call}' instructio
 Since `\texttt{ip}' is incremented automatically after most instructions, the VM resumes instruction execution at the first instruction after the \qVerb{call} instruction.
 Therefore, the call frame of the caller function stays unaffected as long as the called function is executed.
 
-\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width={.33\textwidth}, caption={VM instructions matching the AST in~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.s}
+\Lirsting[wrap=o, fancyvrb={numbers=\OuterEdge}, wrap width={.33\textwidth}, caption={VM instructions matching the AST in Figure~\ref{fig:tree_vs_vm_tree}.}, label={lst:tree_vs_vm_vm}]{listings/vm_faster_instructions.s}
 
 Now that the \qVerb{call} instruction has been interpreted, the VM begins executing the first instruction of the \qVerb{main} function.
 Since the \qVerb{main} function only calls the \qVerb{rec} function with the argument `1000', there are no new concepts to consider in this function.
@@ -282,7 +282,7 @@ Since functions also return values by placing them on top of the stack, the retu
 Next, the VM interprets the \qVerb{jmp} (\textbf{j}u\textbf{mp}) instruction in line~18.
 Unlike \qVerb{jmpfalse}, this instruction performs its jump without any condition.
 Here, the instruction jumps to the instruction at index `14' of the current function, meaning \qVerb{setmp} in line~24.
-The instructions in the lines~24 and 25 return `0' in case \qVerb{n} was equal to `0'.
+The instructions in lines~24 and 25 return `0' in case \qVerb{n} was equal to `0'.
 
 \subsection{Fetch-Decode-Execute Cycle of the VM}
 Now that the semantic meaning of the instructions in Listing~\ref{lst:tree_vs_vm_vm} has been explained, the fetch-decode-execute cycle of the VM will be explained\@.

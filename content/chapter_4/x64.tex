@@ -71,7 +71,7 @@ The norm in x64 is using just two operands where the first represents both the f
 
 \begin{table}[h]
 	\centering
-	\caption[x64 Integer Registers]{Integer registers of the x64 architecture~\cite[pp.~20,26]{Lu2022}.}\label{tbl:x64_registers}
+	\caption[General-purpose registers of the x64 architecture.]{General-purpose registers of the x64 architecture~\cite[pp.~20,26]{Lu2022}.}\label{tbl:x64_registers}
 	\rowcolors{2}{gray!15}{}
 	\begin{tabular}{c|ccc|c|l}
 		\rowcolor{gray!25} 64-bit & 32-bit     & 16-bit     & 8-bit      & Caller-Saved & Purpose                                    \\
@@ -173,7 +173,7 @@ Its internal layout may differ between programming languages~\cite[p.~21]{Lu2022
 
 \subsection{Implementation}
 
-\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=o, fancyvrb={numbers=\OuterEdge}, caption={The \qVerb{Instruction} definition in the rush x64 compiler.}, label={lst:x64_instruction}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
+\Lirsting[ranges={14-14, 20-21, 46-47, 104-104}, wrap=o, fancyvrb={numbers=\OuterEdge}, caption={x64: The \qVerb{Instruction} definition.}, label={lst:x64_instruction}]{deps/rush/crates/rush-compiler-x86-64/src/instruction.rs}
 
 Even though many implementation details could be the same as for the \riscv{} compiler, there are some differences because we each created one separately without using any reference implementation.
 One such difference is that the x64 compiler's \qVerb{Instruction} definition, which is shown in Listing~\ref{lst:x64_instruction}, not only includes instructions, but also directives and labels.
@@ -189,7 +189,7 @@ Listing~\ref{lst:x64_intvalue} shows its definition.
 
 \subsubsection{Struct Fields}
 
-\Lirsting[ranges={33-37}, wrap=r, wrap width={0.45\textwidth}, fancyvrb={numbers=right}, caption={The \qVerb{IntValue} definition in the rush x64 compiler.}, label={lst:x64_intvalue}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
+\Lirsting[ranges={33-37}, wrap=r, wrap width={0.45\textwidth}, fancyvrb={numbers=right}, caption={x64: The \qVerb{IntValue} definition.}, label={lst:x64_intvalue}]{deps/rush/crates/rush-compiler-x86-64/src/value.rs}
 
 The compiler struct itself, shown in Listing~\ref{lst:x64_compiler}, is also a bit different.
 Both compilers have a \qVerb{used_registers} field, but this compiler does not need to store the size for each register because the registers themselves already have a defined size (line~19).
@@ -198,7 +198,7 @@ Both compilers store the global variables, but this compiler has separate fields
 The same applies for constants in the \qVerb{.rodata} section (lines~58--70).
 And both compilers have one field for accumulating the final assembly code, but this compiler saves a list of \qVerb{Instruction}s instead of \qVerb{Block}s (line~44).
 
-\Lirsting[ranges={15-19, 25-31, 43-48, 55-60, 69-71}, float=htb, caption={Overview of the x64 \qVerb{Compiler} struct definition.}, label={lst:x64_compiler}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+\Lirsting[ranges={15-19, 25-31, 43-48, 55-60, 69-71}, float=htb, caption={The \qVerb{Compiler} struct definition of the x64 compiler.}, label={lst:x64_compiler}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
 Additional fields of this compiler are \qVerb{function_body}, \qVerb{stack_pointer}, and \qVerb{frame_size}.
 The \qVerb{function_body} field stores the instructions of the current function.
@@ -217,11 +217,11 @@ Then, it adds the number of bytes required for the value to the stack pointer, a
 Now, the pointer to this value is constructed using \qreg{rbp} as the base and the negated stack pointer as the offset.
 Finally, a \qVerb{mov} instruction for inserting the value at the location of the pointer is added to the assembly code, and the pointer is returned for further use.
 
-\Lirsting[ranges={254-271, 277-277, _280-283}, float=htb, caption={Stack space reservation for values.}, label={lst:x64_push_to_stack}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+\Lirsting[ranges={254-271, 277-277, _280-283}, float=htb, caption={x64: Stack space reservation for values.}, label={lst:x64_push_to_stack}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
 \subsubsection{Register Allocation}
 
-\Lirsting[ranges={257-261, 271-272:26, _272:59-274}, wrap=o, wrap width=0.5\textwidth, fancyvrb={numbers=\OuterEdge}, caption={Register allocation in the rush x64 compiler.}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
+\Lirsting[ranges={257-261, 271-272:26, _272:59-274}, wrap=o, wrap width=0.5\textwidth, fancyvrb={numbers=\OuterEdge}, caption={x64: Register allocation.}, label={lst:x64_intregister_next}]{deps/rush/crates/rush-compiler-x86-64/src/register.rs}
 
 The register allocation algorithm of the x64 compiler differs quite a lot from the \riscv{} version.
 Instead of marking individual registers as used or unused and then searching through a specified order for the first free one, this compiler uses an almost stack-like behavior.
@@ -313,24 +313,24 @@ The displayed function serves no purpose, and the analyzer rightfully warns abou
 
 Compiled if-expressions always follow the same outline, as it is shown in Figure~\ref{fig:asm_if}.
 First, the condition is compiled and an initial jump instruction that jumps to the else-block in case the condition evaluates to `false' is emitted.
-The instructions for the if-block, terminated by an unconditional jump to behind the else-block, follow.
+The instructions for the if-block, concluded by an unconditional jump to behind the else-block, follow.
 Now, the first label is inserted, here \qVerb{.block_x}, followed by the else-block.
 The entire construct ends with the second label, here \qVerb{.block_y}.
 Any following code goes after that.
 It is apparent that this structure encodes the expected if-else branching behavior.
-The code from the if-block is only ever reached if the condition is true, and it then skips over the else-block to the following instructions.
-If the condition is false, the if-block is immediately skipped, and only the else-block is executed which then also continues with the following instructions, causing the two branches to merge.
+The code from the if-block is only ever reached if the condition is `true', and it then skips over the else-block to the following instructions.
+If the condition is `false', the if-block is immediately skipped, and only the else-block is executed which then also continues with the following instructions, causing the two branches to merge.
 
 Starting with the if-expression in line~6 of Listing~\ref{lst:x64_control_flow_rush}, the condition here is merely a boolean variable.
 In order to execute a jump based on the value of this variable, the \qVerb{test} instruction is used with both the variable pointer and a constant `1' as operands in line~22 of Listing~\ref{lst:x64_control_flow_asm}.
-This results in the equality flag being set to `1' if a bitwise AND operation of these operands results in `0', that is, if the boolean variable is `false'.
+This results in the equality flag being set to `1' if a bitwise AND operation of these operands resulted in `0', that is, if the boolean variable was `false'.
 The following \qVerb{je} instruction in line~23 therefore skips to the else-block in case the boolean value was `false'.
 
 The compiler could now simply compile all condition expressions as usual, always resulting in one \qVerb{IntValue} holding a boolean, and use the same simple boolean check every time.
 However, since x64 provides additional jump instructions for basic conditions like \qVerb{==}, \qVerb{!=}, \qVerb{>=}, or \qVerb{<}, the compiler will try to use one of these when the source rush expression is simple enough.
 This can be seen in lines~30--33 of the assembly code, which represent the condition of the if-expression in line~7 of the rush code.
-The compiler detects the condition to be a simple equality check between two floats, and therefore issues a \qVerb{ucomisd} instruction in line~31 to compare the floats, and a \qVerb{jne} instruction in line~33 to jump if the floats are not equal.
-The reason for the \qVerb{jp}\label{x64_ucomisd} instruction in between is explained later.
+The compiler detects the condition to be a simple equality check between two floats, and therefore issues a \qVerb{ucomisd} instruction in line~31 to compare the floats, and a \qVerb{jne} (\textbf{j}ump if \textbf{n}ot \textbf{e}qual) instruction in line~33 to jump if the floats are not equal.
+The reason for the \qVerb{jp}\label{x64_ucomisd} (\textbf{j}ump if \textbf{p}arity) instruction in between is explained later.
 
 The representation of the loop is much simpler.
 Only two labels must be defined, one before and one after the loop's contents, and an unconditional jump back to the former must be performed at the end of every iteration.
@@ -342,44 +342,44 @@ For-loops also initialize a variable before the first iteration and call an upda
 
 \subsubsection{Integer Division and Float Comparisons}
 
-This subsection's title might seem a little specific compared to the others, but it has the simple reason that this subsection highlights two unexpectedly complex difficulties which we encountered during the creation of this compiler.
+This subsection's title might seem a little specific compared to the others, but it has the reason that this subsection highlights two unexpectedly complex difficulties which we encountered during the creation of this compiler.
 They were both already hinted at before.
 Firstly, there is integer division with the \qVerb{idiv} instruction, which was shortly explained in the introduction to x64 on page~\pageref{x64_idiv}.
 It is used when compiling rush infix-expressions between two integers that use either the \qVerb{/} or the \qVerbCmd{\%} operator.
 
-\Lirsting[ranges={56-56, 65-78, _90-104, 110-115}, float=htb, caption={Compilation of integer division in x64.}, label={lst:x64_infix_idiv}]{deps/rush/crates/rush-compiler-x86-64/src/infix.rs}
+\Lirsting[ranges={12-12, _18-19, 56-56, 63-73, _85-97, 101-106, 249-250}, float=htb, caption={x64: Compilation of integer division.}, label={lst:x64_infix_idiv}]{deps/rush/crates/rush-compiler-x86-64/src/infix.rs}
 
 Listing~\ref{lst:x64_infix_idiv} shows this compilation process.
 As \qVerb{idiv} always operates on the \qreg{rax} and \qreg{rdx} registers, it must first be assured that they are free for use.
-The left-hand side of the division, the numerator, is then moved into \qreg{rax} and sign-extended\footnote{\TODO{what is sign-extension}} to 128 bits via the \qVerb{cqo} instruction.
-Now, the right-hand side, the denominator, is made sure to either be a register or a memory pointer, which is then used in the call to \qVerb{idiv} in line~93.
+The left-hand side of the division, the numerator, is then moved into \qreg{rax} and sign-extended\footnote{Converting an $n$-bit sized integer to an $m$-bit sized one, where $m>n$, by prepending either zeros or ones to the binary representation, depending on the number's sign.} to 128 bits via the \qVerb{cqo} (\textbf{c}onvert \textbf{q}uadruple word to \textbf{o}ctuple word) instruction.
+Now, the right-hand side, the denominator, is made sure to either be a register or a memory pointer, which is then used in the call to \qVerb{idiv} in line~87.
 The division result, either \qreg{rax} or \qreg{rdx} depending on the operator, is then moved into the register that previously contained the numerator, as this is guaranteed to be available now.
 To finish up, possibly spilled registers are reloaded, and the register is returned as the expression's result.
-The resulting assembly of this can be seen in lines~43--45 in Listing~\ref{lst:x64_control_flow_asm}.
+The resulting assembly of this can be seen in lines~43--45 of Listing~\ref{lst:x64_control_flow_asm}.
 
 The second unexpected difficulty was presented by floating-point number comparisons.
-Floating-point numbers, as defined by the \emph{IEEE 754--2008} standard, have the special property of not forming a total order \TODO{cite}.
+Floating-point numbers, as defined by the \emph{IEEE 754--2008} standard, have the special property of not forming a total order.
 That means, not any two arbitrary values are comparable.
-For instance, the float standard defines a `NaN'\footnote{Short for ``not a number''.} value, which cannot be compared to itself~\cite[p.~216]{Patterson2017-zq}.
+For instance, the float standard defines a `NaN'\footnote{Short for ``not a number''.} value, which cannot be compared to itself~\cite[pp.~215f]{Patterson2017-zq}.
 In rush an expression comparing two incomparable float values should result in `false'.
-This is the reason for the additional \qVerb{jp} instruction in line~32 of Listing~\ref{lst:x64_control_flow_asm} that was previously hinted at on page~\pageref{x64_ucomisd}.
+This is the reason for the additional \qVerb{jp} instruction in line~32 of Listing~\ref{lst:x64_control_flow_asm} which was previously hinted at on page~\pageref{x64_ucomisd}.
 When comparing two floats with the \qVerb{ucomisd} instruction and there is no clear order defined, the \emph{parity} flag is set to `1'.
-The \qVerb{jp} instruction then jumps straight to the else-block if this flag is set, hereby interpreting an expression like \qVerb{NaN == NaN} as false.
+The \qVerb{jp} instruction then jumps straight to the else-block if this flag is set, hereby interpreting an expression like \qVerb{NaN == NaN} as `false'.
 
-\Lirsting[ranges={927-927, 944-959}, float=htb, caption={Compilation of float comparisons in x64.}, label={lst:x64_infix_ucomisd}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
+\Lirsting[ranges={927-927, 944-959}, float=htb, caption={x64: Compilation of float comparisons.}, label={lst:x64_infix_ucomisd}]{deps/rush/crates/rush-compiler-x86-64/src/compiler.rs}
 
 How this is achieved in the compiler is visible in Listing~\ref{lst:x64_infix_ucomisd}.
 The shown code snippet is inside the \qVerb{condition} method which is used during compilation of if-expressions and conditional loops.
 After pushing the \qVerb{ucomisd} instruction, two additional checks are performed.
-Firstly, if the condition is \qVerb{==}, then add a conditional jump to the else-block for when the result is unordered.
-Secondly, if the condition is \qVerb{!=}, then add a conditional jump to the else-block for when the result is \emph{not} unordered.
+Firstly, if the condition is \qVerb{==}, then a conditional jump to the else-block is added for when the result is unordered.
+Secondly, if the condition is \qVerb{!=}, then a conditional jump to the else-block is added for when the result is \emph{not} unordered.
 An expression like \qVerb{NaN != NaN} is therefore considered to be true.
 
 \subsubsection{Pointers}
 
 As for pointers, the x64 compiler operates based on the same principles as the \riscv{} one.
 However, the exact implementation differs slightly as x64 provides a specialized \qVerb{lea} (\textbf{l}oad \textbf{e}ffective \textbf{a}ddress) instruction for calculating a pointer address at runtime.
-For referencing a variable stored at an offset of `-24' from the frame pointer, the \riscv{} compiler produces the instruction \qVerb{addi a0, fp, -24} in order to manually subtract 24 from the address stored in \qVerb{fp}.
+For referencing a variable stored at an offset of `$-24$' from the frame pointer, the \riscv{} compiler produces the instruction \qVerb{addi a0, fp, -24} in order to manually subtract `24' from the address stored in \qVerb{fp}.
 The x64 compiler instead emits \qVerbCmd{lea \%rax, qword ptr [\%rbp-24]}.
 Here, the same syntax for pointers can be used as for accesses to the values behind pointers.
 In fact, in order to load the value instead of the address into \qreg{rax}, one only has to substitute \qVerb{lea} with \qVerb{mov}.

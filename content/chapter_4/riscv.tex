@@ -89,10 +89,10 @@ Every category is meant to be used in the specified manner, however, these group
 		\cell{\nth{1} stack argument} \cellcom{\texttt{0(fp)}}
 		\finishframe{previous}
 
+		\startframe
 		\cell{previous \qVerb{fp} value} \cellcom{\texttt{-8(fp)}}
 		\cell{return address} \cellcom{\texttt{-16(fp)}}
 
-		\startframe
 		\padding{3}{\makecell{unspecified\\variable size}} \cellcom{\texttt{0(sp)}}
 		% custom draws instead of `\cellcom` for yshift and padding cell offset
 		\draw (2.4,\value{cellnb}+1) node[anchor=west, yshift=3.5pt] {\vdots};
@@ -107,8 +107,8 @@ Every category is meant to be used in the specified manner, however, these group
 Figure~\ref{fig:riscv_stack} shows the stack layout used by \riscv{}.
 Stack frames are enclosed by the \qVerb{fp} and \qVerb{sp} registers.
 Here, \qVerb{sp} always points to the lowest address inside of the current stack frame while
-\qVerb{fp} points to 16 bytes\footnote{Assuming the RV64I extension is used.} above the top of the current frame.
-The available space for functions therefore ranges from \qVerb{-24(fp)} to \qVerb{0(sp)}.
+\qVerb{fp} points to the address above the current frame.
+The available space for functions ranges from \qVerb{-24(fp)} to \qVerb{0(sp)}.
 It is used for storing variables, following the alignment rules that were explained in Section~\ref{sec:alignment}.
 In the space between \qVerb{0(fp)} and \qVerb{-24(fp)}, the frame pointer of the previous stack frame and the return address are saved at the positions \mbox{\qVerb{-8(fp)}} and \qVerb{-16(fp)}, respectively.
 If stack arguments were present, they would be placed upwards of \qVerb{fp}.
@@ -239,7 +239,7 @@ In this case, 16 bytes are allocated since two 8-byte values are stored on the s
 
 The comment in line~17 indicates the start of the function's body.
 First, the previously explained \qVerb{li} instruction in line~18 places a constant `1' in the register \qVerb{a0}.
-Next, the \qVerb{ld} (\textbf{l}oad \textbf{d}word\footnote{Here, \enquote{dword} indicates that 64 bits of data shall be loaded.}) instruction in line 19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
+Next, the \qVerb{ld} (\textbf{l}oad \textbf{d}word\footnote{Here, \enquote{dword} indicates that 64 bits of data shall be loaded.}) instruction in line~19 is used in order to load the value of the global variable \qVerb{m} into the register \qVerb{a1}~\cite[Reference Card]{Patterson2017}.
 Global variables, like \qVerb{m}, are saved under the \qVerb{.rodata} or the \qVerb{.data} section, depending on their mutability.
 Since \qVerb{m} is declared as mutable, the compiler saves it under the \qVerb{.data} section.
 The start of the \qVerb{.data} section is marked by the \qVerb{.section} assembler directive in line~51.
@@ -261,24 +261,12 @@ This instruction will cause the CPU to jump to the address of the specified labe
 here \qVerb{epilogue_0} would be targeted~\cite[p.~17]{Patterson2017}.
 The rush compiler emits the \qVerb{call} and \qVerb{ret} (\textbf{ret}urn) instructions for jumps between functions,
 while the \qVerb{j} instruction is used for jumps between blocks of the current function.
-In the lines~26--30, inside the epilogue, the aforementioned task of restoring register values and returning to the caller are performed.
+In lines~26--30, inside the epilogue, the aforementioned task of restoring register values and returning to the caller are performed.
 
 \subsection{Supporting Pointers}
 
-\noindent
-\begin{minipage}{.34\textwidth}
-	\centering
-	\Lirsting[float=H, caption={Example rush program containing a pointer.}, label={lst:rush_simple_pointer}]{listings/rush_simple_pointer.rush}
-\end{minipage}%
-\hspace{3cm}
-\begin{minipage}{.45\textwidth}
-	\centering
-	\Lirsting[float=H, ranges={10-10,18-24}, caption={\riscv{} assembly output generated from Listing~\ref{lst:rush_simple_pointer}.}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
-	\vspace{.1cm}
-\end{minipage}
-
 Listing~\ref{lst:rush_simple_pointer} shows a rush program in which a variable is referenced to create a pointer which is then dereferenced.
-In line 3, the previously created variable \qVerb{a} is referenced in order to create the variable \qVerb{to_a} which saves a pointer to \qVerb{a}.
+In line~3, the previously created variable \qVerb{a} is referenced in order to create the variable \qVerb{to_a} which saves a pointer to \qVerb{a}.
 Listing~\ref{lst:rush_simple_pointer_asm} includes the relevant part of the compiler output which represents this rush program\footnote{Generated using rush (Git commit \rushCommit{}).}.
 In line~18, the integer value `42' is placed in the register \qVerb{a0}.
 Next, \qVerb{a0} is saved on the stack at \qVerb{-24(fp)} using the \qVerb{sd} instruction.
@@ -288,6 +276,18 @@ This results in the absolute address of \qVerb{a} at runtime because the syntax 
 The calculation has to be performed at runtime since the value of \qVerb{fp} cannot be determined at compile time.
 In line~21, the \qVerb{a0} register, which contains this memory address, is also saved on the stack.
 Therefore, the \qVerb{a} variable is saved at \qVerb{-24(fp)} and \qVerb{to_a} is saved at \qVerb{-32(fp)}.
+
+\noindent
+\begin{minipage}{.34\textwidth}
+	\centering
+	\Lirsting[float=H, caption={Example rush program containing a pointer.}, label={lst:rush_simple_pointer}]{listings/rush_simple_pointer.rush}
+\end{minipage}%
+\hspace{3cm}
+\begin{minipage}{.45\textwidth}
+	\centering
+	\Lirsting[float=H, ranges={10-10,18-24}, caption={Compiler output of the rush program in Listing~\ref{lst:rush_simple_pointer}.}, label={lst:rush_simple_pointer_asm}]{listings/generated/riscv_rush_simple_pointer.s}
+	\vspace{.1cm}
+\end{minipage}
 
 In order to access the value of \qVerb{a}, \qVerb{to_a} is dereferenced in line~4 of the rush program.
 For this, the memory address stored in the variable \qVerb{to_a} first needs to be loaded from the stack,
@@ -306,14 +306,13 @@ Unlike the LLVM or Wasm compilers, this one emits \riscv{} assembly which can th
 Before any complex code samples can be considered, important struct fields of the compiler need to be explained.
 Listing~\ref{lst:riscv_compiler_attr} shows the \qVerb{Compiler} struct definition containing those fields.
 
-\Lirsting[ranges={11-11,15-15,19-34}, caption={Fields of the \riscv{} \qVerb{Compiler} struct.}, label={lst:riscv_compiler_attr}, float=h]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[ranges={11-11,15-15,19-34}, caption={The \qVerb{Compiler} struct definition of the \riscv{} compiler.}, label={lst:riscv_compiler_attr}, float=h]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+
+\Lirsting[ranges={57-57,69-71,110-110}, caption={\riscv{}: The \qVerb{Instruction} enumeration.}, label={lst:riscv_instruction_enum}, float=h]{deps/rush/crates/rush-compiler-risc-v/src/instruction.rs}
 
 The \qVerb{blocks} field in line~15 holds a vector containing values of the type \qVerb{Block}.
 That type provides an abstraction for representing a label followed by instructions.
 The Listing~\ref{lst:riscv_instruction_enum} shows parts the \qVerb{Instruction} enumeration declaration.
-
-\Lirsting[ranges={57-57,69-71,110-110}, caption={The \qVerb{Instruction} enumeration in the \riscv{} compiler.}, label={lst:riscv_instruction_enum}, float=h]{deps/rush/crates/rush-compiler-risc-v/src/instruction.rs}
-
 Although the listing only shows a few of the implemented instructions,
 this enumeration contains all instructions which the compiler might need at a later point.
 Depending on the type of instruction, the corresponding variant includes fields which define its operands.
@@ -324,11 +323,11 @@ Listing~\ref{lst:riscv_intregister_enum} shows a part of the \qVerb{IntRegister}
 It specifies all registers which \riscv{} provides, assuming that the required extensions are considered.
 An equivalent enumeration called \qVerb{FloatRegister} is defined for the float registers of this \riscv{} configuration.
 
-\Lirsting[ranges={98-98,130-132,136-136}, caption={The \qVerb{IntRegister} enumeration in the \riscv{} compiler.}, label={lst:riscv_intregister_enum}, float=h]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
+\Lirsting[ranges={98-98,130-132,136-136}, caption={\riscv{}: The \qVerb{IntRegister} enumeration.}, label={lst:riscv_intregister_enum}, float=h]{deps/rush/crates/rush-compiler-risc-v/src/register.rs}
 
 The \qVerb{curr_block} field, defined in line~19 of Listing~\ref{lst:riscv_compiler_attr},
-saves the index of the block which is currently being inserted to.
-Next, the \qVerb{data_section} and \qVerb{rodata_section} fields are declared in the lines~20--23.
+saves the index of the block which is currently being inserted into.
+Next, the \qVerb{data_section} and \qVerb{rodata_section} fields are declared in lines~20--23.
 They represent the ELF sections \qVerb{.data} and \qVerb{.rodata}, respectively.
 Here, each vector might contain global variables, which are represented by the type \qVerb{DataObj}.
 Each \qVerb{DataObj} consists of a label, saved as a string, and the initial data.
@@ -387,7 +386,7 @@ this one does not emphasize the performance of the output program.
 All variables are saved on the stack in order to keep as many registers as possible free for temporary use in calculations and operations like this one.
 Since this algorithm only performs rudimentary register allocation, its implementation is also significantly simpler.
 
-\Lirsting[ranges={175-186}, float=h, label={lst:riscv_get_int_reg}, caption={The \qVerb{get_int_reg} method of the \riscv{} rush compiler.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
+\Lirsting[ranges={175-186}, float=h, label={lst:riscv_get_int_reg}, caption={\riscv{}: The \qVerb{get_int_reg} method.}]{deps/rush/crates/rush-compiler-risc-v/src/utils.rs}
 
 Listing~\ref{lst:riscv_get_int_reg} shows the method called \qVerb{get_int_reg} which is called every time a register is required by the compiler.
 The method returns the first available register from the register pool that contains either integer or float registers.
@@ -395,7 +394,7 @@ Each register pool contains all possible registers for either integer or floatin
 In line~175, in the method's signature, one can see that it returns a value of type \qVerb{IntRegister}.
 The for-loop in line~176 is used to iterate over the entire \qVerb{INT_REGISTERS} array.
 This array represents the pool containing integer registers.
-For each register in that pool, the if-expression in the lines~177--180 checks whether the current register \qVerb{reg} is contained in the \qVerb{used_registers} vector.
+For each register in that pool, the if-expression in lines~177--180 checks whether the current register \qVerb{reg} is contained in the \qVerb{used_registers} vector.
 If this is not the case, the current register is still unused and can therefore be returned for usage.
 Since the \qVerb{return} statement causes the function to return immediately,
 the loop only iterates until a free register has been found.
@@ -436,7 +435,7 @@ The gray cells specify registers that are currently in use by the compiler.
 The arrow points to \qVerb{a2}, which is the first free register, meaning the one which follows \qVerb{a1}, the last used register.
 Therefore, if the \qVerb{get_int_reg} method was called when the state of the registers is equivalent to the one displayed in Figure~\ref{fig:riscv_iregister_pool}, it would return the register \qVerb{a2}.
 
-\Lirsting[float=h, ranges={590-596,656-657}, caption={Parts of the \qVerb{expression} method in the \riscv{} rush compiler.}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={590-596,656-657}, caption={\riscv{}: Parts of the \qVerb{expression} method.}, label={lst:riscv_expression}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 In order to understand how expressions are compiled, Listing~\ref{lst:riscv_expression}, which shows parts of the \qVerb{expression} method, is to be considered.
 This method is responsible for compiling expressions.
@@ -450,7 +449,7 @@ Next, an \qVerb{li} instruction is inserted which loads the integer contained in
 Finally, this register is then returned.
 For more complex expressions, the specified methods are called, just like in the other compilers.
 
-\Lirsting[float=h, ranges={755-755,791-791,841-858}, caption={Parts of the \qVerb{infix_expr} method in the \riscv{} rush compiler.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
+\Lirsting[float=h, ranges={755-755,791-791,841-858}, caption={\riscv{}: Parts of the \qVerb{infix_expr} method.}, label={lst:riscv_infix_expr}]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
 However, it is still not apparent \emph{when} the compiler marks certain registers as used.
 For this, the compilation of the rush expression \qVerb{n+m} is to be considered.
@@ -473,7 +472,7 @@ Now, the right-hand side will respect that the register returned by the left-han
 \Lirsting[
 	float=h,
 	ranges={861-861,864-871,977-980,990-991},
-	caption={Parts of the \qVerb{infix_helper} method of the \riscv{} rush compiler.},
+    caption={\riscv{}: Parts of the \qVerb{infix_helper} method.},
 	label={lst:riscv_infix_helper}
 ]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -511,7 +510,7 @@ Secondly, the special instructions for calling the \qVerb{main} and \qVerb{exit}
 \Lirsting[
 	float=h,
 	ranges={123-156},
-	caption={The \qVerb{define_main_fn} method of the \riscv{} rush compiler.},
+    caption={\riscv{}: The \qVerb{define_main_fn} method.},
 	label={lst:riscv_define_main_fn}
 ]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -542,7 +541,7 @@ For this, the previously created epilogue label is now appended to the \qVerb{bl
 \Lirsting[
 	float=h,
 	ranges={66-87},
-	caption={The \qVerb{epilogue} method of the \riscv{} rush compiler.},
+    caption={\riscv{}: The \qVerb{epilogue} method.},
 	label={lst:riscv_epilogue}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
@@ -570,7 +569,7 @@ A \qVerb{Pointer} stores a relative memory address given a base register, \qVerb
 \Lirsting[
 	float=h,
 	ranges={557-557,_561-567,580-587},
-	caption={The \qVerb{save_expr_on_stack} method in the \riscv{} rush compiler.},
+    caption={\riscv{}: The \qVerb{save_expr_on_stack} method.},
 	label={lst:riscv_save_on_stack}
 ]{deps/rush/crates/rush-compiler-risc-v/src/compiler.rs}
 
@@ -603,7 +602,8 @@ For instance, if the \qVerb{exit} function was called, this method would return 
 	float=h,
 	ranges={92-113,189-189},
 	fancyvrb={lastline=23},
-	caption={The \qVerb{call_expr} method in the \riscv{} rush compiler.},
+    start continued=true,
+    caption={\riscv{}: The \qVerb{call_expr} method.},
 	label={lst:riscv_call_expr}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
@@ -620,7 +620,7 @@ Therefore, after the assignment, the \qVerb{used_registers} vector will be empty
 \Lirsting[
 	float=h,
 	ranges={92-92, 115-133:59, _133:84-139, 160-161, 189-189},
-	caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
+    caption={\riscv{}: The \qVerb{call_expr} method.},
 	label={lst:riscv_call_expr_2},
 	fancyvrb={firstline=2, lastline=31},
 	continued=true,
@@ -662,7 +662,7 @@ Although just the code for floats is shown here, the algorithm for integer-based
 	float=h,
 	ranges={92-92, 163-189},
 	fancyvrb={firstline=2},
-	caption={The \qVerb{call_expr} method of the \riscv{} rush compiler.},
+    caption={\riscv{}: The \qVerb{call_expr} method.},
 	label={lst:riscv_call_expr_3}
 ]{deps/rush/crates/rush-compiler-risc-v/src/call.rs}
 
@@ -713,7 +713,7 @@ Before each iteration, the while-loop checks whether \qVerb{count} is less than 
 If it is, count is incremented by `1', and the loop begins its next iteration.
 Otherwise, the execution of the loop stops and the code after the loop is executed.
 In the assembly code, the content of the loop is represented by the instructions below the \qVerb{while_head_0} label.
-As the comment in line 22 suggests, the first four instructions represent the loop control code.
+As the comment in line~22 suggests, the first four instructions represent the loop control code.
 These instructions are executed every time the loop begins a new iteration.
 They check the condition before any of the code inside the loop's body is executed.
 If it results in `false', the execution of the loop should stop.

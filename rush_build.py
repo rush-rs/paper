@@ -11,42 +11,50 @@ class Backend(Enum):
     riscv = 1
     c = 2
 
-
 JOBS = [
+    # Not automatically built with the document
     {
         'in': './listings/fib.rush',
-        'out': './listings/generated/fib.ll',
+        'out': './listings/fib.ll',
         'backend': Backend.llvm,
+        'auto': False,
     },
     {
         'in': './listings/simple.rush',
-        'out': './listings/generated/simple.ll',
+        'out': './listings/simple.ll',
         'backend': Backend.llvm,
+        'auto': False,
     },
+    # Automatically built with the document
     {
         'in': './listings/simple_scope.rush',
         'out': './listings/generated/rush_simple_scope.c',
         'backend': Backend.c,
+        'auto': True,
     },
     {
         'in': './listings/riscv_simple.rush',
         'out': './listings/generated/riscv_simple.s',
         'backend': Backend.riscv,
+        'auto': True,
     },
     {
         'in': './listings/rush_simple_pointer.rush',
         'out': './listings/generated/riscv_rush_simple_pointer.s',
         'backend': Backend.riscv,
+        'auto': True,
     },
     {
         'in': './listings/simple_add.rush',
         'out': './listings/generated/rush_simple_add.s',
         'backend': Backend.riscv,
+        'auto': True,
     },
     {
         'in': './listings/while_loop.rush',
         'out': './listings/generated/rush_while_loop.s',
         'backend': Backend.riscv,
+        'auto': True,
     },
 ]
 
@@ -164,8 +172,10 @@ if __name__ == '__main__':
         lint_all()
     elif sys.argv[1] == 'used':
         assure_used_listings()
-    elif sys.argv[1] == 'build':
+    elif sys.argv[1] == 'build' or sys.argv[1] == 'regen':
         for job in JOBS:
+            if sys.argv[1] == 'build' and job['auto'] == False:
+                continue
             if job['backend'] == Backend.riscv:
                 riscv_asm(job['in'], job['out'], 17)
             elif job['backend'] == Backend.llvm:
